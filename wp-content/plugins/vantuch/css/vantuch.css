@@ -1,0 +1,63 @@
+header .fb-like {
+    float: right;
+    margin-top: 20px;
+    margin-bottom: -40px;
+    margin-left: 20px;
+}
+
+header .instagram {
+    float: right;
+    margin-top: 22px;
+    margin-bottom: -40px;
+    margin-left: 20px;
+}
+
+header .translate {
+    margin-top: 20px;
+}
+
+header nav li {
+    list-style: none;
+    text-color: black;
+
+    float: right;
+    margin-right: 20px;
+
+}
+
+header nav li a {
+    text-transform: uppercase;
+    font-family: Montserrat, sans-serif;
+    text-decoration: none;
+    border: 0px;
+    font-weight: normal;
+}
+
+.ig-b- {
+    display: inline-block;
+}
+
+.ig-b- img {
+    visibility: hidden;
+}
+
+.ig-b-:hover {
+    background-position: 0 -60px;
+}
+
+.ig-b-:active {
+    background-position: 0 -120px;
+}
+
+.ig-b-24 {
+    width: 24px;
+    height: 24px;
+    background: url(//badges.instagram.com/static/images/ig-badge-sprite-24.png) no-repeat 0 0;
+}
+
+@media only screen and (-webkit-min-device-pixel-ratio: 2),only screen and (min--moz-device-pixel-ratio: 2),only screen and (-o-min-device-pixel-ratio: 2 / 1),only screen and (min-device-pixel-ratio: 2),only screen and (min-resolution: 192dpi),only screen and (min-resolution: 2dppx) {
+    .ig-b-24 {
+        background-image: url(//badges.instagram.com/static/images/ig-badge-sprite-24@2x.png);
+        background-size: 60px 178px;
+    }
+}
