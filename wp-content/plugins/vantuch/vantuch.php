@@ -3,12 +3,12 @@
  Plugin Name: Vantuch
  Description: Plugin for the vantuch.cz blog page.
  Author: mvantuch
- Version: 0.0.1
+ Version: 0.0.3
  Author URI: http://vantuch.cz/
 */
 
 if ( ! defined( 'VANTUCH_VER' ) ) {
-	define( 'VANTUCH_VER', '1.0.0' );
+	define( 'VANTUCH_VER', '0.0.3' );
 }
 
 class Vantuch {
