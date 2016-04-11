@@ -44,7 +44,9 @@ class Vantuch {
 
 	public function front_scripts() {
 		wp_enqueue_script( 'vantuch', plugins_url( 'js/vantuch.js', __FILE__ ), array(), VANTUCH_VER );
+//		wp_enqueue_script( 'vantuch', plugins_url( 'js/jquery.swipebox.min.js', __FILE__ ), array(), VANTUCH_VER );
 		wp_enqueue_style( 'vantuch', plugins_url( 'css/vantuch.css', __FILE__ ), array(), VANTUCH_VER );
+//		wp_enqueue_style( 'vantuch', plugins_url( 'css/swipebox.min.css', __FILE__ ), array(), VANTUCH_VER );
 	}
 }
 
