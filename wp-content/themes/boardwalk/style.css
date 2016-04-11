@@ -2510,7 +2510,7 @@ video,
 .infinite-scroll.archive .hentry,
 .infinite-scroll.blog .hentry,
 .infinite-scroll.search-results .hentry {
-	opacity: 0;
+	/*opacity: 0;*/
 }
 
 /*--------------------------------------------------------------
@@ -2897,7 +2897,7 @@ hr,
 18.0 Pace
 --------------------------------------------------------------*/
 .site {
-	opacity: 0;
+	/*opacity: 0;*/
 }
 .pace-done .site {
 	opacity: 1;

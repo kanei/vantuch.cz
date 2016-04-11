@@ -18,9 +18,6 @@
 </head>
 
 <body <?php body_class(); ?>>
-<!-- facebook start -->
-<div id="fb-root"></div>
-<!-- facebook end -->
 <div id="page" class="hfeed site">
 	<a class="skip-link screen-reader-text" href="#content"><?php _e( 'Skip to content', 'boardwalk' ); ?></a>
 
@@ -35,15 +32,16 @@
 		<?php if ( is_active_sidebar( 'sidebar-1' ) || has_nav_menu( 'primary' ) ) : ?>
 			<button class="sidebar-toggle" aria-expanded="false" ><span class="screen-reader-text"><?php _e( 'Toggle Sidebar', 'boardwalk' ); ?></span></button>
 		<?php endif; ?>
-	  	<?php /** facebook start */ ?>
-		<div class="fb-follow" data-href="https://www.facebook.com/cesta.do.australie" data-width="300px" data-height="70px" data-layout="standard" data-show-faces="false"></div>
-		<?php /**  facebook end */ ?>
 
-		<?php /** Instagram start */ ?>
-		<a href="http://instagram.com/doaustralie?ref=badge" class="instagram ig-b- ig-b-24">
-			<img src="//badges.instagram.com/static/images/ig-badge-24.png" alt="Instagram" />
-		</a>
-		<?php /** Instagram end */ ?>
+		<?php if ( has_nav_menu( 'primary' ) ) : ?>
+			<nav id="site-navigation" role="navigation">
+				<?php
+					wp_nav_menu( array(
+						'theme_location'  => 'primary',
+					) );
+				?>
+			</nav><!-- #site-navigation -->
+		<?php endif; ?>
 
 		<?php /** Translate start */ ?>
 		<div class="translate">
@@ -51,8 +49,9 @@
 				<input name="u" value="<?= "http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]" ?>" type="hidden" />
 				<input name="hl" value="en" type="hidden" />
 				<input name="ie" value="UTF8" type="hidden" />
+				<input name="sandbox" value="0" type="hidden" />
 				<input name="langpair" value="" type="hidden" />
-				<input name="langpair" value="cs|fr" title="English" src= "/wp-content/themes/boardwalk/image/uk.png" onclick="this.form.langpair.value=this.value" height="30" type="image" width="30" />
+				<input name="langpair" value="cs|en" title="English" src= "/wp-content/themes/boardwalk/image/uk.png" onclick="this.form.langpair.value=this.value" height="30" type="image" width="30" />
 			</form>
 		</div>
 		<?php /** Translate end */ ?>
