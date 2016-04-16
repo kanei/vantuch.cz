@@ -42,7 +42,7 @@
 	<footer class="entry-footer">
 		<?php boardwalk_entry_footer(); ?>
 		<div id="jp-relatedposts" class="jp-relatedposts" style="display: block;">
-			<h3 class="jp-relatedposts-headline"><em>Pokud toho ještě nemáte dost...</em></h3>
+			<h3 class="jp-relatedposts-headline"><em>Sledujte naši cestu na Facebooku:</em></h3>
 			<div class="fb-page" data-href="https://www.facebook.com/cesta.do.australie/" data-width="500" data-small-header="false" data-adapt-container-width="true" data-hide-cover="false" data-show-facepile="false">
 				<div class="fb-xfbml-parse-ignore">
 					<blockquote cite="https://www.facebook.com/cesta.do.australie/">
