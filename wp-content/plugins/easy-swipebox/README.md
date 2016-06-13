@@ -10,7 +10,7 @@ Easy SwipeBox plugin for WordPress websites gives you a flexible, aesthetic and 
 ## Main features
 
 1. Enqueuing of SwipeBox Javascript and CSS files.
-2. Customization of SwipeBox lightbox appereance and behaviour from the Lightbox Settings page.
+2. Customization of SwipeBox lightbox appearance and behaviour from the Lightbox Settings page.
 3. Autodetection of links to images or videos. You can exclude/include media types from the Autodetection Settings page.
 4. Other geek settings in the Advanced Settings page.
 

@@ -82,7 +82,7 @@ class EasySwipeBox {
    *
    * @since    1.1.0
    * @access   protected
-   * @var      array    $options_lightbox    The options for lightbox behaviour and appereance.
+   * @var      array    $options_lightbox    The options for lightbox behaviour and appearance.
    */
   protected $options_lightbox;
 

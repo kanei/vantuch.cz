@@ -69,7 +69,7 @@ Updated PHP Warning and Notice tracking so that multiple different errors on the
 Compatibility updates for trunk
 
 = 0.3 =
-Added WordPress Query infomation
+Added WordPress Query information
 Added Request parsing information
 
 = 0.2 =
@@ -129,7 +129,7 @@ Updated PHP Warning and Notice tracking so that multiple different errors on the
 Compatibility updates for trunk
 
 = 0.3 =
-Added WordPress Query infomation
+Added WordPress Query information
 Added Request parsing information
 
 = 0.2 =

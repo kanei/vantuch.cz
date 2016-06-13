@@ -456,7 +456,7 @@ class EasySwipeboxAdmin {
   // Section: Advanced Settings
   public function advancedtSectionRender() {
     ?>
-      <p><?php _e('In this page you can customize the Easy SwipeBox advanced settings.', $this->plugin_name); ?> <?php _e('Please be carefull, the wrong settings combination can break your site.', $this->plugin_name); ?><br>
+      <p><?php _e('In this page you can customize the Easy SwipeBox advanced settings.', $this->plugin_name); ?> <?php _e('Please be careful, the wrong settings combination can break your site.', $this->plugin_name); ?><br>
       </p>
     <?php
   }
