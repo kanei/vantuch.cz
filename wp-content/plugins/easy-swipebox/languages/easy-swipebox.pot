@@ -244,7 +244,7 @@ msgid "In this page you can customize the Easy SwipeBox advanced settings."
 msgstr ""
 
 #: admin/class-easy-swipebox-admin.php:459
-msgid "Please be carefull, the wrong settings combination can break your site."
+msgid "Please be careful, the wrong settings combination can break your site."
 msgstr ""
 
 #: admin/class-easy-swipebox-admin.php:466
