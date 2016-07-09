@@ -82,6 +82,9 @@ article.post img.size-large {
 }
 
 @media screen and (min-width: 568px) {
+}
+
+@media screen and (min-width: 768px) {
 
     #sidebar .widget_nav_menu{
         display: none;
@@ -90,7 +93,4 @@ article.post img.size-large {
     #menu-top {
         display: block;
     }
-}
-
-@media screen and (min-width: 768px) {
 }
