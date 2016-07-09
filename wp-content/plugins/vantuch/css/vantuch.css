@@ -61,3 +61,18 @@ header nav li a {
         background-size: 60px 178px;
     }
 }
+
+/* Display images correctly */
+article.post img.size-large {
+    width: 624px;
+}
+
+/* Display map in full width */
+.page-id-578 .entry-content {
+    padding: 0;
+    width: 100%;
+}
+
+.page-id-578 .entry-header {
+    display: none;
+}
