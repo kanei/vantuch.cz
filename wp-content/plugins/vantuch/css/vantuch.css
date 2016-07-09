@@ -76,3 +76,21 @@ article.post img.size-large {
 .page-id-578 .entry-header {
     display: none;
 }
+
+
+#sidebar .widget_nav_menu{
+    display: none;
+}
+
+@media screen and (min-width: 568px) {
+    #menu-top {
+        display: none;
+    }
+
+    #sidebar .widget_nav_menu{
+        display: block;
+    }
+}
+
+@media screen and (min-width: 768px) {
+}
