@@ -77,17 +77,17 @@ article.post img.size-large {
     display: none;
 }
 
-
-#sidebar .widget_nav_menu{
+#menu-top {
     display: none;
 }
 
 @media screen and (min-width: 568px) {
-    #menu-top {
+
+    #sidebar .widget_nav_menu{
         display: none;
     }
 
-    #sidebar .widget_nav_menu{
+    #menu-top {
         display: block;
     }
 }
