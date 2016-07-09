@@ -41,5 +41,15 @@
 
 	<footer class="entry-footer">
 		<?php boardwalk_entry_footer(); ?>
+		<div style="display: block;">
+			<h3><em>Sledujte naši cestu na Facebooku:</em></h3>
+			<div class="fb-page" data-href="https://www.facebook.com/cesta.do.australie/" data-width="500" data-small-header="false" data-adapt-container-width="true" data-hide-cover="false" data-show-facepile="false">
+				<div class="fb-xfbml-parse-ignore">
+					<blockquote cite="https://www.facebook.com/cesta.do.australie/">
+						<a href="https://www.facebook.com/cesta.do.australie/">Do Austrálie</a>
+					</blockquote>
+				</div>
+			</div>
+		</div>
 	</footer><!-- .entry-footer -->
 </article><!-- #post-## -->

@@ -106,13 +106,13 @@ function boardwalk_entry_footer() {
 		/* translators: used between list items, there is a space after the comma */
 		$categories_list = get_the_category_list( __( ', ', 'boardwalk' ) );
 		if ( $categories_list && boardwalk_categorized_blog() ) {
-			printf( '<span class="cat-links">' . __( 'Posted in %1$s', 'boardwalk' ) . '</span>', $categories_list );
+			printf( '<span class="cat-links">' . __( 'Publikováno v %1$s', 'boardwalk' ) . '</span>', $categories_list );
 		}
 
 		/* translators: used between list items, there is a space after the comma */
 		$tags_list = get_the_tag_list( '', __( ', ', 'boardwalk' ) );
 		if ( $tags_list ) {
-			printf( '<span class="tags-links">' . __( 'Tagged %1$s', 'boardwalk' ) . '</span>', $tags_list );
+			printf( '<span class="tags-links">' . __( 'Štítky %1$s', 'boardwalk' ) . '</span>', $tags_list );
 		}
 
 		if ( 1 != get_theme_mod( 'boardwalk_author_bio' ) ) {
@@ -123,11 +123,11 @@ function boardwalk_entry_footer() {
 
 	if ( ! post_password_required() && ( comments_open() || '0' != get_comments_number() ) ) {
 		echo '<span class="comments-link">';
-		comments_popup_link( __( 'Leave a comment', 'boardwalk' ), __( '1 Comment', 'boardwalk' ), __( '% Comments', 'boardwalk' ) );
+		comments_popup_link( __( 'Napište nám komentář', 'boardwalk' ), __( '1 komentář', 'boardwalk' ), __( '% komentáře', 'boardwalk' ) );
 		echo '</span>';
 	}
 
-	edit_post_link( __( 'Edit', 'boardwalk' ), '<span class="edit-link">', '</span>' );
+	edit_post_link( __( 'Upravit', 'boardwalk' ), '<span class="edit-link">', '</span>' );
 }
 endif;
 
