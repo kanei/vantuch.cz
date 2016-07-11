@@ -4,6 +4,8 @@
 
 /** Facebook */
 (function(d, s, id) {
+    if (!d.getElementById('fb-page-post')) return;
+
     var js, fjs = d.getElementsByTagName(s)[0];
     if (d.getElementById(id)) return;
     js = d.createElement(s); js.id = id;
