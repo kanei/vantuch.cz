@@ -81,8 +81,8 @@ article.post img.size-large {
     display: none;
 }
 
-.site-logo-link img {
-    width: 165px;
+.site-logo-link .site-logo {
+    max-width: 165px;
 }
 
 #menu-top {
