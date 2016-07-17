@@ -77,6 +77,10 @@ article.post img.size-large {
     display: none;
 }
 
+.site-title {
+    display: none;
+}
+
 #menu-top {
     display: none;
 }
