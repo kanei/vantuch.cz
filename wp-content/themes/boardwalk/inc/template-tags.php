@@ -106,7 +106,7 @@ function boardwalk_entry_footer() {
 		/* translators: used between list items, there is a space after the comma */
 		$categories_list = get_the_category_list( __( ', ', 'boardwalk' ) );
 		if ( $categories_list && boardwalk_categorized_blog() ) {
-			printf( '<span class="cat-links">' . __( 'Publikováno v %1$s', 'boardwalk' ) . '</span>', $categories_list );
+			printf( '<span class="cat-links">' . __( 'Na cestě %1$s', 'boardwalk' ) . '</span>', $categories_list );
 		}
 
 		/* translators: used between list items, there is a space after the comma */
@@ -116,7 +116,7 @@ function boardwalk_entry_footer() {
 		}
 
 		if ( 1 != get_theme_mod( 'boardwalk_author_bio' ) ) {
-			$byline = sprintf( '<span class="byline">' . _x( 'By %s', 'post author', 'boardwalk' ) . '</span>', '<span class="author vcard"><a class="url fn n" href="' . esc_url( get_author_posts_url( get_the_author_meta( 'ID' ) ) ) . '">' . esc_html( get_the_author() ) . '</a></span>' );
+			$byline = sprintf( '<span class="byline">' . _x( 'Napsal %s', 'post author', 'boardwalk' ) . '</span>', '<span class="author vcard"><a class="url fn n" href="' . esc_url( get_author_posts_url( get_the_author_meta( 'ID' ) ) ) . '">' . esc_html( get_the_author() ) . '</a></span>' );
 			echo $byline;
 		}
 	}

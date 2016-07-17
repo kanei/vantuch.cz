@@ -7,7 +7,7 @@
 ?>
 
 <div class="entry-author">
-	<h2 class="author-heading"><?php printf( __( 'Published by %s', 'boardwalk' ), get_the_author() ); ?></h2>
+	<h2 class="author-heading"><?php printf( __( 'Nabloggoval(a) %s', 'boardwalk' ), get_the_author() ); ?></h2>
 
 	<div class="author-avatar">
 		<?php
@@ -24,7 +24,7 @@
 	<div class="author-description">
 		<p class="author-bio">
 			<?php the_author_meta( 'description' ); ?>
-			<span class="author-link"><a href="<?php echo esc_url( get_author_posts_url( get_the_author_meta( 'ID' ) ) ); ?>" rel="author"><?php printf( __( 'View all posts by %s', 'boardwalk' ), get_the_author() ); ?></a></span>
+			<span class="author-link"><a href="<?php echo esc_url( get_author_posts_url( get_the_author_meta( 'ID' ) ) ); ?>" rel="author"><?php printf( __( 'Zobrazit další články od %s', 'boardwalk' ), get_the_author() ); ?></a></span>
 		</p><!-- .author-bio -->
 	</div><!-- .author-description -->
 </div><!-- .entry-author -->
