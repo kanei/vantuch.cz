@@ -2709,10 +2709,6 @@ div#jp-relatedposts:before {
 	width: auto;
 	max-height: 48px;
 }
-.has-site-logo .site-description,
-.has-site-logo .site-title {
-	margin-top: 12px;
-}
 
 /*--------------------------------------------------------------
 15.7 Responsive Videos
