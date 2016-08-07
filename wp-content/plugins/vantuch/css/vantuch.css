@@ -89,11 +89,32 @@ article.post img.size-large {
     display: none;
 }
 
+/** Ads **/
+.entry-ads-column {
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+.entry-adsense {
+    margin-right: auto;
+    margin-left: auto;
+    width: 100%;
+    padding: 25px 24px 24px;
+    border-top: 1px solid #f2f2f2;
+    color: rgba(0, 0, 0, 0.6);
+}
+
 @media screen and (min-width: 568px) {
 }
 
 @media screen and (min-width: 768px) {
 
+    .entry-adsense {
+        padding-right: 72px;
+        padding-left: 72px;
+        width: 768px;
+    }
 }
 
 @media screen and (min-width: 1024px) {
@@ -105,11 +126,4 @@ article.post img.size-large {
     #menu-top {
         display: block;
     }
-}
-
-/** Ads **/
-.entry-ads-column {
-    position: absolute;
-    right: 0;
-    top: 0;
 }

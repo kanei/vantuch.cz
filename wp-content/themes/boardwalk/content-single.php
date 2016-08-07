@@ -18,16 +18,18 @@
 		<?php the_title( '<h1 class="entry-title">', '</h1>' ); ?>
 	</header><!-- .entry-header -->
 
-<!--	<div class="entry-ads-column">-->
-<!--		<!-- Column -->-->
-<!--		<ins class="adsbygoogle"-->
-<!--			 style="display:inline-block;width:300px;height:600px"-->
-<!--			 data-ad-client="ca-pub-8650917758207848"-->
-<!--			 data-ad-slot="4254001755"></ins>-->
-<!--		<script>-->
-<!--			(adsbygoogle = window.adsbygoogle || []).push({});-->
-<!--		</script>-->
-<!--	</div>-->
+	<?php if (false): ?>
+	<div class="entry-ads-column">
+		<!-- Column -->
+		<ins class="adsbygoogle"
+			 style="display:inline-block;width:300px;height:600px"
+			 data-ad-client="ca-pub-8650917758207848"
+			 data-ad-slot="4254001755"></ins>
+		<script>
+			(adsbygoogle = window.adsbygoogle || []).push({});
+		</script>
+	</div>
+	<?php endif ?>
 	
 	<div class="entry-content">
 		<?php the_content(); ?>
@@ -52,14 +54,5 @@
 
 	<footer class="entry-footer">
 		<?php boardwalk_entry_footer(); ?>
-		<!-- Responsive -->
-		<ins class="adsbygoogle"
-			 style="display:block"
-			 data-ad-client="ca-pub-8650917758207848"
-			 data-ad-slot="2916869352"
-			 data-ad-format="auto"></ins>
-		<script>
-			(adsbygoogle = window.adsbygoogle || []).push({});
-		</script>
 	</footer><!-- .entry-footer -->
 </article><!-- #post-## -->
