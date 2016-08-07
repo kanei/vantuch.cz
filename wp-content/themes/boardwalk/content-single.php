@@ -18,6 +18,17 @@
 		<?php the_title( '<h1 class="entry-title">', '</h1>' ); ?>
 	</header><!-- .entry-header -->
 
+<!--	<div class="entry-ads-column">-->
+<!--		<!-- Column -->-->
+<!--		<ins class="adsbygoogle"-->
+<!--			 style="display:inline-block;width:300px;height:600px"-->
+<!--			 data-ad-client="ca-pub-8650917758207848"-->
+<!--			 data-ad-slot="4254001755"></ins>-->
+<!--		<script>-->
+<!--			(adsbygoogle = window.adsbygoogle || []).push({});-->
+<!--		</script>-->
+<!--	</div>-->
+	
 	<div class="entry-content">
 		<?php the_content(); ?>
 		<?php
@@ -41,15 +52,14 @@
 
 	<footer class="entry-footer">
 		<?php boardwalk_entry_footer(); ?>
-		<div style="display: block;">
-			<h3><em>Sledujte naši cestu na Facebooku:</em></h3>
-			<div id="fb-page-post" class="fb-page" data-href="https://www.facebook.com/cesta.do.australie/" data-width="500" data-small-header="false" data-adapt-container-width="true" data-hide-cover="false" data-show-facepile="false">
-				<div class="fb-xfbml-parse-ignore">
-					<blockquote cite="https://www.facebook.com/cesta.do.australie/">
-						<a href="https://www.facebook.com/cesta.do.australie/">Do Austrálie</a>
-					</blockquote>
-				</div>
-			</div>
-		</div>
+		<!-- Responsive -->
+		<ins class="adsbygoogle"
+			 style="display:block"
+			 data-ad-client="ca-pub-8650917758207848"
+			 data-ad-slot="2916869352"
+			 data-ad-format="auto"></ins>
+		<script>
+			(adsbygoogle = window.adsbygoogle || []).push({});
+		</script>
 	</footer><!-- .entry-footer -->
 </article><!-- #post-## -->

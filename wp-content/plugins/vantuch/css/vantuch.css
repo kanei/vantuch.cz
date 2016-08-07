@@ -106,3 +106,10 @@ article.post img.size-large {
         display: block;
     }
 }
+
+/** Ads **/
+.entry-ads-column {
+    position: absolute;
+    right: 0;
+    top: 0;
+}
