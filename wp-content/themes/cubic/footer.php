@@ -26,9 +26,10 @@
 			</nav><!-- .social-navigation -->
 		<?php endif; ?>
 		<div class="site-info">
-			<a href="<?php echo esc_url( __( 'http://wordpress.org/', 'cubic' ) ); ?>"><?php printf( __( 'Proudly powered by %s', 'cubic' ), 'WordPress' ); ?></a>
-			<span class="sep"> | </span>
-			<?php printf( __( 'Theme: %1$s by %2$s.', 'cubic' ), 'Cubic', '<a href="https://wordpress.com/themes/" rel="designer">WordPress.com</a>' ); ?>
+			Marek Vantuch @2016
+<!--			<a href="--><?php //echo esc_url( __( 'http://wordpress.org/', 'cubic' ) ); ?><!--">--><?php //printf( __( 'Proudly powered by %s', 'cubic' ), 'WordPress' ); ?><!--</a>-->
+<!--			<span class="sep"> | </span>-->
+<!--			--><?php //printf( __( 'Theme: %1$s by %2$s.', 'cubic' ), 'Cubic', '<a href="https://wordpress.com/themes/" rel="designer">WordPress.com</a>' ); ?>
 		</div><!-- .site-info -->
 	</footer><!-- #colophon -->
 </div><!-- #page -->
