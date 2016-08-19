@@ -111,12 +111,16 @@ article.post img.size-large {
     padding-right: 1em;
 }
 
+#main .woocommerce-result-count {
+    display: none;
+}
+
 #main ul.products li.product a img {
     margin: 0;
 }
 
 #main ul.products li.product, .woocommerce-page ul.products li.product {
-    margin-bottom:0px;
+    margin-bottom: 0;
 }
 
 #sidebar ul.product_list_widget {
