@@ -27,6 +27,8 @@ class Vantuch {
 		add_action( 'wp_enqueue_scripts', array( $this, 'front_scripts' ) );
 
         add_filter( 'wc_product_sku_enabled', '__return_false' );
+
+        add_filter( 'loop_shop_per_page', create_function( '$cols', 'return 24;' ) );
 	}
 
 	/**
