@@ -34,17 +34,14 @@ class HunchSchema_Category extends HunchSchema_Thing {
 
         endwhile;
 
-        // Get Category Properties
-        $category_link = get_category_link(get_the_category());
-        $category_headline = single_cat_title('', false) . " Category";
 
         $this->schema = array
             (
             '@context' => 'http://schema.org/',
             '@type' => $this->schemaType,
-            'headline' => $category_headline,
+            'headline' => single_cat_title( '', false ) . " Category",
             'description' => category_description(),
-            'url' => $category_link,
+            'url' => get_category_link( get_query_var( 'cat' ) ),
             'hasPart' => $hasPart
         );
 

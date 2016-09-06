@@ -59,14 +59,14 @@ jQuery(document).ready(function ($) {
             resourceURI: $('#resourceURI').val(),
             resourceData: $('#resourceData').val() 
         }
-        $.form('http://app.schemaapp.com/importpost', data, 'POST').submit();
+        $.SchemaAppForm('http://app.schemaapp.com/importpost', data, 'POST').submit();
 
     });
 });
 
 jQuery(function ($) {
     $.extend({
-        form: function (url, data, method) {
+        SchemaAppForm: function (url, data, method) {
             if (method == null)
                 method = 'POST';
             if (data == null)

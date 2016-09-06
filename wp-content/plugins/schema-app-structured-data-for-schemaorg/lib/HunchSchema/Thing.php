@@ -47,6 +47,34 @@ class HunchSchema_Thing {
     }
 
 
+    public static function getPermalink()
+    {
+		$Permalink = '';
+
+		if ( is_author() )
+		{
+			$Permalink = get_author_posts_url( get_the_author_meta( 'ID' ) );
+		}
+		elseif ( is_category() )
+		{
+			$Permalink = get_category_link( get_query_var( 'cat' ) );
+		}
+		elseif ( is_singular() )
+		{
+			$Permalink = get_permalink();
+		}
+        elseif ( is_front_page() && is_home() || is_front_page() )
+        {
+			$Permalink = get_site_url();
+        }
+        elseif ( is_home() )
+        {
+			$Permalink = get_permalink( get_option( 'page_for_posts' ) );
+        }
+
+		return $Permalink;
+	}
+
     protected function getImage()
     {
 		if ( has_post_thumbnail() )
@@ -131,11 +159,13 @@ class HunchSchema_Thing {
 
 	protected function getAuthor()
 	{
+		global $post;
+
 		$Author = array
 		(
 			'@type' => 'Person',
-			'name' => get_the_author(),
-			'url' => esc_url( get_author_posts_url( get_the_author_meta( 'ID' ) ) ),
+			'name' => get_the_author_meta( 'display_name', $post->post_author ),
+			'url' => esc_url( get_author_posts_url( get_the_author_meta( 'ID', $post->post_author ) ) ),
 		);
 
 		if ( get_the_author_meta( 'description' ) )
@@ -144,7 +174,7 @@ class HunchSchema_Thing {
 		}
 
                 if ( version_compare( get_bloginfo( 'version' ), '4.2', '>=' ) ) {
-                    $AuthorImage = get_avatar_url( get_the_author_meta( 'user_email' ), 96 );
+                    $AuthorImage = get_avatar_url( get_the_author_meta( 'user_email', $post->post_author ), 96 );
 
                     if ( $AuthorImage )
                     {

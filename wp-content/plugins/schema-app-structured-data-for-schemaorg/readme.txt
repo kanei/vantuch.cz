@@ -5,8 +5,8 @@ Tags: schema, structured data, schema.org, rich snippets
 Author URI: https://www.hunchmanifest.com
 Author: Mark van Berkel (vberkel)
 Requires at least: 3.5
-Tested up to: 4.5.2
-Stable tag: 1.1.2
+Tested up to: 4.6
+Stable tag: 1.1.4
 License: GPL2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -76,6 +76,15 @@ You\'ll find the [FAQ on SchemaApp.com] (http://www.schemaapp.com/wordpress/faq/
 5. Link to Validation
 
 == Changelog ==
+= 1.1.4 = 
+- Fix, Show Custom Markup for Latest Blog Homepages
+
+= 1.1.3 = 
+- Fix, Author details on Post edit screen
+- Fix, Loading of assets on plugin settings page for SSL site
+- Fix, jQuery conflict on Post edit screen
+- Feature, Added link in Toolbar to test markup
+
 = 1.1.2 = 
 - Fix, Javascript version to force reload
 

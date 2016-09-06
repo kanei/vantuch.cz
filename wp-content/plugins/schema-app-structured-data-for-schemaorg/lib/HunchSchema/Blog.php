@@ -10,12 +10,21 @@ defined('ABSPATH') OR die('This script cannot be accessed directly.');
 class HunchSchema_Blog extends HunchSchema_Thing {
 
     public $schemaType = "Blog";
-    
+
     public function getResource($pretty = false) {
+        
+        if (is_front_page() && is_home() || is_front_page()) {
+            $Headline = get_bloginfo('name');
+            $Permalink = get_site_url() . '/';
+        } else {
+            $Headline = get_the_title(get_option('page_for_posts'));
+            $Permalink = get_permalink(get_option('page_for_posts'));
+        }
+        
         $blogPost = array();
-
+        
         while (have_posts()) : the_post();
-
+        
             $blogPost[] = array
                 (
                 '@type' => 'BlogPosting',
@@ -31,19 +40,18 @@ class HunchSchema_Blog extends HunchSchema_Thing {
                 'commentCount' => get_comments_number(),
                 'comment' => $this->getComments(),
             );
-
+            
         endwhile;
-
+        
         $this->schema = array
             (
             '@context' => 'http://schema.org/',
             '@type' => $this->schemaType,
-            'headline' => get_option('page_for_posts') ? get_the_title(get_option('page_for_posts')) : get_bloginfo('name'),
+            'headline' => $Headline,
             'description' => get_bloginfo('description'),
-            'url' => get_option('page_for_posts') ? get_permalink(get_option('page_for_posts')) : get_site_url(),
+            'url' => $Permalink,
             'blogPost' => $blogPost,
         );
-
         return $this->toJson($pretty);
     }
 

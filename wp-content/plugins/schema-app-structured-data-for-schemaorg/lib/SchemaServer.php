@@ -17,12 +17,14 @@ class SchemaServer {
     public function __construct($uri = "") {
         $this->options = get_option('schema_option_name');    
 
-        if (empty($uri)) { 
-            $this->resource = get_permalink();
+        if ( !empty($uri ) ) {
+            $this->resource = $uri;            
+        } elseif (is_front_page() && is_home() || is_front_page()) {
+            $this->resource = get_site_url() . '/';
         } else { 
-            $this->resource = $uri;
+            $this->resource = get_permalink();            
         }
-        
+
         $subDomain = ( substr($_SERVER['SERVER_NAME'], 0, 3) === "dev" ) ? "dev" : "";
         $this->server = $this->getProtocol($_SERVER) . "://api$subDomain.hunchmanifest.com";
 

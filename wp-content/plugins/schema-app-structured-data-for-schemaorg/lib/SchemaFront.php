@@ -38,4 +38,28 @@ class SchemaFront {
 			}
 		}     
     }
+
+
+	function AdminBarMenu( $wp_admin_bar )
+	{
+		$Permalink = HunchSchema_Thing::getPermalink();
+
+		if ( $Permalink )
+		{
+			$args = array
+			(
+				'id'    => 'Hunch-Schema',
+				'title' => 'Test Schema',
+				'href'  => 'https://developers.google.com/structured-data/testing-tool?url=' . urlencode( $Permalink ),
+				'meta'  => array
+				(
+					'class' => 'Hunch-Schema',
+					'target' => '_blank',
+				),
+			);
+
+			$wp_admin_bar->add_node( $args );
+		}
+	}
+
 }

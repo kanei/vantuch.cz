@@ -12,6 +12,7 @@ class SchemaSettings
      */
     private $options;
     private $license;
+    private $PluginURL;
     
     const SCHEMA_ITEM_NAME = "schemawoocommerce";    
 
@@ -23,6 +24,7 @@ class SchemaSettings
         $this->options = get_option( 'schema_option_name' );
         $this->license = get_option( 'schema_option_name_license' );
         $this->wc_status = get_option( 'schema_license_wc_status' );
+        $this->PluginURL = plugins_url( 'schema-app-structured-data-for-schemaorg' );
         
         add_action( 'admin_init', array($this, 'admin_nag_handle'));
         add_action( 'admin_init', array( $this, 'page_init' ) );        
@@ -200,13 +202,13 @@ class SchemaSettings
         }
         // Javascript
         wp_enqueue_media(); 
-        wp_enqueue_script('schema-admin-funcs', WP_PLUGIN_URL.'/schema-app-structured-data-for-schemaorg/js/schemaAdmin.js', array('jquery','media-editor'), '20160712');
+        wp_enqueue_script('schema-admin-funcs', $this->PluginURL.'/js/schemaAdmin.js', array('jquery','media-editor'), '20160712');
         $tab = isset($_GET['tab']) ? $_GET['tab'] : 'schema-app-settings';
         wp_localize_script( 'schema-admin-funcs', 'schemaData', array(
             'tab' => $tab,
 	));
         // CSS Styles
-        wp_enqueue_style( 'schema-admin-style', WP_PLUGIN_URL.'/schema-app-structured-data-for-schemaorg/css/schemaStyle.css' );
+        wp_enqueue_style( 'schema-admin-style', $this->PluginURL.'/css/schemaStyle.css' );
         
     }
     
@@ -267,6 +269,7 @@ class SchemaSettings
             'schema-app-setting', // Page
             'publisher_settings' // Section           
         );      
+
         
         //// Schema App License Page
         // License Information
@@ -428,7 +431,9 @@ class SchemaSettings
         echo $imageHtml;
 
     }
-    
+
+   
+
     /** 
      * Get the settings option array and print one of its values
      */
