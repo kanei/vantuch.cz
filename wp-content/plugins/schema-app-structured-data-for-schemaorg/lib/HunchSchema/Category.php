@@ -45,7 +45,7 @@ class HunchSchema_Category extends HunchSchema_Thing {
             'hasPart' => $hasPart
         );
 
-        return $this->toJson($pretty);
+        return $this->toJson( $this->schema, $pretty );
     }
 
 }

@@ -26,7 +26,7 @@ class SchemaEditor {
         }
         // Javascript
         wp_enqueue_media(); 
-        wp_enqueue_script('schema-admin-funcs', WP_PLUGIN_URL.'/schema-app-structured-data-for-schemaorg/js/schemaAdmin.js', array('jquery','media-editor'), '20160712');
+        wp_enqueue_script('schema-admin-funcs', WP_PLUGIN_URL.'/schema-app-structured-data-for-schemaorg/js/schemaEditor.js', array('jquery'), '20160928');        
         
     }
     
@@ -43,7 +43,7 @@ class SchemaEditor {
         if (in_array($post_type, $post_types)) {
             add_meta_box(
                 'schema_meta_json_ld'
-                , __('Schema.org Structured Data', 'schema_textdomain')
+                , __('Schema App Structured Data', 'schema_textdomain')
                 , array($this, 'render_meta_box_content')
                 , $post_type
                 , 'advanced'
@@ -93,48 +93,70 @@ class SchemaEditor {
         <label for="schema_new_field"><span class="inside"><?php echo _e('Post JSON-LD', 'schema_textdomain') ?></span>
             <div id="schemapostlinks">
                 <?php 
-                if ( empty($replacelink) ) {
-                    echo '<button><a target="_blank" href="' . $editlink . '">Edit</a></button>';
-                } else {
-                    ?>
-                    <button><a target="_blank" href="<?php echo $replacelink; ?>">Use Different Schema.org Type</a></button>
-                    <button id="extendSchema" value="Extend Markup"><a target="_blank" href="#">Add to <?php echo $schemaObj->schemaType; ?> Default Markup</a></button>
-                    <input type="hidden" id="resourceURI" value="<?php echo get_permalink($post->ID); ?>"/>
-                    <textarea id="resourceData" style="display:none"><?php echo esc_attr($jsonLd); ?></textarea> 
-                    <?php 
-                }
+					if ( ! $DisableMarkup )
+					{
+						if ( empty($replacelink) ) {
+							echo '<button><a target="_blank" href="' . $editlink . '">Edit</a></button>';
+						} else {
+							?>
+							<button><a target="_blank" href="<?php echo $replacelink; ?>">Use Different Schema.org Type</a></button>
+							<button id="extendSchema" value="Extend Markup"><a target="_blank" href="#">Add to <?php echo $schemaObj->schemaType; ?> Default Markup</a></button>
+							<input type="hidden" id="resourceURI" value="<?php echo get_permalink($post->ID); ?>"/>
+							<textarea id="resourceData" style="display:none"><?php echo esc_attr($jsonLd); ?></textarea> 
+							<?php 
+						}
+					}
                 ?>
                 <button><a class="" target="_blank" href="<?php echo $testlink; ?>">Test with Google</a></button>
             </div>
         </label> 
         <p>
-            <textarea disabled="" class="large-text metadesc" rows="6" id="schema_new_field" name="schema_new_field"><?php echo esc_attr($jsonLd); ?></textarea>
-            <?php if (isset($schemaObj)): ?>
+            <textarea disabled="" class="large-text metadesc" rows="6" id="schema_new_field" name="schema_new_field"><?php print $DisableMarkup ? '' : esc_attr($jsonLd); ?></textarea>
+            <?php if ( isset( $schemaObj ) && ! $DisableMarkup ): ?>
                 <br/><strong>Note: </strong><span style="color: grey"><em>This is default markup. Extend this with Schema App Creator using Update linked above.</em></span>
             <?php endif; ?>
         </p>
         <h4>Markup Options</h4>
-        <p>
-            <label><input type="checkbox" name="HunchSchemaDisableMarkup" value="1" <?php $this->CheckSelected(1, $DisableMarkup, 'checkbox'); ?>> <?php _e('Disable Schema markup', 'schema_textdomain'); ?></label>
-        </p>
-        <?php if ($PostType == 'page') : ?>
-            <p>
-                <label>Select Type</label> 
-                <select name="HunchSchemaType">
-                    <option value="">Article</option>
-                    <option value="BlogPosting" <?php $this->CheckSelected('BlogPosting', $MarkupType); ?>>Blog Posting</option>
-                    <option value="LiveBlogPosting" <?php $this->CheckSelected('LiveBlogPosting', $MarkupType); ?>>&nbsp; Live Blog Posting</option>
-                    <option value="NewsArticle" <?php $this->CheckSelected('NewsArticle', $MarkupType); ?>>News Article</option>
-                    <option value="Report" <?php $this->CheckSelected('Report', $MarkupType); ?>>Report</option>
-                    <option value="ScholarlyArticle" <?php $this->CheckSelected('ScholarlyArticle', $MarkupType); ?>>Scholarly Article</option>
-                    <option value="MedicalScholarlyArticle" <?php $this->CheckSelected('MedicalScholarlyArticle', $MarkupType); ?>>&nbsp; Medical Scholarly Article</option>
-                    <option value="SocialMediaPosting" <?php $this->CheckSelected('SocialMediaPosting', $MarkupType); ?>>Social Media Posting</option>
-                    <option value="DiscussionForumPosting" <?php $this->CheckSelected('DiscussionForumPosting', $MarkupType); ?>>&nbsp; Discussion Forum Posting</option>
-                    <option value="TechArticle" <?php $this->CheckSelected('TechArticle', $MarkupType); ?>>Tech Article</option>
-                    <option value="APIReference" <?php $this->CheckSelected('APIReference', $MarkupType); ?>>&nbsp; API Reference</option>
-                </select>
-            </p>
-        <?php endif; 
+
+		<table class="widefat fixed wp-list-table">
+			<tbody>
+
+				<tr>
+					<td style="width: 30%;">
+						<?php _e('Disable Schema markup', 'schema_textdomain'); ?>
+					</td>
+					<td>
+						<input type="checkbox" name="HunchSchemaDisableMarkup" value="1" <?php $this->CheckSelected(1, $DisableMarkup, 'checkbox'); ?>>
+					</td>
+				</tr>
+
+				<?php if ( $PostType == 'page') : ?>
+					<tr>
+						<td>
+							<?php _e('Select Type', 'schema_textdomain'); ?>
+						</td>
+						<td>
+							<select name="HunchSchemaType">
+								<option value="">Article</option>
+								<option value="BlogPosting" <?php $this->CheckSelected('BlogPosting', $MarkupType); ?>>Blog Posting</option>
+								<option value="LiveBlogPosting" <?php $this->CheckSelected('LiveBlogPosting', $MarkupType); ?>>&nbsp; Live Blog Posting</option>
+								<option value="NewsArticle" <?php $this->CheckSelected('NewsArticle', $MarkupType); ?>>News Article</option>
+								<option value="Report" <?php $this->CheckSelected('Report', $MarkupType); ?>>Report</option>
+								<option value="ScholarlyArticle" <?php $this->CheckSelected('ScholarlyArticle', $MarkupType); ?>>Scholarly Article</option>
+								<option value="MedicalScholarlyArticle" <?php $this->CheckSelected('MedicalScholarlyArticle', $MarkupType); ?>>&nbsp; Medical Scholarly Article</option>
+								<option value="SocialMediaPosting" <?php $this->CheckSelected('SocialMediaPosting', $MarkupType); ?>>Social Media Posting</option>
+								<option value="DiscussionForumPosting" <?php $this->CheckSelected('DiscussionForumPosting', $MarkupType); ?>>&nbsp; Discussion Forum Posting</option>
+								<option value="TechArticle" <?php $this->CheckSelected('TechArticle', $MarkupType); ?>>Tech Article</option>
+								<option value="APIReference" <?php $this->CheckSelected('APIReference', $MarkupType); ?>>&nbsp; API Reference</option>
+							</select>
+						</td>
+					</tr>
+				<?php endif; ?>
+
+			</tbody>
+		</table>
+
+        <?php
     }
 
     function ActionSavePost($PostId) {

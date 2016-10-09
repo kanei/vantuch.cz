@@ -1,12 +1,10 @@
-<?php
-
-defined('ABSPATH') OR die('This script cannot be accessed directly.');
+<?php defined( 'ABSPATH' ) OR die( 'This script cannot be accessed directly.' );
 
 /*
  * Plugin Name: Schema App Structured Data
  * Plugin URI: http://www.schemaapp.com
  * Description: This plugin adds http://schema.org structured data to your website
- * Version: 1.1.4
+ * Version: 1.2.1
  * Author: Hunch Manifest
  * Author URI: https://www.hunchmanifest.com
  */
@@ -22,11 +20,13 @@ if (is_admin()) {
     add_action('load-post-new.php', array($editor, 'hunch_schema_edit'));
 } else {
 
-    $Settings = get_option('schema_option_name');
+    $SchemaFront = new SchemaFront();
 
-    $front = new SchemaFront();
-    add_action('wp_head', array($front, 'hunch_schema_add'));
+    add_action('wp_head', array($SchemaFront, 'hunch_schema_add'));
 
-    add_action('admin_bar_menu', array($front, 'AdminBarMenu'), 999);
+	if ( ! empty( $SchemaFront->Settings['ToolbarShowTestSchema'] ) )
+	{
+		add_action( 'admin_bar_menu', array( $SchemaFront, 'AdminBarMenu' ), 999 );
+	}
 
 }

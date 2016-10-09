@@ -26,7 +26,7 @@ class HunchSchema_Author extends HunchSchema_Thing {
             'about' => $this->getAuthor(),
         );
 
-        return $this->toJson($pretty);
+        return $this->toJson( $this->schema, $pretty );
     }
 
 }

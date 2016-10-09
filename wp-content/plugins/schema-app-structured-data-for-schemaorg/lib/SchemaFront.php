@@ -4,13 +4,16 @@
  *
  * @author Mark van Berkel
  */
-class SchemaFront {
+class SchemaFront
+{
+    public $Settings;
 
     /**
      * Hook into the appropriate actions when the class is constructed.
      */
-    public function __construct() {
-        
+    public function __construct()
+    {
+		$this->Settings = get_option( 'schema_option_name' );
     }
 
     /**
@@ -24,29 +27,45 @@ class SchemaFront {
 
 		if ( ! $DisableMarkup )
 		{
-			$server = new SchemaServer();
-			$jsonLd = $server->getResource();
-			if ($jsonLd === "") {
-				$postType = get_post_type();
-				$schemaObj = HunchSchema_Thing::factory($postType);
-				if ( isset( $schemaObj )) {
-					$jsonLd = $schemaObj->getResource();
+			$PostType = get_post_type();
+			$SchemaThing = HunchSchema_Thing::factory( $PostType );
+
+			$SchemaServer = new SchemaServer();
+			$SchemaMarkup = $SchemaServer->getResource();
+
+			if ( $SchemaMarkup === "" )
+			{
+				if ( isset( $SchemaThing ) )
+				{
+					$SchemaMarkup = $SchemaThing->getResource();
 				}
 			}
-			if ( $jsonLd !== "" ) {
-				echo "<script type='application/ld+json'>" . $jsonLd . "</script>";
+
+			if ( $SchemaMarkup !== "" )
+			{
+				printf( '<script type="application/ld+json">%s</script>', $SchemaMarkup );
+			}
+
+			if ( ! empty( $this->Settings['SchemaBreadcrumb'] ) )
+			{
+				$SchemaMarkupBreadcrumb = $SchemaThing->getBreadcrumb();
+
+				if ( ! empty( $SchemaMarkupBreadcrumb ) )
+				{
+					printf( '<script type="application/ld+json">%s</script>', $SchemaMarkupBreadcrumb );
+				}
 			}
 		}     
     }
 
 
-	function AdminBarMenu( $wp_admin_bar )
+	function AdminBarMenu( $WPAdminBar )
 	{
 		$Permalink = HunchSchema_Thing::getPermalink();
 
 		if ( $Permalink )
 		{
-			$args = array
+			$Node = array
 			(
 				'id'    => 'Hunch-Schema',
 				'title' => 'Test Schema',
@@ -58,7 +77,7 @@ class SchemaFront {
 				),
 			);
 
-			$wp_admin_bar->add_node( $args );
+			$WPAdminBar->add_node( $Node );
 		}
 	}
 

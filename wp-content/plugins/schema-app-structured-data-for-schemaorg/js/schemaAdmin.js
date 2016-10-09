@@ -30,84 +30,33 @@ jQuery(document).ready(function ($) {
     });
 
     // Tab based navigation on settings page
-    $(document).on('click', '.nav-tab-wrapper a', function () {
-        console.log($(this).index());
-        $('section').hide();
-        $('section').eq($(this).index()).show();
-        return false;
+    $( '.wrap .nav-tab-wrapper a' ).click( function( e )
+    {
+        e.preventDefault();
+
+		var Elm = $( this );
+
+		Elm.blur();
+
+		$( '.wrap .nav-tab-wrapper a' ).removeClass( 'nav-tab-active' );
+		$( '.wrap .nav-tab-wrapper a' ).eq( Elm.index() ).addClass( 'nav-tab-active' );
+
+        $('.wrap section').hide();
+        $('.wrap section').eq(Elm.index()).show();
     });
 
     // Switch to a specific tab on page load
     function schemaLoadSwitchTab() {
         var tabIndex = 1;                               // Default to Settings tab
-        $("section").each(function (index) {
+        $( "section[id^='schema-app']" ).each(function (index) {
             if ($(this)[0].id === schemaData.tab) {
                 tabIndex = index;
             }
         });
-        $('section').hide();
-        $('section').eq(tabIndex).show();
-    }
+        $( "section[id^='schema-app']" ).hide();
+        $( "section[id^='schema-app']" ).eq(tabIndex).show();
+    };
 
     schemaLoadSwitchTab();
 
-    // Capture click event to form POST request of data
-    $('#extendSchema').click(function (e) {
-        
-        e.preventDefault();
-        var data = { 
-            resourceURI: $('#resourceURI').val(),
-            resourceData: $('#resourceData').val() 
-        }
-        $.SchemaAppForm('http://app.schemaapp.com/importpost', data, 'POST').submit();
-
-    });
-});
-
-jQuery(function ($) {
-    $.extend({
-        SchemaAppForm: function (url, data, method) {
-            if (method == null)
-                method = 'POST';
-            if (data == null)
-                data = {};
-
-            var form = $('<form>').attr({
-                method: method,
-                action: url,
-                target: '_blank'
-            }).css({
-                display: 'none'
-            });
-
-            var addData = function (name, data) {
-                if ($.isArray(data)) {
-                    for (var i = 0; i < data.length; i++) {
-                        var value = data[i];
-                        addData(name + '[]', value);
-                    }
-                } else if (typeof data === 'object') {
-                    for (var key in data) {
-                        if (data.hasOwnProperty(key)) {
-                            addData(name + '[' + key + ']', data[key]);
-                        }
-                    }
-                } else if (data != null) {
-                    form.append($('<input>').attr({
-                        type: 'hidden',
-                        name: String(name),
-                        value: String(data)
-                    }));
-                }
-            };
-
-            for (var key in data) {
-                if (data.hasOwnProperty(key)) {
-                    addData(key, data[key]);
-                }
-            }
-            
-            return form.appendTo('body');
-        }
-    });
 });

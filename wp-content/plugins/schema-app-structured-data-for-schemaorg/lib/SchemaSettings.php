@@ -94,12 +94,14 @@ class SchemaSettings
         <div class="wrap">
             <h2>Schema App Settings</h2>
             <div></div>
+
+			<h3 class="nav-tab-wrapper">
+				<a class="nav-tab" href="<?php echo admin_url() ?>options-general.php?page=schema-app-welcome">Quick Guide</a>
+				<a class="nav-tab nav-tab-active" href="<?php echo admin_url() ?>options-general.php?page=schema-app-setting">Settings</a>
+				<a class="nav-tab" href="<?php echo admin_url() ?>options-general.php?page=schema-app-licenses">Licenses</a>
+			</h3>
+
             <section id="schema-app-welcome">
-                <h3 class="nav-tab-wrapper">
-                    <a class="nav-tab nav-tab-active" href="<?php echo admin_url() ?>options-general.php?page=schema-app-welcome">Quick Guide</a>
-                    <a class="nav-tab" href="<?php echo admin_url() ?>options-general.php?page=schema-app-setting">Settings</a>
-                    <a class="nav-tab" href="<?php echo admin_url() ?>options-general.php?page=schema-app-licenses">Licenses</a>
-                </h3>
                 <h3>Instructions</h3>
                 <ol>
                     <li>Enter your publisher settings in Wordpress Admin > Settings > Schema App</li>
@@ -130,11 +132,6 @@ class SchemaSettings
                 </p>
             </section>
             <section id="schema-app-settings">
-                <h3 class="nav-tab-wrapper">
-                    <a class="nav-tab" href="<?php echo admin_url() ?>options-general.php?page=schema-app-welcome">Quick Guide</a>
-                    <a class="nav-tab nav-tab-active" href="<?php echo admin_url() ?>options-general.php?page=schema-app-setting">Settings</a>
-                    <a class="nav-tab" href="<?php echo admin_url() ?>options-general.php?page=schema-app-licenses">Licenses</a>
-                </h3>
                 <form method="post" action="options.php">
                 <?php
                     // This prints out all hidden setting fields
@@ -153,11 +150,6 @@ class SchemaSettings
             $status 	= $this->wc_status;
             ?>
             <section id="schema-app-license">   
-                <h3 class="nav-tab-wrapper">
-                    <a class="nav-tab" href="<?php echo admin_url() ?>options-general.php?page=schema-app-welcome">Quick Guide</a>
-                    <a class="nav-tab" href="<?php echo admin_url() ?>options-general.php?page=schema-app-setting">Settings</a>
-                    <a class="nav-tab nav-tab-active" href="<?php echo admin_url() ?>options-general.php?page=schema-app-licenses">Licenses</a>
-                </h3>
                 <form method="post" action="options.php">
 
                     <?php 
@@ -187,7 +179,7 @@ class SchemaSettings
                     <?php submit_button(); ?>
                 </form>
             </section>
-            
+
         </div>
         <?php
     }   
@@ -202,7 +194,7 @@ class SchemaSettings
         }
         // Javascript
         wp_enqueue_media(); 
-        wp_enqueue_script('schema-admin-funcs', $this->PluginURL.'/js/schemaAdmin.js', array('jquery','media-editor'), '20160712');
+        wp_enqueue_script('schema-admin-funcs', $this->PluginURL.'/js/schemaAdmin.js', array('jquery','media-editor'), '20160928');
         $tab = isset($_GET['tab']) ? $_GET['tab'] : 'schema-app-settings';
         wp_localize_script( 'schema-admin-funcs', 'schemaData', array(
             'tab' => $tab,
@@ -270,6 +262,14 @@ class SchemaSettings
             'publisher_settings' // Section           
         );      
 
+
+		add_settings_section( 'toolbar', 'Toolbar', null, 'schema-app-setting' );  
+		add_settings_field( 'ToolbarShowTestSchema', 'Show Test Schema', array( $this, 'SettingsFieldToolbarShowTestSchema' ), 'schema-app-setting', 'toolbar' );      
+
+
+		add_settings_section( 'schema', 'Schema', null, 'schema-app-setting' );  
+		add_settings_field( 'SchemaBreadcrumb', 'Show Breadcrumb', array( $this, 'SettingsFieldSchemaBreadcrumb' ), 'schema-app-setting', 'schema' );      
+
         
         //// Schema App License Page
         // License Information
@@ -320,6 +320,16 @@ class SchemaSettings
             $new_input['publisher_name'] = sanitize_text_field( $input['publisher_name'] );
         if( isset( $input['publisher_image'] ) && !empty($input['publisher_image']) )
             $new_input['publisher_image'] = sanitize_text_field( $input['publisher_image'] );
+
+        if ( ! empty( $input['ToolbarShowTestSchema'] ) )
+        {
+			$new_input['ToolbarShowTestSchema'] = sanitize_text_field( $input['ToolbarShowTestSchema'] );
+		}
+
+        if ( ! empty( $input['SchemaBreadcrumb'] ) )
+        {
+			$new_input['SchemaBreadcrumb'] = sanitize_text_field( $input['SchemaBreadcrumb'] );
+		}
         
         return $new_input;
     }
@@ -432,7 +442,22 @@ class SchemaSettings
 
     }
 
-   
+
+	public function SettingsFieldToolbarShowTestSchema( $Options )
+	{
+		$Value = empty( $this->options['ToolbarShowTestSchema'] ) ? 0 : $this->options['ToolbarShowTestSchema'];
+
+		print '<input type="checkbox" name="schema_option_name[ToolbarShowTestSchema]" value="1" ' . checked( 1, $Value, false ) . '>'; 
+	}
+    
+
+	public function SettingsFieldSchemaBreadcrumb( $Options )
+	{
+		$Value = empty( $this->options['SchemaBreadcrumb'] ) ? 0 : $this->options['SchemaBreadcrumb'];
+
+		print '<input type="checkbox" name="schema_option_name[SchemaBreadcrumb]" value="1" ' . checked( 1, $Value, false ) . '>'; 
+	}
+    
 
     /** 
      * Get the settings option array and print one of its values

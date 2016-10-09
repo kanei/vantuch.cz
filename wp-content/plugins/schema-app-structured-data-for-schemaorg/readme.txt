@@ -6,7 +6,7 @@ Author URI: https://www.hunchmanifest.com
 Author: Mark van Berkel (vberkel)
 Requires at least: 3.5
 Tested up to: 4.6
-Stable tag: 1.1.4
+Stable tag: 1.2.1
 License: GPL2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -43,6 +43,7 @@ Just by installing the plugin you will get the schema.org AMP compliant markup f
 * Author : http://schema.org/ProfilePage
 * Category : http://schema.org/CollectionPage
 * Blog : http://schema.org/Blog
+* BreadcrumbList : http://schema.org/BreadcrumbList
 
 = Schema App Enabled Features =
 Extend your schema.org structured data to speak to Google's many advanced search features with your Wordpress site using [Schema App](http://www.schemaapp.com). Common features include:
@@ -76,6 +77,14 @@ You\'ll find the [FAQ on SchemaApp.com] (http://www.schemaapp.com/wordpress/faq/
 5. Link to Validation
 
 == Changelog ==
+= 1.2.1 = 
+- Fix, error with access settings
+
+= 1.2.0 =
+- Feature, BreadcrumbList for Page & Posts
+- Feature, Meta Box Layout Improvement
+- Fix, Javascript conflict for admin sections elements
+
 = 1.1.4 = 
 - Fix, Show Custom Markup for Latest Blog Homepages
 

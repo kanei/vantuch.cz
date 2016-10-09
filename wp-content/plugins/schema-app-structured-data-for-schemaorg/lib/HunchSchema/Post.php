@@ -4,11 +4,12 @@
  *
  * @author mark
  */
-class HunchSchema_Post extends HunchSchema_Page {
-    
+class HunchSchema_Post extends HunchSchema_Page
+{
     public $schemaType = "BlogPosting";
 
-    public function getResource($pretty = false) {
+    public function getResource($pretty = false)
+    {
         parent::getResource($pretty);
         $this->schema['@type'] = $this->schemaType;
 
@@ -25,7 +26,40 @@ class HunchSchema_Post extends HunchSchema_Page {
 		$this->schema['commentCount'] = get_comments_number();
 		$this->schema['comment'] = $this->getComments();
 
-        return $this->toJson($pretty);
 
+        return $this->toJson( $this->schema, $pretty );
+    }
+
+
+    public function getBreadcrumb( $Pretty = false )
+    {
+		$BreadcrumbPosition = 1;
+
+		$this->SchemaBreadcrumb['@context'] = 'http://schema.org/';
+		$this->SchemaBreadcrumb['@type'] = 'BreadcrumbList';
+
+		$this->SchemaBreadcrumb['itemListElement'][] = array
+		(
+			'@type' => 'ListItem',
+			'position' => $BreadcrumbPosition++,
+			'item' => array
+			(
+				'@id' => get_site_url(),
+				'name' => get_bloginfo( 'name' ),
+			),
+		);
+
+		$this->SchemaBreadcrumb['itemListElement'][] = array
+		(
+			'@type' => 'ListItem',
+			'position' => $BreadcrumbPosition++,
+			'item' => array
+			(
+				'@id' => get_permalink(),
+				'name' => get_the_title(),
+			),
+		);
+
+        return $this->toJson( $this->SchemaBreadcrumb, $Pretty );
     }
 }

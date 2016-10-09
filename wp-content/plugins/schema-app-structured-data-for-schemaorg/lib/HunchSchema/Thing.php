@@ -12,30 +12,42 @@ class HunchSchema_Thing {
      * @var type 
      */
     protected $schema;
+    protected $SchemaBreadcrumb;
+	protected $Settings;
 
     /**
      * Construuctor
      */
-    public function __construct() {
-        
+    public function __construct()
+    {
+		$this->Settings = get_option( 'schema_option_name' );
     }
 
-    public static function factory($postType) {
+    public static function factory( $postType )
+    {
         // Check for specific Page Types
-        if (is_search()) {
-            $postType = "Search";
-        } elseif (is_author()) {
-            $postType = "Author";
-        } elseif (is_category()) {
-            $postType = "Category";
+        if ( is_search() )
+        {
+			$postType = 'Search';
+        }
+        elseif ( is_author() )
+        {
+			$postType = 'Author';
+        }
+        elseif ( is_category() )
+        {
+			$postType = 'Category';
         }
      	elseif ( ! is_front_page() && is_home() || is_home() )
 		{
-            $postType = "Blog";
+            $postType = 'Blog';
 		}
-        $class = "HunchSchema_" . $postType;
-        if (class_exists($class)) {
-            return new $class;
+
+        $class = 'HunchSchema_' . $postType;
+
+        if ( class_exists( $class ) )
+        {
+			return new $class;
         }
     }
 
@@ -44,6 +56,12 @@ class HunchSchema_Thing {
      */
     public function getResource($pretty = false) {
         // To override in child classes
+    }
+
+
+    public function getBreadcrumb( $Pretty = false )
+    {
+		return false;
     }
 
 
@@ -75,6 +93,7 @@ class HunchSchema_Thing {
 		return $Permalink;
 	}
 
+
     protected function getImage()
     {
 		if ( has_post_thumbnail() )
@@ -83,10 +102,10 @@ class HunchSchema_Thing {
 
             return array
             (
-				"@type" => "ImageObject",
-				"url" => $Image[0],
-				"height" => $Image[2],
-				"width" => $Image[1]
+				'@type' => 'ImageObject',
+				'url' => $Image[0],
+				'height' => $Image[2],
+				'width' => $Image[1]
             );
         }
         else
@@ -173,20 +192,21 @@ class HunchSchema_Thing {
 			$Author['description'] = get_the_author_meta( 'description' );
 		}
 
-                if ( version_compare( get_bloginfo( 'version' ), '4.2', '>=' ) ) {
-                    $AuthorImage = get_avatar_url( get_the_author_meta( 'user_email', $post->post_author ), 96 );
+        if ( version_compare( get_bloginfo( 'version' ), '4.2', '>=' ) )
+        {
+			$AuthorImage = get_avatar_url( get_the_author_meta( 'user_email', $post->post_author ), 96 );
 
-                    if ( $AuthorImage )
-                    {
-                            $Author['image'] = array
-                            (
-                                    '@type' => 'ImageObject',
-                                    'url' => $AuthorImage,
-                                    'height' => 96,
-                                    'width' => 96
-                            );
-                    }
-                }
+			if ( $AuthorImage )
+			{
+				$Author['image'] = array
+				(
+					'@type' => 'ImageObject',
+					'url' => $AuthorImage,
+					'height' => 96,
+					'width' => 96
+				);
+			}
+		}
 
 		return $Author;
 	}
@@ -215,7 +235,7 @@ class HunchSchema_Thing {
 				if ( isset($options['publisher_image']) ) {
 					global $wpdb;
 
-					$imgProperty = ($options['publisher_type'] === "Person") ? "image" : "logo";
+					$imgProperty = ($options['publisher_type'] === 'Person') ? 'image' : 'logo';
 
 					$pubimage = $wpdb->get_row( $wpdb->prepare ( 
 						"SELECT ID FROM $wpdb->posts WHERE guid = %s", 
@@ -254,19 +274,19 @@ class HunchSchema_Thing {
      * 
      * @return string
      */
-    protected function toJson($pretty = false) {
+    protected function toJson( $Array = array(), $pretty = false ) {
         
-        foreach ($this->schema as $key => $value) {
+        foreach ($Array as $key => $value) {
             if ( $value === null ) {
-                unset($this->schema[$key]);
+                unset($Array[$key]);
             }
         }
         
-        if (isset($this->schema)) {
+        if (isset($Array)) {
             if ($pretty && strnatcmp(phpversion(), '5.4.0') >= 0) {
-                $jsonLd = json_encode($this->schema, JSON_PRETTY_PRINT);
+                $jsonLd = json_encode($Array, JSON_PRETTY_PRINT);
             } else {
-                $jsonLd = json_encode($this->schema);
+                $jsonLd = json_encode($Array);
             }
             return $jsonLd;
         }

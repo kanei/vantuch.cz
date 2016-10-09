@@ -14,7 +14,6 @@ class HunchSchema_Search extends HunchSchema_Thing {
             '@type' => $this->schemaType,
         );
         
-        return $this->toJson($pretty);
-
+        return $this->toJson( $this->schema, $pretty );
     }
 }
