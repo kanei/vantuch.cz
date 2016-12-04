@@ -8,7 +8,7 @@ jQuery(document).ready(function ($) {
             resourceURI: $('#resourceURI').val(),
             resourceData: $('#resourceData').val() 
         }
-        $.SchemaAppForm('http://app.schemaapp.com/importpost', data, 'POST').submit();
+        $.SchemaAppForm('https://app.schemaapp.com/importpost', data, 'POST').submit();
 
     });
     

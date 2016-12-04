@@ -10,6 +10,8 @@ class HunchSchema_Post extends HunchSchema_Page
 
     public function getResource($pretty = false)
     {
+        global $post;
+
         parent::getResource($pretty);
         $this->schema['@type'] = $this->schemaType;
 
@@ -22,6 +24,7 @@ class HunchSchema_Post extends HunchSchema_Page
             $this->schema['about'] = $categoryNames;
         }
 
+		$this->schema['wordCount'] = str_word_count( $post->post_content );
 		$this->schema['keywords'] = $this->getTags();
 		$this->schema['commentCount'] = get_comments_number();
 		$this->schema['comment'] = $this->getComments();
@@ -44,7 +47,7 @@ class HunchSchema_Post extends HunchSchema_Page
 			'position' => $BreadcrumbPosition++,
 			'item' => array
 			(
-				'@id' => get_site_url(),
+				'@id' => get_site_url() . "#breadcrumbitem",
 				'name' => get_bloginfo( 'name' ),
 			),
 		);
@@ -55,7 +58,7 @@ class HunchSchema_Post extends HunchSchema_Page
 			'position' => $BreadcrumbPosition++,
 			'item' => array
 			(
-				'@id' => get_permalink(),
+				'@id' => get_permalink() . "#breadcrumbitem",
 				'name' => get_the_title(),
 			),
 		);

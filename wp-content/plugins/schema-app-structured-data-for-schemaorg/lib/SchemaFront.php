@@ -41,14 +41,26 @@ class SchemaFront
 				}
 			}
 
+			$SchemaMarkup = apply_filters( 'hunch_schema_markup', $SchemaMarkup, $PostType );
+
 			if ( $SchemaMarkup !== "" )
 			{
 				printf( '<script type="application/ld+json">%s</script>', $SchemaMarkup );
 			}
 
-			if ( ! empty( $this->Settings['SchemaBreadcrumb'] ) )
+			if ( ! empty( $this->Settings['SchemaWebSite'] ) && is_front_page() )
 			{
-				$SchemaMarkupBreadcrumb = $SchemaThing->getBreadcrumb();
+				$SchemaMarkupWebSite = apply_filters( 'hunch_schema_markup_website', $SchemaThing->getWebSite(), $PostType );
+
+				if ( ! empty( $SchemaMarkupWebSite ) )
+				{
+					printf( '<script type="application/ld+json">%s</script>', $SchemaMarkupWebSite );
+				}
+			}
+
+			if ( ! empty( $this->Settings['SchemaBreadcrumb'] ) && method_exists( $SchemaThing, 'getBreadcrumb' ) )
+			{
+				$SchemaMarkupBreadcrumb = apply_filters( 'hunch_schema_markup_breadcrumb', $SchemaThing->getBreadcrumb(), $PostType );
 
 				if ( ! empty( $SchemaMarkupBreadcrumb ) )
 				{

@@ -40,6 +40,7 @@ class HunchSchema_Blog extends HunchSchema_Thing
                 'author' => $this->getAuthor(),
                 'publisher' => $this->getPublisher(),
                 'image' => $this->getImage(),
+                'wordCount' => str_word_count( get_the_content() ),
                 'keywords' => $this->getTags(),
                 'commentCount' => get_comments_number(),
                 'comment' => $this->getComments(),

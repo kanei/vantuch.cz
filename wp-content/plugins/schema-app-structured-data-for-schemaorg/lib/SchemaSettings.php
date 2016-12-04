@@ -269,6 +269,7 @@ class SchemaSettings
 
 		add_settings_section( 'schema', 'Schema', null, 'schema-app-setting' );  
 		add_settings_field( 'SchemaBreadcrumb', 'Show Breadcrumb', array( $this, 'SettingsFieldSchemaBreadcrumb' ), 'schema-app-setting', 'schema' );      
+		add_settings_field( 'SchemaWebSite', 'Show WebSite', array( $this, 'SettingsFieldSchemaWebSite' ), 'schema-app-setting', 'schema' );      
 
         
         //// Schema App License Page
@@ -329,6 +330,11 @@ class SchemaSettings
         if ( ! empty( $input['SchemaBreadcrumb'] ) )
         {
 			$new_input['SchemaBreadcrumb'] = sanitize_text_field( $input['SchemaBreadcrumb'] );
+		}
+        
+        if ( ! empty( $input['SchemaWebSite'] ) )
+        {
+			$new_input['SchemaWebSite'] = sanitize_text_field( $input['SchemaWebSite'] );
 		}
         
         return $new_input;
@@ -456,6 +462,14 @@ class SchemaSettings
 		$Value = empty( $this->options['SchemaBreadcrumb'] ) ? 0 : $this->options['SchemaBreadcrumb'];
 
 		print '<input type="checkbox" name="schema_option_name[SchemaBreadcrumb]" value="1" ' . checked( 1, $Value, false ) . '>'; 
+	}
+    
+
+	public function SettingsFieldSchemaWebSite( $Options )
+	{
+		$Value = empty( $this->options['SchemaWebSite'] ) ? 0 : $this->options['SchemaWebSite'];
+
+		print '<input type="checkbox" name="schema_option_name[SchemaWebSite]" value="1" ' . checked( 1, $Value, false ) . '>'; 
 	}
     
 

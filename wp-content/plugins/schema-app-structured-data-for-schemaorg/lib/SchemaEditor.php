@@ -26,7 +26,7 @@ class SchemaEditor {
         }
         // Javascript
         wp_enqueue_media(); 
-        wp_enqueue_script('schema-admin-funcs', WP_PLUGIN_URL.'/schema-app-structured-data-for-schemaorg/js/schemaEditor.js', array('jquery'), '20160928');        
+        wp_enqueue_script('schema-admin-funcs', WP_PLUGIN_URL.'/schema-app-structured-data-for-schemaorg/js/schemaEditor.js', array('jquery'), '20161116');        
         
     }
     

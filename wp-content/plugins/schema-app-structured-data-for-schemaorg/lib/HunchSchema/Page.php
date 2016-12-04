@@ -62,7 +62,8 @@ class HunchSchema_Page extends HunchSchema_Thing
 
     public function getBreadcrumb( $Pretty = false )
     {
-                global $post;
+		global $post;
+
 		$BreadcrumbPosition = 1;
 		$this->SchemaBreadcrumb['@context'] = 'http://schema.org';
 		$this->SchemaBreadcrumb['@type'] = 'BreadcrumbList';
@@ -73,7 +74,7 @@ class HunchSchema_Page extends HunchSchema_Thing
 			'position' => $BreadcrumbPosition++,
 			'item' => array
 			(
-				'@id' => get_site_url(),
+				'@id' => get_site_url() . "#breadcrumbitem",
 				'name' => get_bloginfo( 'name' ),
 			),
 		);
@@ -97,16 +98,18 @@ class HunchSchema_Page extends HunchSchema_Thing
 			}
 		}
 
-		$this->SchemaBreadcrumb['itemListElement'][] = array
-		(
-			'@type' => 'ListItem',
-			'position' => $BreadcrumbPosition++,
-			'item' => array
-			(
-				'@id' => get_permalink(),
-				'name' => get_the_title(),
-			),
-		);
+                if ( ! is_front_page() ) {
+                    $this->SchemaBreadcrumb['itemListElement'][] = array
+                    (
+                            '@type' => 'ListItem',
+                            'position' => $BreadcrumbPosition++,
+                            'item' => array
+                            (
+                                    '@id' => get_permalink() . "#breadcrumbitem",
+                                    'name' => get_the_title(),
+                            ),
+                    );
+                }
 
         return $this->toJson( $this->SchemaBreadcrumb, $Pretty );
     }
