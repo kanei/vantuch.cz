@@ -27,6 +27,9 @@ if ( ! class_exists( 'BEWPI_Abstract_Document' ) ) {
          */
         protected $template_options;
 
+	    /**
+         * Constructor
+         */
         public function __construct() {
             $this->general_options      = get_option( 'bewpi_general_settings' );
             $this->template_options     = get_option( 'bewpi_template_settings' );
@@ -34,13 +37,13 @@ if ( ! class_exists( 'BEWPI_Abstract_Document' ) ) {
 
         /**
          * Generates the invoice with MPDF lib.
-         * @param $dest
+         * @param string $dest
          * @return string
          */
-        protected function generate( $html_sections, $dest, $paid ) {
+        protected function generate( $html_sections, $dest, $is_paid ) {
 	        set_time_limit(0);
-	        require_once BEWPI_LIB_DIR . 'mpdf/mpdf.php';
-	        require_once BEWPI_LIB_DIR . 'mpdf/vendor/autoload.php';
+	        require_once BEWPI_DIR . 'lib/mpdf/mpdf.php';
+	        require_once BEWPI_DIR . 'lib/mpdf/vendor/autoload.php';
 
 	        $mpdf_options = $this->get_mpdf_options();
 	        $mpdf = new mPDF(
@@ -57,8 +60,17 @@ if ( ! class_exists( 'BEWPI_Abstract_Document' ) ) {
 		        $mpdf_options['orientation']         // orientation
 	        );
 
+	        // add company logo image as a variable.
+	        $wp_upload_dir = wp_upload_dir();
+	        $image_url = $this->template_options['bewpi_company_logo'];
+	        if ( ! empty( $image_url ) ) {
+		        // use absolute path in order to prevent errors due to wrong (local)host configurations when accessing files and this way `allow_url_fopen` doesn't need to be enabled.
+		        $image_path = str_replace( $wp_upload_dir['baseurl'], $wp_upload_dir['basedir'], $image_url );
+		        $mpdf->company_logo = file_get_contents( $image_path );
+	        }
+
 	        // show paid watermark
-	        if ( (bool)$this->template_options[ 'bewpi_show_payment_status' ] && $paid ) {
+	        if ( (bool)$this->template_options[ 'bewpi_show_payment_status' ] && $is_paid ) {
 		        $mpdf->SetWatermarkText( __( 'Paid', 'woocommerce-pdf-invoices' ) );
 		        $mpdf->showWatermarkText = true;
 				$mpdf->watermarkTextAlpha = "0.2";
@@ -96,6 +108,9 @@ if ( ! class_exists( 'BEWPI_Abstract_Document' ) ) {
 	        $mpdf->Output( $filename, $dest );
         }
 
+        /**
+         * Get the invoice if exist and show.
+         */
         public function view() {
             if ( $this->general_options[ 'bewpi_view_pdf' ] === 'browser' ) {
 	            header( 'Content-type: application/pdf' );
