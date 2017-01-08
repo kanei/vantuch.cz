@@ -226,13 +226,13 @@ article.post img.size-large {
 @media screen and (min-width: 1024px) {
 
     .vantuch.archive article {
-        width:12.5vw;
-        height: 12.5vw;
+        width:12.4vw;
+        height: 12.4vw;
     }
 
     .vantuch.archive .thumbnail img {
-        width:12.5vw;
-        height: 12.5vw;
+        width:12.4vw;
+        height: 12.4vw;
     }
 
     #main ul.products{
