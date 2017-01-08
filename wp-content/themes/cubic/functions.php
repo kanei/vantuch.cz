@@ -89,6 +89,7 @@ function cubic_setup() {
 	 * @link http://codex.wordpress.org/Function_Reference/add_theme_support#Post_Thumbnails
 	 */
 	add_image_size( 'boardwalk-featured-image', 980, 980, true );
+    add_image_size( 'boardwalk-archive-image', 200, 200, true );
 
 }
 add_action( 'after_setup_theme', 'cubic_setup', 11 );

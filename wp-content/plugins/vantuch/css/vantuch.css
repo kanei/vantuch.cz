@@ -159,8 +159,8 @@ article.post img.size-large {
 
 /** ARCHIVE **/
 .vantuch.archive article {
-    width: 150px;
-    height: 150px;
+    width: 25vw;
+    height: 25vw;
     position: relative;
     float: left;
 }
@@ -169,8 +169,13 @@ article.post img.size-large {
     position: absolute;
 }
 
+.vantuch.archive .thumbnail img {
+    width: 25vw;
+    height: 25vw;
+}
+
 .vantuch.archive header {
-    width: 150px;
+    width: 100%;
     position: absolute;
     bottom: 0;
     background: rgba(0, 0, 0, 0.25);
@@ -192,6 +197,16 @@ article.post img.size-large {
 }
 
 @media screen and (min-width: 568px) {
+
+    .vantuch.archive article {
+        width: 20vw;
+        height: 20vw;
+    }
+
+    .vantuch.archive .thumbnail img {
+        width: 20vw;
+        height: 20vw;
+    }
 }
 
 @media screen and (min-width: 768px) {
@@ -209,6 +224,16 @@ article.post img.size-large {
 }
 
 @media screen and (min-width: 1024px) {
+
+    .vantuch.archive article {
+        width:12.5vw;
+        height: 12.5vw;
+    }
+
+    .vantuch.archive .thumbnail img {
+        width:12.5vw;
+        height: 12.5vw;
+    }
 
     #main ul.products{
         padding-left: 3em;

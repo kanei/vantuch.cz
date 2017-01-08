@@ -18,7 +18,7 @@ get_header(); ?>
       <?php while ( $wpb_all_query->have_posts() ) : $wpb_all_query->the_post(); ?>
         <article>
           <div class="thumbnail">
-            <?php the_post_thumbnail([150, 150]) ?>
+            <?php the_post_thumbnail('boardwalk-archive-image') ?>
           </div>
           <header>
             <div class="posted-on"><?php the_date() ?></div>
