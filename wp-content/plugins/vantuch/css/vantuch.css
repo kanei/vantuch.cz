@@ -189,11 +189,12 @@ article.post img.size-large {
 }
 
 .vantuch.archive header h1 {
-    font-size: small;
+    font-size: smaller;
 }
 
 .vantuch.archive header h1 a {
     color: white;
+    border-bottom: 0;
 }
 
 @media screen and (min-width: 568px) {
@@ -224,6 +225,9 @@ article.post img.size-large {
 }
 
 @media screen and (min-width: 1024px) {
+    .vantuch.archive header h1 {
+        font-size: small;
+    }
 
     .vantuch.archive article {
         width:12.3vw;
