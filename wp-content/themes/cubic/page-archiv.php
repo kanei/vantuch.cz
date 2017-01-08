@@ -17,14 +17,15 @@ get_header(); ?>
       <!-- the loop -->
       <?php while ( $wpb_all_query->have_posts() ) : $wpb_all_query->the_post(); ?>
         <article>
-          <div class="thumbnail">
-            <?php the_post_thumbnail('boardwalk-archive-image') ?>
-          </div>
-          <header>
-            <div class="posted-on"><?php the_date() ?></div>
-            <h1>
-              <a href="<?php the_permalink() ?>" rel="bookmark"><?php the_title() ?></a>
-            </h1></header>
+            <a href="<?php the_permalink() ?>" rel="bookmark">
+              <div class="thumbnail">
+                <?php the_post_thumbnail('boardwalk-archive-image') ?>
+              </div>
+              <header>
+                <div class="posted-on"><?php the_date() ?></div>
+                <h1><?php the_title() ?></h1>
+              </header>
+            </a>
         </article>
       <?php endwhile; ?>
       <!-- end of the loop -->
