@@ -159,8 +159,8 @@ article.post img.size-large {
 
 /** ARCHIVE **/
 .vantuch.archive article {
-    width: 25vw;
-    height: 25vw;
+    width: 33.1vw;
+    height: 33.1vw;
     position: relative;
     float: left;
 }
@@ -170,8 +170,8 @@ article.post img.size-large {
 }
 
 .vantuch.archive .thumbnail img {
-    width: 24.8vw;
-    height: 24.8vw;
+    width: 33.1vw;
+    height: 33.1vw;
 }
 
 .vantuch.archive header {
