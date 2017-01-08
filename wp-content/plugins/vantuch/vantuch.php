@@ -8,7 +8,7 @@
 */
 
 if ( ! defined( 'VANTUCH_VER' ) ) {
-	define( 'VANTUCH_VER', '0.0.3' );
+	define( 'VANTUCH_VER', '0.0.4' );
 }
 
 class Vantuch {
