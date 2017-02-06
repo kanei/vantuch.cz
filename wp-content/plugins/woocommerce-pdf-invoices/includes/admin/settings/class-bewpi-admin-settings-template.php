@@ -68,8 +68,6 @@ if ( ! class_exists( 'BEWPI_Template_Settings' ) ) {
 		 * @return array
 		 */
 		private function the_settings() {
-			$templates = $this->get_templates();
-
 			$settings = array(
 				array(
 					'id'       => 'bewpi-template-name',
@@ -80,8 +78,8 @@ if ( ! class_exists( 'BEWPI_Template_Settings' ) ) {
 					'section'  => 'general',
 					'type'     => 'text',
 					'desc'     => '',
-					'options'  => $templates,
-					'default'  => $templates[0]['value'],
+					'options'  => $this->get_templates(),
+					'default'  => 'micro',
 				),
 				array(
 					'id'       => 'bewpi-color-theme',
@@ -118,7 +116,7 @@ if ( ! class_exists( 'BEWPI_Template_Settings' ) ) {
 					'section'  => 'general',
 					'type'     => 'text',
 					'desc'     => __( '<a href="http://php.net/manual/en/datetime.formats.date.php">Format</a> of invoice date and order date.', 'woocommerce-pdf-invoices' ),
-					'default'  => 'F j, Y',
+					'default'  => get_option( 'date_format' ),
 					'attrs'    => array( 'required' ),
 				),
 				array(
@@ -233,6 +231,18 @@ if ( ! class_exists( 'BEWPI_Template_Settings' ) ) {
 					'default'  => __( 'Thank you for your purchase!', 'woocommerce-pdf-invoices' ),
 				),
 				array(
+					'id'       => 'bewpi-show-ship-to',
+					'name'     => self::PREFIX . 'show_ship_to',
+					'title'    => '',
+					'callback' => array( $this, 'input_callback' ),
+					'page'     => self::SETTINGS_KEY,
+					'section'  => 'body',
+					'type'     => 'checkbox',
+					'desc'     => __( 'Show customers shipping address<br/><div class="bewpi-notes">Customers shipping address won\'t be displayed when order has only virtual products.</div>', 'woocommerce-pdf-invoices' ),
+					'class'    => 'bewpi-checkbox-option-title',
+					'default'  => 1,
+				),
+				array(
 					'id'       => 'bewpi-show-customer-notes',
 					'name'     => self::PREFIX . 'show_customer_notes',
 					'title'    => '',
@@ -319,10 +329,10 @@ if ( ! class_exists( 'BEWPI_Template_Settings' ) ) {
 					'page'     => self::SETTINGS_KEY,
 					'section'  => 'invoice_number',
 					'type'     => 'number',
-					'desc'     => __( 'Reset the invoice counter and start counting from given invoice number.<br/><b>Note:</b> Only available for Sequential numbering. All PDF invoices will be deleted and need to be manually created again! Value will be editable by selecting checkbox.', 'woocommerce-pdf-invoices' ),
+					'desc'     => __( 'Next invoice number when resetting counter.<br/><b>Note:</b> Only available for Sequential numbering. All PDF invoices with invoice number greater then next invoice number will be deleted.', 'woocommerce-pdf-invoices' ),
 					'default'  => 1,
 					'attrs'    => array(
-						'disabled',
+						'readonly',
 						'min="1"',
 					),
 				),
@@ -335,7 +345,7 @@ if ( ! class_exists( 'BEWPI_Template_Settings' ) ) {
 					'section'  => 'invoice_number',
 					'type'     => 'number',
 					'desc'     => '',
-					'default'  => 3,
+					'default'  => 5,
 					'attrs'    => array(
 						'min="3"',
 						'max="20"',
@@ -372,7 +382,7 @@ if ( ! class_exists( 'BEWPI_Template_Settings' ) ) {
 					'page'     => self::SETTINGS_KEY,
 					'section'  => 'invoice_number',
 					'type'     => 'text',
-					'desc'     => sprintf( __( 'Allowed placeholders: <code>%1$s</code> <code>%2$s</code> <code>%3$s</code> <code>%4$s</code> <code>%5$s</code> <code>%6$s</code>.<br/><b>Note:</b> <code>%3$s</code> is required and slashes aren\'t supported.', 'woocommerce-pdf-invoices' ), '[prefix]', '[suffix]', '[number]', '[m]', '[Y]', '[y]' ),
+					'desc'     => sprintf( __( 'Allowed placeholders: <code>%1$s</code> <code>%2$s</code> <code>%3$s</code> <code>%4$s</code> <code>%5$s</code> <code>%6$s</code><br/><b>Note:</b> <code>%3$s</code> is required and slashes aren\'t supported.', 'woocommerce-pdf-invoices' ), '[prefix]', '[suffix]', '[number]', '[order-number]', '[order-date]', '[m]', '[Y]', '[y]' ),
 					'default'  => '[number]-[Y]',
 					'attrs'    => array( 'required' ),
 				),
@@ -384,7 +394,10 @@ if ( ! class_exists( 'BEWPI_Template_Settings' ) ) {
 					'page'     => self::SETTINGS_KEY,
 					'section'  => 'invoice_number',
 					'type'     => 'checkbox',
-					'desc'     => __( 'Reset on 1st of january', 'woocommerce-pdf-invoices' ),
+					'desc'     => __( 'Reset yearly', 'woocommerce-pdf-invoices' )
+								. '<br/><div class="bewpi-notes">'
+								. __( 'Automatically reset invoice numbers on new year\'s day. <br/><b>Note</b>: You will have to generate all invoices again when changing option.', 'woocommerce-pdf-invoices' )
+								. '</div>',
 					'class'    => 'bewpi-checkbox-option-title',
 					'default'  => 1,
 				),
@@ -479,9 +492,17 @@ if ( ! class_exists( 'BEWPI_Template_Settings' ) ) {
 		 * Load (default) settings.
 		 */
 		public function load_settings() {
+			// merge defaults with options.
 			$defaults = $this->get_defaults();
 			$options  = (array) get_option( self::SETTINGS_KEY );
 			$options  = array_merge( $defaults, $options );
+
+			// check for deleted custom template.
+			$templates = wp_list_pluck( $this->get_templates(), 'value' );
+			if ( ! in_array( $options['bewpi_template_name'], $templates, true ) ) {
+				$options['bewpi_template_name'] = $defaults['bewpi_template_name'];
+			}
+
 			update_option( self::SETTINGS_KEY, $options );
 		}
 
@@ -559,8 +580,7 @@ if ( ! class_exists( 'BEWPI_Template_Settings' ) ) {
 		 * @return mixed|void
 		 */
 		public function validate_input( $input ) {
-			$output           = array();
-			$template_options = get_option( self::SETTINGS_KEY );
+			$output = array();
 
 			// strip strings.
 			foreach ( $input as $key => $value ) {
@@ -612,11 +632,7 @@ if ( ! class_exists( 'BEWPI_Template_Settings' ) ) {
 				$output['bewpi_company_logo'] = $_POST['bewpi_company_logo'];
 			}
 
-			// invoice number.
-			if ( ! isset( $input['bewpi_next_invoice_number'] ) ) {
-				// reset the next invoice number so it's visible in the disabled input field.
-				$output['bewpi_next_invoice_number'] = $template_options['bewpi_next_invoice_number'];
-			}
+			$output['bewpi_next_invoice_number'] = intval( $input['bewpi_next_invoice_number'] );
 
 			// return the array processing any additional functions filtered by this action.
 			return apply_filters( 'validate_input', $output, $input );
