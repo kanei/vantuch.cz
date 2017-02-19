@@ -5,8 +5,8 @@ Tags: schema, structured data, schema.org, rich snippets, json-ld
 Author URI: https://www.hunchmanifest.com
 Author: Mark van Berkel (vberkel)
 Requires at least: 3.5
-Tested up to: 4.6
-Stable tag: 1.3.3 
+Tested up to: 4.7
+Stable tag: 1.4.1
 License: GPL2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -83,6 +83,15 @@ You\'ll find the [FAQ on SchemaApp.com] (http://www.schemaapp.com/wordpress/faq/
 5. Link to Validation
 
 == Changelog ==
+= 1.4.1 =
+- Fix, Publisher details for Article, BlogPosting
+
+= 1.4.0 = 
+- Feature, provide in post editing for custom schema markup
+
+= 1.3.4 = 
+- Fix, error with custom post types for WebSite markup
+
 = 1.3.3 = 
 - Feature, add wordCount, split keyword many properties
 

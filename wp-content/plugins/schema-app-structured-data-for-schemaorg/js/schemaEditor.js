@@ -57,4 +57,77 @@ jQuery(document).ready(function ($) {
             return form.appendTo('body');
         }
     });
+
+
+	$( '.MetaSchemaMarkup .Edit' ).click( function( e )
+	{
+		e.preventDefault();
+
+		var ElmWrap = $( this ).closest( '.MetaSchemaMarkup' );
+
+		$( this ).hide();
+		ElmWrap.find( 'textarea' ).prop( 'disabled', false ).focus().val( '' );
+		ElmWrap.find( '.Delete' ).show();
+	});
+
+
+	$( '.MetaSchemaMarkup .Delete' ).click( function( e )
+	{
+		e.preventDefault();
+
+		var ElmWrap = $( this ).closest( '.MetaSchemaMarkup' );
+
+		ElmWrap.find( 'textarea' ).val( '' ).blur();
+	});
+
+
+	$( '.MetaSchemaMarkup textarea' ).blur( function()
+	{
+		var Elm = $( this );
+		var ElmWrap = $( this ).closest( '.MetaSchemaMarkup' );
+
+		if ( ! Elm.prop( 'disabled' ) )
+		{
+			ElmWrap.find( '.ErrorMessage' ).empty();
+			Elm.closest( '.MetaSchemaMarkup' ).find( '.Updating' ).show();
+
+			$.ajax
+			({
+				type: 'POST',
+				url: ajaxurl,
+				data: { 'action': 'HunchSchemaMarkupUpdate', 'Id': Elm.attr( 'data-id' ), 'Data': Elm.val() },
+				dataType: 'json'
+			})
+			.done( function( Data )
+			{
+				if ( Data && Data.Status == 'Ok' )
+				{
+					if ( Data.Delete )
+					{
+						Elm.prop( 'disabled', true ).val( $( '#MetaSchemaMarkupDefault' ).val() );
+
+						ElmWrap.find( '.Delete' ).hide();
+						ElmWrap.find( '.Edit' ).show();
+					}
+				}
+				else if ( Data && Data.Status == 'Error' )
+				{
+					ElmWrap.find( '.ErrorMessage' ).html( Data.Message );
+				}
+				else
+				{
+					ElmWrap.find( '.ErrorMessage' ).html( 'Request error, please try again later.' );
+				}
+			})
+			.fail( function( jqXHR, textStatus, errorThrown )
+			{
+				ElmWrap.find( '.ErrorMessage' ).html( 'Connection error: ' + errorThrown );
+			})
+			.always( function( Data )
+			{
+				Elm.closest( '.MetaSchemaMarkup' ).find( '.Updating' ).hide();
+			});
+		}
+	});
+
 });

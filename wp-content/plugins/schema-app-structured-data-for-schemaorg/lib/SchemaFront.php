@@ -35,7 +35,13 @@ class SchemaFront
 
 			if ( $SchemaMarkup === "" )
 			{
-				if ( isset( $SchemaThing ) )
+				$SchemaMarkupCustom = get_post_meta( $post->ID, '_HunchSchemaMarkup', true );
+
+				if ( $SchemaMarkupCustom )
+				{
+					$SchemaMarkup = $SchemaMarkupCustom;
+				}
+				else if ( isset( $SchemaThing ) )
 				{
 					$SchemaMarkup = $SchemaThing->getResource();
 				}

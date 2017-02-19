@@ -456,10 +456,10 @@ if ( ! class_exists( 'BE_WooCommerce_PDF_Invoices' ) ) {
 				return $columns;
 			}
 
-			// put the column after the Status column.
-			$new_columns = array_slice( $columns, 0, 2, true ) +
+			// put the column before actions column.
+			$new_columns = array_slice( $columns, 0, count( $columns ) - 1, true ) +
 			               array( 'bewpi_invoice_number' => __( 'Invoice No.', 'woocommmerce-pdf-invoices' ) ) +
-			               array_slice( $columns, 2, count( $columns ) - 1, true );
+			               array_slice( $columns, count( $columns ) - 1, count( $columns ) - ( count( $columns ) - 1 ), true );
 
 			return $new_columns;
 		}
@@ -478,6 +478,8 @@ if ( ! class_exists( 'BE_WooCommerce_PDF_Invoices' ) ) {
 
 			if ( BEWPI_Invoice::exists( $post->ID ) ) {
 				echo get_post_meta( $post->ID, '_bewpi_invoice_number', true );
+			} else {
+				echo '-';
 			}
 		}
 

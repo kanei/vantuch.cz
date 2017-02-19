@@ -21,6 +21,12 @@ class SchemaServer {
             $this->resource = $uri;            
         } elseif (is_front_page() && is_home() || is_front_page()) {
             $this->resource = get_site_url() . '/';
+        } elseif (is_tax() || is_post_type_archive()) {
+            $this->resource = 'http' . 
+                (null !== filter_input(INPUT_SERVER, 'HTTPS') ? 's' : '') . 
+                '://' . 
+                filter_input(INPUT_SERVER, 'HTTP_HOST') . 
+                filter_input(INPUT_SERVER, 'REQUEST_URI');
         } else { 
             $this->resource = get_permalink();            
         }

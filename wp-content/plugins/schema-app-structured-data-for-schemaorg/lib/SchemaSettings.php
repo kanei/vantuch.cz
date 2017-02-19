@@ -34,7 +34,6 @@ class SchemaSettings
         register_activation_hook( __FILE__, array($this, 'welcome_screen_activate'));
         add_action( 'admin_init', array($this, 'welcome_screen_do_activation_redirect'));
         add_action( 'admin_init', array($this, 'hunch_schema_activate_license'));
-
     }
 
     /**

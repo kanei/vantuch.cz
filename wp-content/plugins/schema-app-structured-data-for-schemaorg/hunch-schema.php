@@ -4,7 +4,7 @@
  * Plugin Name: Schema App Structured Data
  * Plugin URI: http://www.schemaapp.com
  * Description: This plugin adds http://schema.org structured data to your website
- * Version: 1.3.3
+ * Version: 1.4.1
  * Author: Hunch Manifest
  * Author URI: https://www.hunchmanifest.com
  */
@@ -28,5 +28,4 @@ if (is_admin()) {
 	{
 		add_action( 'admin_bar_menu', array( $SchemaFront, 'AdminBarMenu' ), 999 );
 	}
-
 }

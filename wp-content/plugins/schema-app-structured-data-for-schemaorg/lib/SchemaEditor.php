@@ -14,6 +14,7 @@ class SchemaEditor {
      */
     public function __construct() {
         add_action( 'admin_enqueue_scripts', array( $this, 'admin_assets' ) );
+		add_action( 'wp_ajax_HunchSchemaMarkupUpdate', array( $this, 'MarkupUpdate' ) );
     }
 
      /**
@@ -60,8 +61,10 @@ class SchemaEditor {
     public function render_meta_box_content($post) {
 
         $PostType = get_post_type();
-        $DisableMarkup = get_post_meta($post->ID, '_HunchSchemaDisableMarkup', true);
-        $MarkupType = get_post_meta($post->ID, '_HunchSchemaType', true);
+        $MarkupDisable = get_post_meta( $post->ID, '_HunchSchemaDisableMarkup', true );
+        $MarkupType = get_post_meta( $post->ID, '_HunchSchemaType', true );
+        $MarkupCustom = get_post_meta( $post->ID, '_HunchSchemaMarkup', true );
+        $MarkupDefault = '';
 
         // Add an nonce field so we can check for it later.
         wp_nonce_field('schema_inner_custom_box', 'schema_inner_custom_box_nonce');
@@ -69,10 +72,12 @@ class SchemaEditor {
         $server = new SchemaServer();
         // Use get_post_meta to retrieve an existing value from the database.       
         $jsonLd = $server->getResource(get_permalink($post->ID), true);
+		$MarkupDefault = $jsonLd;
 
         if (empty($jsonLd)) {
             $schemaObj = HunchSchema_Thing::factory($PostType);
-            $jsonLd = $schemaObj->getResource(TRUE);
+			$MarkupDefault = $schemaObj->getResource(TRUE);
+            $jsonLd = $MarkupCustom ? $MarkupCustom : $MarkupDefault;
             $replacelink = $server->createLink();
         } else {
             $editlink = $server->updateLink();
@@ -90,17 +95,19 @@ class SchemaEditor {
             margin: 0 1em;
         }
         </style>
-        <label for="schema_new_field"><span class="inside"><?php echo _e('Post JSON-LD', 'schema_textdomain') ?></span>
+        <?php _e('Post JSON-LD', 'schema_textdomain'); ?>
             <div id="schemapostlinks">
                 <?php 
-					if ( ! $DisableMarkup )
+					if ( ! $MarkupDisable )
 					{
 						if ( empty($replacelink) ) {
 							echo '<button><a target="_blank" href="' . $editlink . '">Edit</a></button>';
 						} else {
 							?>
-							<button><a target="_blank" href="<?php echo $replacelink; ?>">Use Different Schema.org Type</a></button>
-							<button id="extendSchema" value="Extend Markup"><a target="_blank" href="#">Add to <?php echo $schemaObj->schemaType; ?> Default Markup</a></button>
+							<?php if ( ! $MarkupCustom ): ?>
+								<button><a target="_blank" href="<?php echo $replacelink; ?>">Use Different Schema.org Type</a></button>
+								<button id="extendSchema" value="Extend Markup"><a target="_blank" href="#">Add to <?php echo $schemaObj->schemaType; ?> Default Markup</a></button>
+							<?php endif; ?>
 							<input type="hidden" id="resourceURI" value="<?php echo get_permalink($post->ID); ?>"/>
 							<textarea id="resourceData" style="display:none"><?php echo esc_attr($jsonLd); ?></textarea> 
 							<?php 
@@ -111,11 +118,25 @@ class SchemaEditor {
             </div>
         </label> 
         <p>
-            <textarea disabled="" class="large-text metadesc" rows="6" id="schema_new_field" name="schema_new_field"><?php print $DisableMarkup ? '' : esc_attr($jsonLd); ?></textarea>
-            <?php if ( isset( $schemaObj ) && ! $DisableMarkup ): ?>
-                <br/><strong>Note: </strong><span style="color: grey"><em>This is default markup. Extend this with Schema App Creator using Update linked above.</em></span>
+			<textarea id="MetaSchemaMarkupDefault" style="display: none;"><?php echo esc_attr( $MarkupDefault ); ?></textarea> 
+			<div class="MetaSchemaMarkup" style="position: relative;">
+				<div class="ErrorMessage" style="color: red;"></div>
+				<textarea class="large-text metadesc" rows="6" id="schema_new_field" name="schema_new_field" data-id="<?php print $post->ID; ?>" <?php print $MarkupCustom ? '' : 'disabled'; ?>><?php print $MarkupDisable ? '' : esc_attr($jsonLd); ?></textarea>
+				<?php if ( ! $MarkupDisable ): ?>
+					<a class="Edit dashicons dashicons-edit" style="<?php print $MarkupCustom ? 'display: none;' : ''; ?> position: absolute; bottom: 10px; right: 32px;" href="#"></a>
+					<a class="Delete dashicons dashicons-trash" style="<?php print $MarkupCustom ? '' : 'display: none;'; ?> position: absolute; bottom: 10px; right: 32px;" href="#"></a>
+					<span class="Updating" style="display: none; position: absolute; top: 5px; right: 32px;">Saving...</span>
+				<?php endif; ?>
+			</div>
+            <?php if ( isset( $schemaObj ) && ! $MarkupDisable ) : ?>
+				<?php if ( $MarkupCustom ): ?>
+					<strong>Note: </strong><span style="color: grey"><em>This is custom markup.</em></span>
+				<?php else : ?>
+					<strong>Note: </strong><span style="color: grey"><em>This is default markup. Extend this with Schema App Creator using Update linked above.</em></span>
+				<?php endif; ?>
             <?php endif; ?>
         </p>
+
         <h4>Markup Options</h4>
 
 		<table class="widefat fixed wp-list-table">
@@ -126,7 +147,7 @@ class SchemaEditor {
 						<?php _e('Disable Schema markup', 'schema_textdomain'); ?>
 					</td>
 					<td>
-						<input type="checkbox" name="HunchSchemaDisableMarkup" value="1" <?php $this->CheckSelected(1, $DisableMarkup, 'checkbox'); ?>>
+						<input type="checkbox" name="HunchSchemaDisableMarkup" value="1" <?php $this->CheckSelected(1, $MarkupDisable, 'checkbox'); ?>>
 					</td>
 				</tr>
 
@@ -159,7 +180,7 @@ class SchemaEditor {
         <?php
     }
 
-    function ActionSavePost($PostId) {
+    public function ActionSavePost($PostId) {
         if (( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE ) || wp_is_post_revision($PostId)) {
             return $PostId;
         }
@@ -179,7 +200,7 @@ class SchemaEditor {
         }
     }
 
-    function CheckSelected($SavedValue, $CurrentValue, $Type = 'select', $Display = true) {
+    public function CheckSelected($SavedValue, $CurrentValue, $Type = 'select', $Display = true) {
         if (( is_array($SavedValue) && in_array($CurrentValue, $SavedValue) ) || ( $SavedValue == $CurrentValue )) {
             switch ($Type) {
                 case 'select':
@@ -200,5 +221,40 @@ class SchemaEditor {
             }
         }
     }
+
+
+	public function MarkupUpdate()
+	{
+		if ( $_POST['Id'] )
+		{
+			if ( ! empty( $_POST['Data'] ) )
+			{
+				$Temp = json_decode( utf8_encode( stripslashes( $_POST['Data'] ) ) );
+
+				if ( json_last_error() === JSON_ERROR_NONE )
+				{
+					update_post_meta( $_POST['Id'], '_HunchSchemaMarkup', $_POST['Data'] );
+
+					print json_encode( array( 'Status' => 'Ok' ) );
+				}
+				else
+				{
+					print json_encode( array( 'Status' => 'Error', 'Message' => 'Invalid JSON format' ) );
+				}
+			}
+			else
+			{
+                delete_post_meta( $_POST['Id'], '_HunchSchemaMarkup' );
+
+				print json_encode( array( 'Status' => 'Ok', 'Delete' => true ) );
+			}
+		}
+		else
+		{
+			print json_encode( array( 'Status' => 'Error', 'Message' => 'Required parameter missing' ) );
+		}
+
+		exit;
+	}
 
 }
