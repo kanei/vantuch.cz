@@ -57,6 +57,16 @@ class SchemaServer {
             return "";
         }
 
+
+		$TransientId = 'HunchSchema-Markup-' . md5( $resource );
+		$Transient = get_transient( $TransientId );
+
+		if ( $Transient !== false )
+		{
+			return $Transient;
+		}
+
+
         $api = $this->readLink($resource);        
         $schemadata = "";
         $ctx = stream_context_create(array(
@@ -75,6 +85,9 @@ class SchemaServer {
                 $schemaObj = json_decode($schemadata);
                 $schemadata = json_encode($schemaObj, JSON_PRETTY_PRINT);
             }
+
+			set_transient( $TransientId, $schemadata, 86400 );
+
         } else {
             // error happened
             $schemadata = "";

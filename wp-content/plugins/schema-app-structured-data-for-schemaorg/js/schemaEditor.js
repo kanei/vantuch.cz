@@ -68,6 +68,8 @@ jQuery(document).ready(function ($) {
 		$( this ).hide();
 		ElmWrap.find( 'textarea' ).prop( 'disabled', false ).focus().val( '' );
 		ElmWrap.find( '.Delete' ).show();
+		$( '#MetaSchemaMarkupNote .default' ).hide();
+		$( '#MetaSchemaMarkupNote .custom' ).show();
 	});
 
 
@@ -78,6 +80,8 @@ jQuery(document).ready(function ($) {
 		var ElmWrap = $( this ).closest( '.MetaSchemaMarkup' );
 
 		ElmWrap.find( 'textarea' ).val( '' ).blur();
+		$( '#MetaSchemaMarkupNote .default' ).show();
+		$( '#MetaSchemaMarkupNote .custom' ).hide();
 	});
 
 
@@ -108,6 +112,8 @@ jQuery(document).ready(function ($) {
 
 						ElmWrap.find( '.Delete' ).hide();
 						ElmWrap.find( '.Edit' ).show();
+						$( '#MetaSchemaMarkupNote .default' ).show();
+						$( '#MetaSchemaMarkupNote .custom' ).hide();
 					}
 				}
 				else if ( Data && Data.Status == 'Error' )

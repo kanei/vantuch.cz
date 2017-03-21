@@ -13,6 +13,7 @@ class SchemaSettings
     private $options;
     private $license;
     private $PluginURL;
+    private $HunchSchemaPluginVersion;
     
     const SCHEMA_ITEM_NAME = "schemawoocommerce";    
 
@@ -22,16 +23,19 @@ class SchemaSettings
     public function __construct()
     {
         $this->options = get_option( 'schema_option_name' );
+        $this->options_genesis = get_option( 'schema_option_name_genesis' );
         $this->license = get_option( 'schema_option_name_license' );
         $this->wc_status = get_option( 'schema_license_wc_status' );
         $this->PluginURL = plugins_url( 'schema-app-structured-data-for-schemaorg' );
         
         add_action( 'admin_init', array($this, 'admin_nag_handle'));
         add_action( 'admin_init', array( $this, 'page_init' ) );        
+        add_action( 'admin_init', array( $this, 'plugin_setup' ) );        
         add_action( 'admin_menu', array( $this, 'add_plugin_page' ) );
         add_action( 'admin_enqueue_scripts', array( $this, 'admin_assets' ) );
         add_action( 'admin_notices', array($this, 'admin_nag_set'));         
         register_activation_hook( __FILE__, array($this, 'welcome_screen_activate'));
+        register_activation_hook( __FILE__, array($this, 'HunchSchemaActivate'));
         add_action( 'admin_init', array($this, 'welcome_screen_do_activation_redirect'));
         add_action( 'admin_init', array($this, 'hunch_schema_activate_license'));
     }
@@ -89,6 +93,11 @@ class SchemaSettings
      */
     public function create_admin_page()
     {
+		if ( class_exists( 'WooCommerce' ) && ! function_exists( 'hunch_schema_wc_add' ) )
+		{
+			print '<div class="notice notice-success is-dismissible"> <p>Schema App WooCommerce is NOT installed.</p> </div>';
+		}
+
         ?>
         <div class="wrap">
             <h2>Schema App Settings</h2>
@@ -98,6 +107,9 @@ class SchemaSettings
 				<a class="nav-tab" href="<?php echo admin_url() ?>options-general.php?page=schema-app-welcome">Quick Guide</a>
 				<a class="nav-tab nav-tab-active" href="<?php echo admin_url() ?>options-general.php?page=schema-app-setting">Settings</a>
 				<a class="nav-tab" href="<?php echo admin_url() ?>options-general.php?page=schema-app-licenses">Licenses</a>
+				<?php if ( function_exists( 'genesis' ) ) : ?>
+					<a class="nav-tab" href="<?php echo admin_url() ?>options-general.php?page=schema-app-setting-genesis">Genesis</a>
+				<?php endif; ?>
 			</h3>
 
             <section id="schema-app-welcome">
@@ -179,6 +191,18 @@ class SchemaSettings
                 </form>
             </section>
 
+			<?php if ( function_exists( 'genesis' ) ) : ?>
+				<section id="schema-app-settings-genesis">
+					<form method="post" action="options.php">
+						<?php
+							settings_fields( 'schema_option_group_genesis' );
+							do_settings_sections( 'schema-app-genesis' );
+							submit_button(); 
+						?>
+					</form>
+				</section>
+			<?php endif; ?>
+
         </div>
         <?php
     }   
@@ -207,7 +231,7 @@ class SchemaSettings
      * Register and add settings
      */
     public function page_init() {      
-        
+
         ////
         // Schema App Settings Page
         register_setting(
@@ -269,6 +293,7 @@ class SchemaSettings
 		add_settings_section( 'schema', 'Schema', null, 'schema-app-setting' );  
 		add_settings_field( 'SchemaBreadcrumb', 'Show Breadcrumb', array( $this, 'SettingsFieldSchemaBreadcrumb' ), 'schema-app-setting', 'schema' );      
 		add_settings_field( 'SchemaWebSite', 'Show WebSite', array( $this, 'SettingsFieldSchemaWebSite' ), 'schema-app-setting', 'schema' );      
+		add_settings_field( 'SchemaDefaultImage', 'Default Image', array( $this, 'SettingsFieldSchemaDefaultImage' ), 'schema-app-setting', 'schema' );      
 
         
         //// Schema App License Page
@@ -298,8 +323,159 @@ class SchemaSettings
             array( $this, 'schema_license_wc_status_callback' ),    // Callback
             'schema-app-license',                   // Page or Tab
             'license_settings'                      // Section           
-        );     
- 
+        );      
+
+		// Genesis
+        register_setting(
+            'schema_option_group_genesis',      // Option group
+            'schema_option_name_genesis',     // Option name
+            array( $this, 'sanitize_genesis' )  // Sanitize
+        );
+
+        add_settings_section(
+            'plugin_settings_genesis', // ID
+            'Genesis Settings', // Title
+            array( $this, 'print_section_genesis' ), // Callback
+            'schema-app-genesis' // Page
+        );  
+        
+//      genesis_attr_search-form
+        add_settings_field(
+            'search-form', // ID
+            'http://schema.org/SearchAction', // Title 
+            array( $this, 'search_form_callback_genesis' ), // Callback
+            'schema-app-genesis', // Page
+            'plugin_settings_genesis' // Section           
+        );      
+                
+//      genesis_attr_breadcrumb
+        add_settings_field(
+            'breadcrumb', // ID
+            'http://schema.org/BreadcrumbList', // Title 
+            array( $this, 'breadcrumb_callback_genesis' ), // Callback
+            'schema-app-genesis', // Page
+            'plugin_settings_genesis' // Section           
+        );      
+        
+//      genesis_attr_head
+        add_settings_field(
+            'head', // ID
+            'http://schema.org/WebSite', // Title 
+//            'http://schema.org/WebSite <br/>Head', // Title 
+            array( $this, 'head_callback_genesis' ), // Callback
+            'schema-app-genesis', // Page
+            'plugin_settings_genesis' // Section           
+        );      
+        
+//      genesis_attr_body
+        add_settings_field(
+            'body', // ID
+            'http://schema.org/WebPage', // Title 
+//            'http://schema.org/WebPage <br/>Body', // Title 
+            array( $this, 'body_callback_genesis' ), // Callback
+            'schema-app-genesis', // Page
+            'plugin_settings_genesis' // Section           
+        );      
+
+//        genesis_attr_site-header
+        add_settings_field(
+            'site-header', // ID
+            'http://schema.org/WPHeader', // Title 
+//            'http://schema.org/WPHeader <br/>Site header', // Title 
+            array( $this, 'site_header_callback_genesis' ), // Callback
+            'schema-app-genesis', // Page
+            'plugin_settings_genesis' // Section           
+        );
+
+//        genesis_attr_nav-primary
+        add_settings_field(
+            'nav-primary', // ID
+            'http://schema.org/SiteNavigationElement', // Title 
+//            'http://schema.org/SiteNavigationElement <br/>Primary navigation', // Title 
+            array( $this, 'nav_primary_callback_genesis' ), // Callback
+            'schema-app-genesis', // Page
+            'plugin_settings_genesis' // Section           
+        );
+                
+//        genesis_attr_entry
+        add_settings_field(
+            'entry', // ID
+            'http://schema.org/CreativeWork', // Title 
+//            'http://schema.org/CreativeWork <br/>Entry', // Title 
+            array( $this, 'entry_callback_genesis' ), // Callback
+            'schema-app-genesis', // Page
+            'plugin_settings_genesis' // Section           
+        );
+        
+        // genesis_attr_sidebar-primary
+         add_settings_field(
+            'sidebar-primary', // ID
+            'http://schema.org/WPSideBar', // Title 
+//            'http://schema.org/WPSideBar <br/>Primary sidebar', // Title 
+            array( $this, 'sidebar_primary_callback_genesis' ), // Callback
+            'schema-app-genesis', // Page
+            'plugin_settings_genesis' // Section           
+        );
+
+//        genesis_attr_site-footer
+         add_settings_field(
+            'site-footer', // ID
+            'http://schema.org/WPFooter', // Title 
+//            'http://schema.org/WPFooter <br/>Site footer', // Title 
+            array( $this, 'site_footer_callback_genesis' ), // Callback
+            'schema-app-genesis', // Page
+            'plugin_settings_genesis' // Section           
+        );
+         
+//      genesis_attr_comment         
+        add_settings_field(
+            'comment', // ID
+//            'http://schema.org/Comment <br/>Comments', // Title 
+            'http://schema.org/Comment', // Title 
+            array( $this, 'comment_callback_genesis' ), // Callback
+            'schema-app-genesis', // Page
+            'plugin_settings_genesis' // Section           
+        );
+       
+//      genesis_attr_comment-author
+        add_settings_field(
+            'comment-author', // ID
+            'http://schema.org/Person', // Title 
+//            'http://schema.org/Person <br/>Comment author', // Title 
+            array( $this, 'comment_author_callback_genesis' ), // Callback
+            'schema-app-genesis', // Page
+            'plugin_settings_genesis' // Section           
+        );
+  
+    }
+    
+    /**
+     * If plugin was upgraded, ensure Schema App knows to use transients
+     *
+     * @param array $input Contains all settings fields as array keys
+     */
+    public function plugin_setup () {
+
+        if ( empty($this->options['Version']) || version_compare( $this->options['Version'], $this->getVersion(), '<' ) )
+        {
+                $this->HunchSchemaActivate();
+        }
+        
+    }
+    
+    /**
+     * get version of plugin
+     * 
+     * @return type
+     */
+    private function getVersion() {
+        
+        if ( !isset($this->HunchSchemaPluginVersion) ) {
+            $HunchSchemaPluginData = get_plugin_data( plugin_dir_path(__FILE__) . "../hunch-schema.php" );
+            $this->HunchSchemaPluginVersion = $HunchSchemaPluginData['Version'];            
+        }
+        return $this->HunchSchemaPluginVersion;
+      
     }
     
     /**
@@ -312,7 +488,16 @@ class SchemaSettings
         
         // Schema App Settings tab
         if( isset( $input['graph_uri'] ) )
+        {
             $new_input['graph_uri'] = sanitize_text_field( $input['graph_uri'] );
+
+			if ( $this->options['graph_uri'] != $new_input['graph_uri'] )
+			{
+				$APISubDomain = ( substr( $_SERVER['SERVER_NAME'], 0, 3 ) === 'dev' ) ? 'dev' : '';
+
+				wp_remote_get( sprintf( 'https://api%s.hunchmanifest.com/utility/template?template=http://hunchmanifest.com/ontology/schemarules#AddSiteAccount&accountId=%s&siteUrl=%s&software=Wordpress', $APISubDomain, $new_input['graph_uri'], site_url() ), array( 'timeout' => 15, 'sslverify' => false ) );
+			}
+		}
         
         if( isset( $input['publisher_type'] ) && !empty($input['publisher_type']) )
             $new_input['publisher_type'] = sanitize_text_field( $input['publisher_type'] );
@@ -335,6 +520,16 @@ class SchemaSettings
         {
 			$new_input['SchemaWebSite'] = sanitize_text_field( $input['SchemaWebSite'] );
 		}
+        
+        if ( ! empty( $input['SchemaDefaultImage'] ) )
+        {
+			$new_input['SchemaDefaultImage'] = sanitize_text_field( $input['SchemaDefaultImage'] );
+		}
+                
+        if ( ! empty( $input['Version'] ) )
+        {
+                $new_input['Version'] = sanitize_text_field( $input['Version'] );
+        }
         
         return $new_input;
     }
@@ -436,8 +631,8 @@ class SchemaSettings
         if ( isset( $this->options['publisher_image'] ) ) {
             $imageVal = esc_attr( $this->options['publisher_image']);
         }
-        $imageHtml .= '<input id="publisher_image" name="schema_option_name[publisher_image]" value="'. $imageVal . '" type="text" />';        
-        $imageHtml .= '<input id="publisher_image_button" class="button" name="publisher_image_button" type="text" value="Upload" />';
+        $imageHtml .= '<input id="publisher_image" class="regular-text" name="schema_option_name[publisher_image]" value="'. $imageVal . '" title="'. $imageVal . '" type="text" />';        
+        $imageHtml .= '<button id="publisher_image_button" class="button">Select</button>';
         $imageHtml .= '<ul style="list-style: inherit; padding-left: 25px;"><li>Logos should have a wide aspect ratio, not a square icon.</li>';
         $imageHtml .= '<li>Logos should be no wider than 600px, and no taller than 60px.</li>';
         $imageHtml .= '<li>Always retain the original aspect ratio of the logo when resizing. Ideally, logos are exactly 60px tall with width <= 600px. If maintaining a height of 60px would cause the width to exceed 600px, downscale the logo to exactly 600px wide and reduce the height accordingly below 60px to maintain the original aspect ratio.</li>';
@@ -452,7 +647,8 @@ class SchemaSettings
 	{
 		$Value = empty( $this->options['ToolbarShowTestSchema'] ) ? 0 : $this->options['ToolbarShowTestSchema'];
 
-		print '<input type="checkbox" name="schema_option_name[ToolbarShowTestSchema]" value="1" ' . checked( 1, $Value, false ) . '>'; 
+		print '<input type="checkbox" name="schema_option_name[ToolbarShowTestSchema]" value="1" ' . checked( 1, $Value, false ) . '>';
+		print '<p>Add a "Test Schema" button to the top of your Wordpress pages when in edit mode to test schema markup in <a href="https://search.google.com/structured-data/testing-tool" target="_blank">Structured Data Testing Tool</a></p>';
 	}
     
 
@@ -460,7 +656,8 @@ class SchemaSettings
 	{
 		$Value = empty( $this->options['SchemaBreadcrumb'] ) ? 0 : $this->options['SchemaBreadcrumb'];
 
-		print '<input type="checkbox" name="schema_option_name[SchemaBreadcrumb]" value="1" ' . checked( 1, $Value, false ) . '>'; 
+		print '<input type="checkbox" name="schema_option_name[SchemaBreadcrumb]" value="1" ' . checked( 1, $Value, false ) . '>';
+		print '<p>Add Schema.org <a href="https://developers.google.com/search/docs/data-types/breadcrumbs" target="_blank">Breadcrumb</a> Markup to your pages.</p>';
 	}
     
 
@@ -468,7 +665,16 @@ class SchemaSettings
 	{
 		$Value = empty( $this->options['SchemaWebSite'] ) ? 0 : $this->options['SchemaWebSite'];
 
-		print '<input type="checkbox" name="schema_option_name[SchemaWebSite]" value="1" ' . checked( 1, $Value, false ) . '>'; 
+		print '<input type="checkbox" name="schema_option_name[SchemaWebSite]" value="1" ' . checked( 1, $Value, false ) . '>';
+		print '<p>Add <a href="https://schema.org/WebSite" target="_blank">WebSite</a> Markup to your homepage to enable <a href="https://developers.google.com/search/docs/data-types/sitelinks-searchbox" target="_blank">Site Search</a> and <a href="https://developers.google.com/search/docs/data-types/sitename" target="_blank">Site Name</a> features.</p>';
+	}
+    
+
+	public function SettingsFieldSchemaDefaultImage( $Options )
+	{
+    $Value = empty ( $this->options['SchemaDefaultImage'] ) ? "" : esc_attr( $this->options['SchemaDefaultImage'] );
+		print '<input id="SchemaDefaultImage" class="regular-text" type="text" name="schema_option_name[SchemaDefaultImage]" value="' . $Value . '" title="' . $Value . '"> <button id="SchemaDefaultImageSelect" class="button">Select</button>';
+		print '<p>Default image for BlogPosting (Posts) or Article (Pages) when none is available.</p>';
 	}
     
 
@@ -501,7 +707,179 @@ class SchemaSettings
             isset( $this->options['title'] ) ? esc_attr( $this->options['title']) : ''
         );
     }
+
+
+    /**
+     * Sanitize each setting field as needed
+     *
+     * @param array $input Contains all settings fields as array keys
+     */
+    public function sanitize_genesis( $input )
+    {
+        $new_input = array();
+        
+        if( isset( $input['search-form'] ) )
+            $new_input['search-form'] = absint( $input['search-form'] );
+        
+        if( isset( $input['breadcrumb'] ) ) {
+            $new_input['breadcrumb'] = absint( $input['breadcrumb'] );
+            $new_input['breadcrumb-link-wrap'] = absint( $input['breadcrumb'] );            
+        }
+        
+        if( isset( $input['head'] ) )
+            $new_input['head'] = absint( $input['head'] );
+        
+        if( isset( $input['body'] ) )
+            $new_input['body'] = absint( $input['body'] );
+        
+        if( isset( $input['site-header'] ) )
+            $new_input['site-header'] = absint( $input['site-header'] );
+        
+        if( isset( $input['nav-primary'] ) ) {
+            $new_input['nav-primary'] = absint( $input['nav-primary'] );
+            $new_input['nav-secondary'] = absint( $input['nav-primary'] );
+            $new_input['nav-header'] = absint( $input['nav-primary'] );            
+        }
+        
+        if( isset( $input['content'] ) )
+            $new_input['content'] = absint( $input['content'] );
+        
+        if( isset( $input['entry'] ) )
+            $new_input['entry'] = absint( $input['entry'] );
+        
+        if( isset( $input['sidebar-primary'] ) )
+            $new_input['sidebar-primary'] = absint( $input['sidebar-primary'] );
+        
+        if( isset( $input['site-footer'] ) )
+            $new_input['site-footer'] = absint( $input['site-footer'] );
+        
+        if( isset( $input['comment'] ) )
+            $new_input['comment'] = absint( $input['comment'] );
+        
+        if( isset( $input['comment-author'] ) )
+            $new_input['comment-author'] = sanitize_text_field( $input['comment-author'] );
+
+        return $new_input;
+    }
+
+    /** 
+     * Print the Section text
+     */
+    public function print_section_genesis()
+    {
+        print 'Choose which schema.org markup to remove from Genesis Themes:';
+    }
+
+    /** 
+     * Get the settings option array and print one of its values
+     */
+    public function body_callback_genesis() {
+        $value = empty( $this->options_genesis['body'] ) ? 0 : $this->options_genesis['body'];
+        print '<input type="checkbox" name="schema_option_name_genesis[body]" value="1" ' . checked( 1, $value, false ) . '>';         
+    }
     
+    /** 
+     * Get the settings option array and print one of its values
+     */
+    public function breadcrumb_callback_genesis() {
+        $value = empty( $this->options_genesis['breadcrumb'] ) ? 0 : $this->options_genesis['breadcrumb'];
+        print '<input type="checkbox" name="schema_option_name_genesis[breadcrumb]" value="1" ' . checked( 1, $value, false ) . '>';      
+        print '<input type="checkbox" style="display:none;" name="schema_option_name_genesis[breadcrumb-link-wrap]" value="1" ' . checked( 1, $value, false ) . '>';         
+    }
+    
+    /** 
+     * Get the settings option array and print one of its values
+     */
+    public function search_form_callback_genesis() {
+        $value = empty( $this->options_genesis['search-form'] ) ? 0 : $this->options_genesis['search-form'];
+        print '<input type="checkbox" name="schema_option_name_genesis[search-form]" value="1" ' . checked( 1, $value, false ) . '>';         
+    }
+
+    /** 
+     * Get the settings option array and print one of its values
+     */
+    public function head_callback_genesis() {
+        $value = empty( $this->options_genesis['head'] ) ? 0 : $this->options_genesis['head'];
+        print '<input type="checkbox" name="schema_option_name_genesis[head]" value="1" ' . checked( 1, $value, false ) . '>';         
+    }
+
+    /** 
+     * Get the settings option array and print one of its values
+     */
+    public function site_header_callback_genesis()
+    {
+        $value = empty( $this->options_genesis['site-header'] ) ? 0 : $this->options_genesis['site-header'];
+        print '<input type="checkbox" name="schema_option_name_genesis[site-header]" value="1" ' . checked( 1, $value, false ) . '>';         
+    }
+
+    /** 
+     * Get the settings option array and print one of its values
+     */
+    public function nav_primary_callback_genesis()
+    {
+        $value = empty( $this->options_genesis['nav-primary'] ) ? 0 : $this->options_genesis['nav-primary'];
+        print '<input type="checkbox" name="schema_option_name_genesis[nav-primary]" value="1" ' . checked( 1, $value, false ) . '>';         
+        // Also control navigation elements in secondary or footer menus
+        print '<input type="checkbox" style="display:none;" name="schema_option_name_genesis[nav-secondary]" value="1" ' . checked( 1, $value, false ) . '>';         
+        print '<input type="checkbox" style="display:none;" name="schema_option_name_genesis[nav-header]" value="1" ' . checked( 1, $value, false ) . '>';         
+
+    }
+
+    /** 
+     * Get the settings option array and print one of its values
+     */
+    public function entry_callback_genesis()
+    {
+        $value = empty( $this->options_genesis['entry'] ) ? 0 : $this->options_genesis['entry'];
+        print '<input type="checkbox" name="schema_option_name_genesis[entry]" value="1" ' . checked( 1, $value, false ) . '>';         
+    }
+
+    /** 
+     * Get the settings option array and print one of its values
+     */
+    public function sidebar_primary_callback_genesis()
+    {
+        $value = empty( $this->options_genesis['sidebar-primary'] ) ? 0 : $this->options_genesis['sidebar-primary'];
+        print '<input type="checkbox" name="schema_option_name_genesis[sidebar-primary]" value="1" ' . checked( 1, $value, false ) . '>';         
+    }
+
+    /** 
+     * Get the settings option array and print one of its values
+     */
+    public function site_footer_callback_genesis()
+    {
+        $value = empty( $this->options_genesis['site-footer'] ) ? 0 : $this->options_genesis['site-footer'];
+        print '<input type="checkbox" name="schema_option_name_genesis[site-footer]" value="1" ' . checked( 1, $value, false ) . '>';         
+    }
+
+    /** 
+     * Get the settings option array and print one of its values
+     */
+    public function id_number_callback()
+    {
+        $value = empty( $this->options_genesis['id_number'] ) ? 0 : $this->options_genesis['id_number'];
+        print '<input type="checkbox" name="schema_option_name_genesis[id_number]" value="1" ' . checked( 1, $value, false ) . '>';         
+    }
+
+    /** 
+     * Get the settings option array and print one of its values
+     */
+    public function comment_callback_genesis()
+    {
+        $value = empty( $this->options_genesis['comment'] ) ? 0 : $this->options_genesis['comment'];
+        print '<input type="checkbox" name="schema_option_name_genesis[comment]" value="1" ' . checked( 1, $value, false ) . '>';         
+    }
+
+    /** 
+     * Get the settings option array and print one of its values
+     */
+    public function comment_author_callback_genesis()
+    {
+        $value = empty( $this->options_genesis['comment-author'] ) ? 0 : $this->options_genesis['comment-author'];
+        print '<input type="checkbox" name="schema_option_name_genesis[comment-author]" value="1" ' . checked( 1, $value, false ) . '>';         
+    }
+
+
     // meta box on post/page
     public function meta_box($data) {
         $value = $this->load_post_meta($data->ID);
@@ -608,4 +986,24 @@ class SchemaSettings
             }
 	}
     }
+    
+        /**
+         * HunchSchemaActivate, function to register the site with Schema App. 
+         * Used to cache schema app data locally as transients
+         * 
+         */
+        public function HunchSchemaActivate()
+        {
+
+                if ( ! empty( $this->options['graph_uri'] ) )
+                {
+                        $activationApi = "https://api.hunchmanifest.com/utility/template?template=http%3A%2F%2Fhunchmanifest.com%2Fontology%2Fschemarules%23AddSiteAccount&accountId=" . $Options['graph_uri'] . "&siteUrl=" . site_url() . "&software=Wordpress";
+                        wp_remote_get( $activationApi, array( 'timeout' => 15, 'sslverify' => false ) );			
+                }
+
+                $this->options['Version'] = $this->getVersion();
+                update_option( 'schema_option_name', $this->options );
+                
+        }
+        
 }

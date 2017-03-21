@@ -6,7 +6,7 @@ Author URI: https://www.hunchmanifest.com
 Author: Mark van Berkel (vberkel)
 Requires at least: 3.5
 Tested up to: 4.7
-Stable tag: 1.4.1
+Stable tag: 1.5.1
 License: GPL2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -83,6 +83,19 @@ You\'ll find the [FAQ on SchemaApp.com] (http://www.schemaapp.com/wordpress/faq/
 5. Link to Validation
 
 == Changelog ==
+= 1.5.1 =
+- Fix, activation sequence
+
+= 1.5.0 =
+- Feature, Improve Schema App speed by storing custom data in WP as transient data
+- Feature, Genesis Framework Filtering options 
+- Fix, Show Page & Post Description default in admin
+- Fix, Setting page notice for default image
+
+= 1.4.2 =
+- Feature, Default Article Image Object option
+- Fix, Improve custom markup form feedback
+
 = 1.4.1 =
 - Fix, Publisher details for Article, BlogPosting
 

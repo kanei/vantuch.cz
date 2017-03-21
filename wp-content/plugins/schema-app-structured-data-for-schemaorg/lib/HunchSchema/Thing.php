@@ -98,6 +98,27 @@ class HunchSchema_Thing {
                 return $Permalink;
         }
 
+
+		protected function getExcerpt()
+		{
+			global $post;
+
+			$text = $post->post_content;
+
+			$text = strip_shortcodes( $text );
+
+			$text = apply_filters( 'the_content', $text );
+			$text = str_replace(']]>', ']]&gt;', $text);
+
+			$excerpt_length = apply_filters( 'excerpt_length', 55 );
+			$excerpt_more = apply_filters( 'excerpt_more', ' ' . '[&hellip;]' );
+
+			$text = wp_trim_words( $text, $excerpt_length, $excerpt_more );
+
+			return $text;
+		}
+
+
         protected function getImage() {
                 if (has_post_thumbnail())
                 {
@@ -127,6 +148,38 @@ class HunchSchema_Thing {
                                                 'height' => $DocumentImages->item(0)->getAttribute('height'),
                                                 'width' => $DocumentImages->item(0)->getAttribute('width')
                                         );
+                                }
+                                else
+                                {
+									if ( $this->Settings['SchemaDefaultImage'] )
+									{
+										global $wpdb;
+
+                                        $Attachment = $wpdb->get_row( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE guid = %s", $this->Settings['SchemaDefaultImage'] ) );
+
+                                        if ( $Attachment )
+                                        {
+											$Image = wp_get_attachment_image_src( $Attachment->ID, 'full' );
+
+											return array
+											(
+												'@type' => 'ImageObject',
+												'url' => $this->Settings['SchemaDefaultImage'],
+												'width' => $Image[1],
+												'height' => $Image[2]
+											);
+                                        }
+                                        else
+                                        {
+											return array
+											(
+												'@type' => 'ImageObject',
+												'url' => $this->Settings['SchemaDefaultImage'],
+												'width' => 100,
+												'height' => 100
+											);
+                                        }
+									}
                                 }
                         }
                 }

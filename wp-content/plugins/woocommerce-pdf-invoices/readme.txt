@@ -4,7 +4,7 @@ Donate link:
 Tags: woocommerce pdf invoices, invoice, generate, pdf, woocommerce, attachment, email, completed order, customer invoice, processing order, attach, automatic, vat, rate, sequential, number
 Requires at least: 4.0
 Tested up to: 4.7
-Stable tag: 2.6.2
+Stable tag: 2.6.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -29,8 +29,8 @@ This WooCommerce plugin generates PDF invoices, attaches it to WooCommerce email
 
 > **WooCommerce PDF Invoices Premium**<br /><br />
 > This plugin offers a premium version which comes with the following features:<br /><br />
-> - Bulk generate PDF invoices<br/>
-> - Bulk export and/or download PDF invoices<br/>
+> - Bulk generate PDF invoices<br />
+> - Bulk export and/or download PDF invoices<br />
 > - Periodically bill by generating and sending global invoices<br />
 > - Add additional PDF files to customer invoices.<br />
 > - Send customer invoices directly to multiple recipients like suppliers.<br />
@@ -217,9 +217,31 @@ function alter_formatted_invoice_number( $formatted_invoice_number, $invoice_typ
 add_filter( 'bewpi_formatted_invoice_number', 'alter_formatted_invoice_number', 10, 2 );
 `
 
+### How to add custom fields/meta-data to the PDF invoice template? ###
+To add custom fields to the PDF invoice, a custom template is required. See FAQ on how to create a custom template. Use below code to display the meta-data. Replace META_KEY with the actual name of the custom field. Ask the author of the third party plugin if you don't know the name of the custom field.
+
+`
+<?php echo get_post_meta( $this->order->id, 'META_KEY', true ); ?>
+`
+
 == Changelog ==
 
-= 2.6.2 - February 2, 2017 =
+= 2.6.4 - March 6, 2017 =
+
+- Fixed: 'Fatal error:  Call to a member function get_total() on null' by checking for `WC_Order` object type within `attach_invoice_to_email()` method.
+
+= 2.6.3 - February 24, 2017 =
+
+- Added: Option to disable generation of PDF invoices for orders with only free products.
+- Improved: Font usage by defining font-family within style.css file.
+- Improved: Translation files.
+- Fixed: Company logo not found by checking for possible modified image source url.
+- Fixed: PDF invoices not updated (with paid watermark) when order has been modified.
+- Fixed: Customer shipping address always showing.
+- Fixed: 'Update Failed: Internal Server Error' when updating plugin (from version 2.5.7-) by temporary changing max_execution_time setting.
+- Fixed: Company logo url not saving due to use of `esc_url()` regarding special characters.
+
+= 2.6.2 - February 15, 2017 =
 
 - Improved: Company logo setting by just using a attachment url from Media Library. Note that the image won't be shown on settings page anymore.
 - Improved: 'readme.txt' and 'settings-sidebar.php' files.

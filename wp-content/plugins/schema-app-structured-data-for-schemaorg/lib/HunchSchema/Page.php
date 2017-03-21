@@ -33,7 +33,7 @@ class HunchSchema_Page extends HunchSchema_Thing
 
 
         if (is_admin()) {
-            $description = "DESCRIPTION IS EMPTY WHILE EDITING";
+            $description = $this->getExcerpt();
         } else {
             $description = wp_trim_excerpt();
         }

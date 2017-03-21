@@ -129,11 +129,11 @@ class SchemaEditor {
 				<?php endif; ?>
 			</div>
             <?php if ( isset( $schemaObj ) && ! $MarkupDisable ) : ?>
-				<?php if ( $MarkupCustom ): ?>
-					<strong>Note: </strong><span style="color: grey"><em>This is custom markup.</em></span>
-				<?php else : ?>
-					<strong>Note: </strong><span style="color: grey"><em>This is default markup. Extend this with Schema App Creator using Update linked above.</em></span>
-				<?php endif; ?>
+				<strong>Note: </strong>
+				<span id="MetaSchemaMarkupNote" style="color: grey"><em>
+					<span class="custom" style="<?php print $MarkupCustom ? '' : 'display: none;'; ?>">This is custom markup.</span>
+					<span class="default" style="<?php print $MarkupCustom ? 'display: none;' : ''; ?>">This is default markup. Extend this with Schema App Creator using Update linked above.</span>
+				</em></span>
             <?php endif; ?>
         </p>
 

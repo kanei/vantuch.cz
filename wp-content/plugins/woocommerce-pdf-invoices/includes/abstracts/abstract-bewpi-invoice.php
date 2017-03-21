@@ -119,7 +119,7 @@ if ( ! class_exists( 'BEWPI_Abstract_Invoice' ) ) {
 		 *
 		 * @return string
 		 */
-		private function get_date_format() {
+		public function get_date_format() {
 			$date_format = $this->template_options['bewpi_date_format'];
 			if ( ! empty( $date_format ) ) {
 				return (string) $date_format;
@@ -299,7 +299,7 @@ if ( ! class_exists( 'BEWPI_Abstract_Invoice' ) ) {
 		 *
 		 * @return string
 		 */
-		protected function save( $destination ) {
+		public function save( $destination = 'F' ) {
 			do_action( 'bewpi_before_invoice_content', $this->order->id );
 
 			if ( BEWPI_Invoice::exists( $this->order->id ) ) {
@@ -340,6 +340,20 @@ if ( ! class_exists( 'BEWPI_Abstract_Invoice' ) ) {
 		}
 
 		/**
+		 * Update invoice.
+		 *
+		 * @param string $destination pdf generation mode.
+		 *
+		 * @return string $full_path Full path to PDF invoice file.
+		 */
+		public function update( $destination = 'F' ) {
+			parent::delete( $this->full_path );
+			parent::generate( $destination, $this->order->is_paid() );
+
+			return $this->full_path;
+		}
+
+		/**
 		 * View invoice.
 		 */
 		public function view() {
@@ -350,6 +364,7 @@ if ( ! class_exists( 'BEWPI_Abstract_Invoice' ) ) {
 				);
 			}
 
+			$this->update();
 			parent::view();
 		}
 
@@ -570,20 +585,14 @@ if ( ! class_exists( 'BEWPI_Abstract_Invoice' ) ) {
 		 * @since 2.5.3
 		 */
 		protected function has_only_virtual_products() {
-			$virtual_products_count = 0;
 			foreach ( $this->order->get_items( 'line_item' ) as $item ) {
 				$product = $this->order->get_product_from_item( $item );
-				// product could be removed.
-				if ( ! $product ) {
-					continue;
-				}
-
-				if ( $product->is_virtual() ) {
-					$virtual_products_count ++;
+				if ( ! $product || ! $product->is_virtual() ) {
+					return false;
 				}
 			}
 
-			return count( $this->order->get_items() ) === $virtual_products_count;
+			return true;
 		}
 
 		/**
