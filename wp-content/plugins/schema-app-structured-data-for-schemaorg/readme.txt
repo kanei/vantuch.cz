@@ -6,7 +6,7 @@ Author URI: https://www.hunchmanifest.com
 Author: Mark van Berkel (vberkel)
 Requires at least: 3.5
 Tested up to: 4.7
-Stable tag: 1.5.1
+Stable tag: 1.6.1
 License: GPL2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,6 +33,7 @@ Just by installing the plugin you will get schema.org compliant markup for the a
 * Search : http://search.org/SearchResultsPage
 * Author : http://schema.org/ProfilePage
 * Category : http://schema.org/CollectionPage
+* Tag : http://schema.org/CollectionPage
 * Blog : http://schema.org/Blog
 * BreadcrumbList : http://schema.org/BreadcrumbList
 * WebSite : http://schema.org/WebSite
@@ -83,6 +84,16 @@ You\'ll find the [FAQ on SchemaApp.com] (http://www.schemaapp.com/wordpress/faq/
 5. Link to Validation
 
 == Changelog ==
+= 1.6.1 =
+- Fix, Server Errors on some web server
+
+= 1.6.0 = 
+- Feature, Add Linked Data Support
+- Feature, Tag Pages, add CollectionPage schema markup
+- Fix, Errors with Javascript URL, PHP Notices
+- Fix, Publisher details missing from list
+- Fix, Admin notice links
+
 = 1.5.1 =
 - Fix, activation sequence
 

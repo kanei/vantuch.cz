@@ -10,35 +10,57 @@ class SchemaSettings
     /**
      * Holds the values to be used in the fields callbacks
      */
-    private $options;
+    private $Settings;
+    private $SettingsGenesis;
     private $license;
     private $PluginURL;
-    private $HunchSchemaPluginVersion;
+    private $PluginVersion;
     
     const SCHEMA_ITEM_NAME = "schemawoocommerce";    
 
     /**
      * Start up
      */
-    public function __construct()
+    public function __construct($HunchSchemaPluginURL, $HunchSchemaPluginVersion)
     {
-        $this->options = get_option( 'schema_option_name' );
-        $this->options_genesis = get_option( 'schema_option_name_genesis' );
+        $this->PluginURL = $HunchSchemaPluginURL;
+        $this->PluginVersion = $HunchSchemaPluginVersion;
+        $this->Settings = get_option( 'schema_option_name' );
+        $this->SettingsGenesis = get_option( 'schema_option_name_genesis' );
         $this->license = get_option( 'schema_option_name_license' );
         $this->wc_status = get_option( 'schema_license_wc_status' );
-        $this->PluginURL = plugins_url( 'schema-app-structured-data-for-schemaorg' );
         
         add_action( 'admin_init', array($this, 'admin_nag_handle'));
         add_action( 'admin_init', array( $this, 'page_init' ) );        
-        add_action( 'admin_init', array( $this, 'plugin_setup' ) );        
         add_action( 'admin_menu', array( $this, 'add_plugin_page' ) );
         add_action( 'admin_enqueue_scripts', array( $this, 'admin_assets' ) );
         add_action( 'admin_notices', array($this, 'admin_nag_set'));         
         register_activation_hook( __FILE__, array($this, 'welcome_screen_activate'));
-        register_activation_hook( __FILE__, array($this, 'HunchSchemaActivate'));
         add_action( 'admin_init', array($this, 'welcome_screen_do_activation_redirect'));
         add_action( 'admin_init', array($this, 'hunch_schema_activate_license'));
     }
+
+
+	/**
+	 * HunchSchemaActivate, function to register the site with Schema App. 
+	 * Used to cache schema app data locally as transients
+	 * 
+	 */
+	function PluginActivate()
+	{
+		$Settings = get_option( 'schema_option_name' );
+
+		if ( ! empty( $Settings['graph_uri'] ) )
+		{
+			$activationApi = "https://api.hunchmanifest.com/utility/template?template=http%3A%2F%2Fhunchmanifest.com%2Fontology%2Fschemarules%23AddSiteAccount&accountId=" . $Settings['graph_uri'] . "&siteUrl=" . site_url() . "&software=Wordpress";
+			wp_remote_get( $activationApi, array( 'timeout' => 15, 'sslverify' => false ) );			
+		}
+
+		$Settings['Version'] = $this->PluginVersion;
+
+		update_option( 'schema_option_name', $Settings );
+	}
+
 
     /**
      * 
@@ -93,9 +115,16 @@ class SchemaSettings
      */
     public function create_admin_page()
     {
-		if ( class_exists( 'WooCommerce' ) && ! function_exists( 'hunch_schema_wc_add' ) )
+        if ( isset( $_GET['NoticeDismiss'] ) && $_GET['NoticeDismiss'] == 'WooCommerceAddon' )
+        {
+            $this->Settings['NoticeDismissWooCommerceAddon'] = 1;
+
+			update_option( 'schema_option_name', $this->Settings );
+        }
+
+		if ( empty( $this->Settings['NoticeDismissWooCommerceAddon'] ) && class_exists( 'WooCommerce' ) && ! function_exists( 'hunch_schema_wc_add' ) )
 		{
-			print '<div class="notice notice-success is-dismissible"> <p>Schema App WooCommerce is NOT installed.</p> </div>';
+			printf( '<div class="notice notice-success"> <p>Schema App WooCommerce is not installed but recommended for your WooCommerce products - <a target="_blank" href="https://www.schemaapp.com/product/schema-woocommerce-plugin/">See more</a>. &nbsp; <a href="%s">Dismiss</a></p> </div>', add_query_arg( 'NoticeDismiss', 'WooCommerceAddon' ) );
 		}
 
         ?>
@@ -294,6 +323,7 @@ class SchemaSettings
 		add_settings_field( 'SchemaBreadcrumb', 'Show Breadcrumb', array( $this, 'SettingsFieldSchemaBreadcrumb' ), 'schema-app-setting', 'schema' );      
 		add_settings_field( 'SchemaWebSite', 'Show WebSite', array( $this, 'SettingsFieldSchemaWebSite' ), 'schema-app-setting', 'schema' );      
 		add_settings_field( 'SchemaDefaultImage', 'Default Image', array( $this, 'SettingsFieldSchemaDefaultImage' ), 'schema-app-setting', 'schema' );      
+		add_settings_field( 'SchemaLinkedOpenData', 'Linked Open Data', array( $this, 'SettingsFieldSchemaLinkedOpenData' ), 'schema-app-setting', 'schema' );      
 
         
         //// Schema App License Page
@@ -447,35 +477,12 @@ class SchemaSettings
             'plugin_settings_genesis' // Section           
         );
   
-    }
-    
-    /**
-     * If plugin was upgraded, ensure Schema App knows to use transients
-     *
-     * @param array $input Contains all settings fields as array keys
-     */
-    public function plugin_setup () {
+  
+  		if ( empty( $this->Settings['Version'] ) || version_compare( $this->Settings['Version'], $this->PluginVersion, '<' ) )
+		{
+			$this->PluginActivate();
+		}
 
-        if ( empty($this->options['Version']) || version_compare( $this->options['Version'], $this->getVersion(), '<' ) )
-        {
-                $this->HunchSchemaActivate();
-        }
-        
-    }
-    
-    /**
-     * get version of plugin
-     * 
-     * @return type
-     */
-    private function getVersion() {
-        
-        if ( !isset($this->HunchSchemaPluginVersion) ) {
-            $HunchSchemaPluginData = get_plugin_data( plugin_dir_path(__FILE__) . "../hunch-schema.php" );
-            $this->HunchSchemaPluginVersion = $HunchSchemaPluginData['Version'];            
-        }
-        return $this->HunchSchemaPluginVersion;
-      
     }
     
     /**
@@ -491,7 +498,7 @@ class SchemaSettings
         {
             $new_input['graph_uri'] = sanitize_text_field( $input['graph_uri'] );
 
-			if ( $this->options['graph_uri'] != $new_input['graph_uri'] )
+			if ( $this->Settings['graph_uri'] != $new_input['graph_uri'] )
 			{
 				$APISubDomain = ( substr( $_SERVER['SERVER_NAME'], 0, 3 ) === 'dev' ) ? 'dev' : '';
 
@@ -526,9 +533,19 @@ class SchemaSettings
 			$new_input['SchemaDefaultImage'] = sanitize_text_field( $input['SchemaDefaultImage'] );
 		}
                 
+        if ( ! empty( $input['SchemaLinkedOpenData'] ) )
+        {
+			$new_input['SchemaLinkedOpenData'] = sanitize_text_field( $input['SchemaLinkedOpenData'] );
+		}
+                
         if ( ! empty( $input['Version'] ) )
         {
                 $new_input['Version'] = sanitize_text_field( $input['Version'] );
+        }
+
+        if ( ! empty( $input['NoticeDismissWooCommerceAddon'] ) )
+        {
+                $new_input['NoticeDismissWooCommerceAddon'] = sanitize_text_field( $input['NoticeDismissWooCommerceAddon'] );
         }
         
         return $new_input;
@@ -580,7 +597,7 @@ class SchemaSettings
     public function graph_uri_callback() {
         printf(
             '<input type="text" id="graph_uri" name="schema_option_name[graph_uri]" value="%s" class="regular-text" />',
-            isset( $this->options['graph_uri'] ) ? esc_attr( $this->options['graph_uri']) : ''
+            isset( $this->Settings['graph_uri'] ) ? esc_attr( $this->Settings['graph_uri']) : ''
         );
     }
     
@@ -592,8 +609,8 @@ class SchemaSettings
             '<select type="text" id="publisher_type" name="schema_option_name[publisher_type]" class="regular-text" />' . 
             '<option value="">Please choose whether you are a company or person</option>';
 
-        if ( isset( $this->options['publisher_type'] ) ) {
-            if ( $this->options['publisher_type'] == "Organization" ) {
+        if ( isset( $this->Settings['publisher_type'] ) ) {
+            if ( $this->Settings['publisher_type'] == "Organization" ) {
                 $pubTypeSelect .= 
                     '<option value="Organization" selected="selected">Organization</option>' .
                     '<option value="Person">Person</option>';
@@ -618,7 +635,7 @@ class SchemaSettings
     public function publisher_name_callback() {
         printf(
             '<input type="text" id="publisher_name" name="schema_option_name[publisher_name]" value="%s" class="regular-text" />',
-            isset( $this->options['publisher_name'] ) ? esc_attr( $this->options['publisher_name']) : ''
+            isset( $this->Settings['publisher_name'] ) ? esc_attr( $this->Settings['publisher_name']) : ''
         );
     }
     
@@ -628,8 +645,8 @@ class SchemaSettings
     public function publisher_image_callback() {
         $imageHtml = '<div class="uploader">';
         $imageVal = "";
-        if ( isset( $this->options['publisher_image'] ) ) {
-            $imageVal = esc_attr( $this->options['publisher_image']);
+        if ( isset( $this->Settings['publisher_image'] ) ) {
+            $imageVal = esc_attr( $this->Settings['publisher_image']);
         }
         $imageHtml .= '<input id="publisher_image" class="regular-text" name="schema_option_name[publisher_image]" value="'. $imageVal . '" title="'. $imageVal . '" type="text" />';        
         $imageHtml .= '<button id="publisher_image_button" class="button">Select</button>';
@@ -645,7 +662,7 @@ class SchemaSettings
 
 	public function SettingsFieldToolbarShowTestSchema( $Options )
 	{
-		$Value = empty( $this->options['ToolbarShowTestSchema'] ) ? 0 : $this->options['ToolbarShowTestSchema'];
+		$Value = empty( $this->Settings['ToolbarShowTestSchema'] ) ? 0 : $this->Settings['ToolbarShowTestSchema'];
 
 		print '<input type="checkbox" name="schema_option_name[ToolbarShowTestSchema]" value="1" ' . checked( 1, $Value, false ) . '>';
 		print '<p>Add a "Test Schema" button to the top of your Wordpress pages when in edit mode to test schema markup in <a href="https://search.google.com/structured-data/testing-tool" target="_blank">Structured Data Testing Tool</a></p>';
@@ -654,7 +671,7 @@ class SchemaSettings
 
 	public function SettingsFieldSchemaBreadcrumb( $Options )
 	{
-		$Value = empty( $this->options['SchemaBreadcrumb'] ) ? 0 : $this->options['SchemaBreadcrumb'];
+		$Value = empty( $this->Settings['SchemaBreadcrumb'] ) ? 0 : $this->Settings['SchemaBreadcrumb'];
 
 		print '<input type="checkbox" name="schema_option_name[SchemaBreadcrumb]" value="1" ' . checked( 1, $Value, false ) . '>';
 		print '<p>Add Schema.org <a href="https://developers.google.com/search/docs/data-types/breadcrumbs" target="_blank">Breadcrumb</a> Markup to your pages.</p>';
@@ -663,7 +680,7 @@ class SchemaSettings
 
 	public function SettingsFieldSchemaWebSite( $Options )
 	{
-		$Value = empty( $this->options['SchemaWebSite'] ) ? 0 : $this->options['SchemaWebSite'];
+		$Value = empty( $this->Settings['SchemaWebSite'] ) ? 0 : $this->Settings['SchemaWebSite'];
 
 		print '<input type="checkbox" name="schema_option_name[SchemaWebSite]" value="1" ' . checked( 1, $Value, false ) . '>';
 		print '<p>Add <a href="https://schema.org/WebSite" target="_blank">WebSite</a> Markup to your homepage to enable <a href="https://developers.google.com/search/docs/data-types/sitelinks-searchbox" target="_blank">Site Search</a> and <a href="https://developers.google.com/search/docs/data-types/sitename" target="_blank">Site Name</a> features.</p>';
@@ -672,11 +689,20 @@ class SchemaSettings
 
 	public function SettingsFieldSchemaDefaultImage( $Options )
 	{
-    $Value = empty ( $this->options['SchemaDefaultImage'] ) ? "" : esc_attr( $this->options['SchemaDefaultImage'] );
+		$Value = empty ( $this->Settings['SchemaDefaultImage'] ) ? "" : esc_attr( $this->Settings['SchemaDefaultImage'] );
 		print '<input id="SchemaDefaultImage" class="regular-text" type="text" name="schema_option_name[SchemaDefaultImage]" value="' . $Value . '" title="' . $Value . '"> <button id="SchemaDefaultImageSelect" class="button">Select</button>';
 		print '<p>Default image for BlogPosting (Posts) or Article (Pages) when none is available.</p>';
 	}
-    
+
+
+	public function SettingsFieldSchemaLinkedOpenData( $Options )
+	{
+		$Value = empty( $this->Settings['SchemaLinkedOpenData'] ) ? 0 : $this->Settings['SchemaLinkedOpenData'];
+
+		print '<input type="checkbox" name="schema_option_name[SchemaLinkedOpenData]" value="1" ' . checked( 1, $Value, false ) . '>';
+		print '<p>Publish website schema.org data items as Linked Open Data</p>';
+	}
+
 
     /** 
      * Get the settings option array and print one of its values
@@ -704,7 +730,7 @@ class SchemaSettings
     public function title_callback() {
         printf(
             '<input type="text" id="title" name="schema_option_name[title]" value="%s" />',
-            isset( $this->options['title'] ) ? esc_attr( $this->options['title']) : ''
+            isset( $this->Settings['title'] ) ? esc_attr( $this->Settings['title']) : ''
         );
     }
 
@@ -774,7 +800,7 @@ class SchemaSettings
      * Get the settings option array and print one of its values
      */
     public function body_callback_genesis() {
-        $value = empty( $this->options_genesis['body'] ) ? 0 : $this->options_genesis['body'];
+        $value = empty( $this->SettingsGenesis['body'] ) ? 0 : $this->SettingsGenesis['body'];
         print '<input type="checkbox" name="schema_option_name_genesis[body]" value="1" ' . checked( 1, $value, false ) . '>';         
     }
     
@@ -782,7 +808,7 @@ class SchemaSettings
      * Get the settings option array and print one of its values
      */
     public function breadcrumb_callback_genesis() {
-        $value = empty( $this->options_genesis['breadcrumb'] ) ? 0 : $this->options_genesis['breadcrumb'];
+        $value = empty( $this->SettingsGenesis['breadcrumb'] ) ? 0 : $this->SettingsGenesis['breadcrumb'];
         print '<input type="checkbox" name="schema_option_name_genesis[breadcrumb]" value="1" ' . checked( 1, $value, false ) . '>';      
         print '<input type="checkbox" style="display:none;" name="schema_option_name_genesis[breadcrumb-link-wrap]" value="1" ' . checked( 1, $value, false ) . '>';         
     }
@@ -791,7 +817,7 @@ class SchemaSettings
      * Get the settings option array and print one of its values
      */
     public function search_form_callback_genesis() {
-        $value = empty( $this->options_genesis['search-form'] ) ? 0 : $this->options_genesis['search-form'];
+        $value = empty( $this->SettingsGenesis['search-form'] ) ? 0 : $this->SettingsGenesis['search-form'];
         print '<input type="checkbox" name="schema_option_name_genesis[search-form]" value="1" ' . checked( 1, $value, false ) . '>';         
     }
 
@@ -799,7 +825,7 @@ class SchemaSettings
      * Get the settings option array and print one of its values
      */
     public function head_callback_genesis() {
-        $value = empty( $this->options_genesis['head'] ) ? 0 : $this->options_genesis['head'];
+        $value = empty( $this->SettingsGenesis['head'] ) ? 0 : $this->SettingsGenesis['head'];
         print '<input type="checkbox" name="schema_option_name_genesis[head]" value="1" ' . checked( 1, $value, false ) . '>';         
     }
 
@@ -808,7 +834,7 @@ class SchemaSettings
      */
     public function site_header_callback_genesis()
     {
-        $value = empty( $this->options_genesis['site-header'] ) ? 0 : $this->options_genesis['site-header'];
+        $value = empty( $this->SettingsGenesis['site-header'] ) ? 0 : $this->SettingsGenesis['site-header'];
         print '<input type="checkbox" name="schema_option_name_genesis[site-header]" value="1" ' . checked( 1, $value, false ) . '>';         
     }
 
@@ -817,7 +843,7 @@ class SchemaSettings
      */
     public function nav_primary_callback_genesis()
     {
-        $value = empty( $this->options_genesis['nav-primary'] ) ? 0 : $this->options_genesis['nav-primary'];
+        $value = empty( $this->SettingsGenesis['nav-primary'] ) ? 0 : $this->SettingsGenesis['nav-primary'];
         print '<input type="checkbox" name="schema_option_name_genesis[nav-primary]" value="1" ' . checked( 1, $value, false ) . '>';         
         // Also control navigation elements in secondary or footer menus
         print '<input type="checkbox" style="display:none;" name="schema_option_name_genesis[nav-secondary]" value="1" ' . checked( 1, $value, false ) . '>';         
@@ -830,7 +856,7 @@ class SchemaSettings
      */
     public function entry_callback_genesis()
     {
-        $value = empty( $this->options_genesis['entry'] ) ? 0 : $this->options_genesis['entry'];
+        $value = empty( $this->SettingsGenesis['entry'] ) ? 0 : $this->SettingsGenesis['entry'];
         print '<input type="checkbox" name="schema_option_name_genesis[entry]" value="1" ' . checked( 1, $value, false ) . '>';         
     }
 
@@ -839,7 +865,7 @@ class SchemaSettings
      */
     public function sidebar_primary_callback_genesis()
     {
-        $value = empty( $this->options_genesis['sidebar-primary'] ) ? 0 : $this->options_genesis['sidebar-primary'];
+        $value = empty( $this->SettingsGenesis['sidebar-primary'] ) ? 0 : $this->SettingsGenesis['sidebar-primary'];
         print '<input type="checkbox" name="schema_option_name_genesis[sidebar-primary]" value="1" ' . checked( 1, $value, false ) . '>';         
     }
 
@@ -848,7 +874,7 @@ class SchemaSettings
      */
     public function site_footer_callback_genesis()
     {
-        $value = empty( $this->options_genesis['site-footer'] ) ? 0 : $this->options_genesis['site-footer'];
+        $value = empty( $this->SettingsGenesis['site-footer'] ) ? 0 : $this->SettingsGenesis['site-footer'];
         print '<input type="checkbox" name="schema_option_name_genesis[site-footer]" value="1" ' . checked( 1, $value, false ) . '>';         
     }
 
@@ -857,7 +883,7 @@ class SchemaSettings
      */
     public function id_number_callback()
     {
-        $value = empty( $this->options_genesis['id_number'] ) ? 0 : $this->options_genesis['id_number'];
+        $value = empty( $this->SettingsGenesis['id_number'] ) ? 0 : $this->SettingsGenesis['id_number'];
         print '<input type="checkbox" name="schema_option_name_genesis[id_number]" value="1" ' . checked( 1, $value, false ) . '>';         
     }
 
@@ -866,7 +892,7 @@ class SchemaSettings
      */
     public function comment_callback_genesis()
     {
-        $value = empty( $this->options_genesis['comment'] ) ? 0 : $this->options_genesis['comment'];
+        $value = empty( $this->SettingsGenesis['comment'] ) ? 0 : $this->SettingsGenesis['comment'];
         print '<input type="checkbox" name="schema_option_name_genesis[comment]" value="1" ' . checked( 1, $value, false ) . '>';         
     }
 
@@ -875,7 +901,7 @@ class SchemaSettings
      */
     public function comment_author_callback_genesis()
     {
-        $value = empty( $this->options_genesis['comment-author'] ) ? 0 : $this->options_genesis['comment-author'];
+        $value = empty( $this->SettingsGenesis['comment-author'] ) ? 0 : $this->SettingsGenesis['comment-author'];
         print '<input type="checkbox" name="schema_option_name_genesis[comment-author]" value="1" ' . checked( 1, $value, false ) . '>';         
     }
 
@@ -915,15 +941,15 @@ class SchemaSettings
      */
     public function admin_nag_set() {
         if ( current_user_can( 'manage_options' ) ) {
-            $graphNotice = isset( $this->options['schema_ignore_notice_graph'] ) ? esc_attr( $this->options['schema_ignore_notice_graph']) : '';
-            $pubNotice = isset( $this->options['schema_ignore_notice_publisher'] ) ? esc_attr( $this->options['schema_ignore_notice_publisher']) : '';
-            if (empty($this->options['graph_uri']) && $graphNotice !== '1') {            
+            $graphNotice = isset( $this->Settings['schema_ignore_notice_graph'] ) ? esc_attr( $this->Settings['schema_ignore_notice_graph']) : '';
+            $pubNotice = isset( $this->Settings['schema_ignore_notice_publisher'] ) ? esc_attr( $this->Settings['schema_ignore_notice_publisher']) : '';
+            if (empty($this->Settings['graph_uri']) && $graphNotice !== '1') {            
                 $hide_url = add_query_arg( 'schema_ignore_notice_graph', '0' );
-                $message = "Setup Schema App Structured Data with <a href='/wp-admin/options-general.php?page=schema-app-setting'>Settings &#8594; Schema App</a> | <a id='hunch-schema-notice-dismiss' href='$hide_url'>Dismiss</a>";
+                $message = "Setup Schema App Structured Data with <a href='" . admin_url( 'options-general.php?page=schema-app-setting' ) . "'>Settings &#8594; Schema App</a> | <a id='hunch-schema-notice-dismiss' href='$hide_url'>Dismiss</a>";
                 echo"<div class=\"update-nag hunch-schema-notice-dis\">$message</div>"; 
-            } elseif (empty($this->options['publisher_type']) && $pubNotice !== '1') {
+            } elseif (empty($this->Settings['publisher_type']) && $pubNotice !== '1') {
                 $hide_url = add_query_arg( 'schema_ignore_notice_pub', '0' );
-                $message = "Set Schema App Structured Data Publisher <a href='/wp-admin/options-general.php?page=schema-app-setting'>Settings &#8594; Schema App</a> | <a id='hunch-schema-notice-dismiss' href='$hide_url'>Dismiss</a>";
+                $message = "Set Schema App Structured Data Publisher <a href='" . admin_url( 'options-general.php?page=schema-app-setting' ) . "'>Settings &#8594; Schema App</a> | <a id='hunch-schema-notice-dismiss' href='$hide_url'>Dismiss</a>";
                 echo"<div class=\"update-nag hunch-schema-notice-dis\">$message</div>"; 
             }
         }
@@ -935,13 +961,13 @@ class SchemaSettings
     public function admin_nag_handle() {
         
         if ( isset($_GET['schema_ignore_notice_graph']) && '0' == $_GET['schema_ignore_notice_graph'] ) {
-            $this->options['schema_ignore_notice_graph'] = '1';
-            update_option('schema_option_name', $this->options);
+            $this->Settings['schema_ignore_notice_graph'] = '1';
+            update_option('schema_option_name', $this->Settings);
         }
         
         if ( isset($_GET['schema_ignore_notice_pub']) && '0' == $_GET['schema_ignore_notice_pub'] ) {
-            $this->options['schema_ignore_notice_publisher'] = '1';
-            update_option('schema_option_name', $this->options);
+            $this->Settings['schema_ignore_notice_publisher'] = '1';
+            update_option('schema_option_name', $this->Settings);
         }
 
     }
@@ -986,24 +1012,5 @@ class SchemaSettings
             }
 	}
     }
-    
-        /**
-         * HunchSchemaActivate, function to register the site with Schema App. 
-         * Used to cache schema app data locally as transients
-         * 
-         */
-        public function HunchSchemaActivate()
-        {
 
-                if ( ! empty( $this->options['graph_uri'] ) )
-                {
-                        $activationApi = "https://api.hunchmanifest.com/utility/template?template=http%3A%2F%2Fhunchmanifest.com%2Fontology%2Fschemarules%23AddSiteAccount&accountId=" . $Options['graph_uri'] . "&siteUrl=" . site_url() . "&software=Wordpress";
-                        wp_remote_get( $activationApi, array( 'timeout' => 15, 'sslverify' => false ) );			
-                }
-
-                $this->options['Version'] = $this->getVersion();
-                update_option( 'schema_option_name', $this->options );
-                
-        }
-        
 }

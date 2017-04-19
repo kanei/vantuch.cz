@@ -14,12 +14,41 @@ class SchemaFront
     public function __construct()
     {
 		$this->Settings = get_option( 'schema_option_name' );
+
+		add_action( 'init', array( $this, 'HandleCache' ) );
+		add_action( 'wp', array( $this, 'LinkedOpenData' ), 10, 1 );
+		add_action( 'wp_head', array( $this, 'hunch_schema_add' ) );
+
+		if ( ! empty( $this->Settings['ToolbarShowTestSchema'] ) )
+		{
+			add_action( 'admin_bar_menu', array( $this, 'AdminBarMenu' ), 999 );
+		}
+
+		if ( function_exists( 'genesis' ) )
+		{
+			// Priority 15 ensures it runs after Genesis itself has setup.
+			add_action( 'genesis_setup', array( $this, 'GenesisSetup' ), 15 );
+		}
     }
+
+
+	function HandleCache()
+	{
+		if ( isset( $_GET['Action'], $_GET['URL'] ) && $_GET['Action'] == 'HSDeleteMarkupCache' )
+		{
+			delete_transient( 'HunchSchema-Markup-' . md5( $_GET['URL'] ) );
+
+			header( 'HTTP/1.0 202 Accepted', true, 202 );
+
+			exit;
+		}
+	}
+
 
     /**
      * hunch_schema_add is called to lookup schema.org or add default markup 
      */
-    public function hunch_schema_add()
+    public function hunch_schema_add( $JSON = false )
     {
 		global $post;
 
@@ -32,6 +61,8 @@ class SchemaFront
 
 			$SchemaServer = new SchemaServer();
 			$SchemaMarkup = $SchemaServer->getResource();
+
+			$JSONSchemaMarkup = array();
 
 			if ( $SchemaMarkup === "" )
 			{
@@ -51,7 +82,14 @@ class SchemaFront
 
 			if ( $SchemaMarkup !== "" )
 			{
-				printf( '<script type="application/ld+json">%s</script>', $SchemaMarkup );
+				if ( $JSON )
+				{
+					$JSONSchemaMarkup[] = $SchemaMarkup;
+				}
+				else
+				{
+					printf( '<script type="application/ld+json">%s</script>', $SchemaMarkup );
+				}
 			}
 
 			if ( ! empty( $this->Settings['SchemaWebSite'] ) && is_front_page() )
@@ -60,7 +98,14 @@ class SchemaFront
 
 				if ( ! empty( $SchemaMarkupWebSite ) )
 				{
-					printf( '<script type="application/ld+json">%s</script>', $SchemaMarkupWebSite );
+					if ( $JSON )
+					{
+						$JSONSchemaMarkup[] = $SchemaMarkupWebSite;
+					}
+					else
+					{
+						printf( '<script type="application/ld+json">%s</script>', $SchemaMarkupWebSite );
+					}
 				}
 			}
 
@@ -70,11 +115,45 @@ class SchemaFront
 
 				if ( ! empty( $SchemaMarkupBreadcrumb ) )
 				{
-					printf( '<script type="application/ld+json">%s</script>', $SchemaMarkupBreadcrumb );
+					if ( $JSON )
+					{
+						$JSONSchemaMarkup[] = $SchemaMarkupBreadcrumb;
+					}
+					else
+					{
+						printf( '<script type="application/ld+json">%s</script>', $SchemaMarkupBreadcrumb );
+					}
 				}
+			}
+
+			if ( $JSON && ! empty( $JSONSchemaMarkup ) )
+			{
+				print '[' . implode( '],[', $JSONSchemaMarkup  ) . ']';
 			}
 		}     
     }
+
+
+	function LinkedOpenData( $WP )
+	{
+		if ( ! empty( $this->Settings['SchemaLinkedOpenData'] ) )
+		{
+			$RequestHeaders = array();
+
+			if ( function_exists( 'apache_request_headers' ) )
+			{
+				$RequestHeaders = apache_request_headers();
+			}
+
+			// preg_match( '/\.jsonld$/i', $_SERVER['REQUEST_URI'] )
+			if (  ( ! empty( $_GET['format'] ) && $_GET['format'] == 'jsonld' )  ||  ( ! empty( $RequestHeaders['Accept'] ) && $RequestHeaders['Accept'] == 'application/json' )  )
+			{
+				$this->hunch_schema_add( true );
+
+				exit;
+			}
+		}
+	}
 
 
 	function AdminBarMenu( $WPAdminBar )
@@ -97,6 +176,30 @@ class SchemaFront
 
 			$WPAdminBar->add_node( $Node );
 		}
+	}
+
+
+	function GenesisSetup()
+	{
+		$Attributes = get_option( 'schema_option_name_genesis' );
+
+		if ( $Attributes )
+		{
+			foreach ( $Attributes as $Key => $Value )
+			{
+				add_filter( 'genesis_attr_' . $Key, array( $this, 'GenesisAttribute' ), 20 );
+			}
+		}
+	}
+
+
+	function GenesisAttribute( $Attribute )
+	{
+		$Attribute['itemtype'] = '';
+		$Attribute['itemprop'] = '';
+		$Attribute['itemscope'] = '';
+
+		return $Attribute;
 	}
 
 }

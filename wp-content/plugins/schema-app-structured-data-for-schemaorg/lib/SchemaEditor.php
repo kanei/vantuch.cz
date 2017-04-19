@@ -9,13 +9,20 @@ defined('ABSPATH') OR die('This script cannot be accessed directly.');
  */
 class SchemaEditor {
 
-    /**
-     * Hook into the appropriate actions when the class is constructed.
-     */
-    public function __construct() {
-        add_action( 'admin_enqueue_scripts', array( $this, 'admin_assets' ) );
-		add_action( 'wp_ajax_HunchSchemaMarkupUpdate', array( $this, 'MarkupUpdate' ) );
-    }
+        private $PluginURL;
+
+        /**
+         * Hook into the appropriate actions when the class is constructed.
+         */
+        public function __construct($HunchSchemaPluginURL) {
+
+                $this->PluginURL = $HunchSchemaPluginURL;
+
+                add_action( 'load-post.php', array( $this, 'hunch_schema_edit' ) );
+                add_action( 'load-post-new.php', array( $this, 'hunch_schema_edit' ) );
+                add_action( 'admin_enqueue_scripts', array( $this, 'admin_assets' ) );
+                add_action( 'wp_ajax_HunchSchemaMarkupUpdate', array( $this, 'MarkupUpdate' ) );
+        }
 
      /**
      * Register javascript for media upload (Publisher Logo)
@@ -25,9 +32,10 @@ class SchemaEditor {
         if ( ! in_array($hook, array('post.php', 'post-new.php' ) ) ) {
             return;
         }
+
         // Javascript
         wp_enqueue_media(); 
-        wp_enqueue_script('schema-admin-funcs', WP_PLUGIN_URL.'/schema-app-structured-data-for-schemaorg/js/schemaEditor.js', array('jquery'), '20161116');        
+        wp_enqueue_script('schema-admin-funcs', $this->PluginURL . 'js/schemaEditor.js', array('jquery'), '20161116');
         
     }
     
@@ -244,8 +252,8 @@ class SchemaEditor {
 			}
 			else
 			{
-                delete_post_meta( $_POST['Id'], '_HunchSchemaMarkup' );
-
+                                delete_post_meta( $_POST['Id'], '_HunchSchemaMarkup' );
+                                
 				print json_encode( array( 'Status' => 'Ok', 'Delete' => true ) );
 			}
 		}

@@ -19,3 +19,4 @@ require_once $baseDir . $schemaDir . 'Author.php';
 require_once $baseDir . $schemaDir . 'Search.php';
 require_once $baseDir . $schemaDir . 'Category.php';
 require_once $baseDir . $schemaDir . 'Blog.php';
+require_once $baseDir . $schemaDir . 'Tag.php';

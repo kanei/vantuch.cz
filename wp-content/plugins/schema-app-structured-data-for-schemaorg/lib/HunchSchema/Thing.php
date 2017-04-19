@@ -33,6 +33,9 @@ class HunchSchema_Thing {
                 } elseif (is_category())
                 {
                         $postType = 'Category';
+                } elseif (is_tag())
+                {
+                        $postType = 'Tag';
                 } elseif (!is_front_page() && is_home() || is_home())
                 {
                         $postType = 'Blog';
@@ -151,35 +154,35 @@ class HunchSchema_Thing {
                                 }
                                 else
                                 {
-									if ( $this->Settings['SchemaDefaultImage'] )
-									{
-										global $wpdb;
-
-                                        $Attachment = $wpdb->get_row( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE guid = %s", $this->Settings['SchemaDefaultImage'] ) );
-
-                                        if ( $Attachment )
+                                        if (!empty($this->Settings['SchemaDefaultImage']))
                                         {
-											$Image = wp_get_attachment_image_src( $Attachment->ID, 'full' );
+                                                global $wpdb;
 
-											return array
-											(
-												'@type' => 'ImageObject',
-												'url' => $this->Settings['SchemaDefaultImage'],
-												'width' => $Image[1],
-												'height' => $Image[2]
-											);
+                                                $Attachment = $wpdb->get_row( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE guid = %s", $this->Settings['SchemaDefaultImage'] ) );
+
+                                                if ( $Attachment )
+                                                {
+                                                        $Image = wp_get_attachment_image_src( $Attachment->ID, 'full' );
+
+                                                        return array
+                                                        (
+                                                                '@type' => 'ImageObject',
+                                                                'url' => $this->Settings['SchemaDefaultImage'],
+                                                                'width' => $Image[1],
+                                                                'height' => $Image[2]
+                                                        );
+                                                }
+                                                else
+                                                {
+                                                        return array
+                                                        (
+                                                                '@type' => 'ImageObject',
+                                                                'url' => $this->Settings['SchemaDefaultImage'],
+                                                                'width' => 100,
+                                                                'height' => 100
+                                                        );
+                                                }
                                         }
-                                        else
-                                        {
-											return array
-											(
-												'@type' => 'ImageObject',
-												'url' => $this->Settings['SchemaDefaultImage'],
-												'width' => 100,
-												'height' => 100
-											);
-                                        }
-									}
                                 }
                         }
                 }
@@ -305,10 +308,10 @@ class HunchSchema_Thing {
                                         }
                                 }
                                 
-                                return $publisher;
-                                
                         }
                 }
+
+			return $publisher;
         }
 
         /**
