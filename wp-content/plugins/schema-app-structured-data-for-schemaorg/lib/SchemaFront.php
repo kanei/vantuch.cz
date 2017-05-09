@@ -19,6 +19,11 @@ class SchemaFront
 		add_action( 'wp', array( $this, 'LinkedOpenData' ), 10, 1 );
 		add_action( 'wp_head', array( $this, 'hunch_schema_add' ) );
 
+		if ( ! empty( $this->Settings['SchemaRemoveMicrodata'] ) )
+		{
+			add_action( 'template_redirect', array( $this, 'TemplateRedirect' ), 0 );
+		}
+
 		if ( ! empty( $this->Settings['ToolbarShowTestSchema'] ) )
 		{
 			add_action( 'admin_bar_menu', array( $this, 'AdminBarMenu' ), 999 );
@@ -153,6 +158,25 @@ class SchemaFront
 				exit;
 			}
 		}
+	}
+
+
+	function TemplateRedirect()
+	{
+		ob_start( array( $this, 'RemoveMicrodata' ) );
+	}
+
+
+	function RemoveMicrodata( $Buffer )
+	{
+		$Buffer = preg_replace( '/[\s\n]*<(link|meta)(\s|[^>]+\s)itemprop=[\'"][^\'"]*[\'"][^>]*>[\s\n]*/imS', '', $Buffer );
+
+		for ( $I = 1; $I <= 6; $I++ )
+		{
+			$Buffer = preg_replace( '/(<[^>]*)\sitem(scope|type|prop)(=[\'"][^\'"]*[\'"])?([^>]*>)/imS', '$1$4', $Buffer );
+		}
+
+		return $Buffer;
 	}
 
 

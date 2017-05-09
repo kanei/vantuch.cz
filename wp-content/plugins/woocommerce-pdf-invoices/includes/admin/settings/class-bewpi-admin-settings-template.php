@@ -10,9 +10,7 @@
  * @version     1.0.0
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+defined( 'ABSPATH' ) or exit;
 
 if ( ! class_exists( 'BEWPI_Template_Settings' ) ) {
 	/**
@@ -28,38 +26,9 @@ if ( ! class_exists( 'BEWPI_Template_Settings' ) ) {
 		 * BEWPI_Template_Settings constructor.
 		 */
 		public function __construct() {
-			add_action( 'admin_init', array( $this, 'admin_init' ) );
+			$this->load_settings();
+			$this->create_settings();
 			add_action( 'admin_notices', array( $this, 'show_settings_notices' ) );
-		}
-
-		/**
-		 * Get path to templates.
-		 *
-		 * @return array
-		 */
-		private function get_templates() {
-			$scanned_templates = array();
-			$templates         = array();
-
-			if ( file_exists( BEWPI_TEMPLATES_DIR . 'invoices' ) ) {
-				$scanned_templates = array_merge( $scanned_templates, scandir( BEWPI_TEMPLATES_DIR . 'invoices/simple/' ) );
-			}
-
-			if ( file_exists( BEWPI_CUSTOM_TEMPLATES_INVOICES_DIR ) ) {
-				$scanned_templates = array_merge( $scanned_templates, scandir( BEWPI_CUSTOM_TEMPLATES_INVOICES_DIR . 'simple/' ) );
-			}
-
-			foreach ( $scanned_templates as $i => $template_name ) {
-				if ( '..' !== $template_name && '.' !== $template_name ) {
-					$templates[] = array(
-						'id'    => $i,
-						'name'  => ucfirst( $template_name ),
-						'value' => $template_name,
-					);
-				}
-			}
-
-			return $templates;
 		}
 
 		/**
@@ -68,6 +37,14 @@ if ( ! class_exists( 'BEWPI_Template_Settings' ) ) {
 		 * @return array
 		 */
 		private function the_settings() {
+			$templater = BEWPI()->templater();
+			$templates = array();
+			foreach ( array_map( 'basename', $templater->get_templates() ) as $template ) {
+				$templates[] = array(
+					'id'    => $template,
+					'value' => strtolower( $template ),
+				);
+			}
 			$company_logo = wp_get_attachment_image_src( get_theme_mod( 'custom_logo' ), 'thumbnail' );
 
 			$settings = array(
@@ -79,9 +56,9 @@ if ( ! class_exists( 'BEWPI_Template_Settings' ) ) {
 					'page'     => self::SETTINGS_KEY,
 					'section'  => 'general',
 					'type'     => 'text',
-					'desc'     => '',
-					'options'  => $this->get_templates(),
-					'default'  => 'micro',
+					'desc'     => sprintf( __( 'Create a custom template by copying it from %1$s to %2$s.', 'woocommerce-pdf-invoices' ), '<code>plugins/woocommerce-pdf-invoices/includes/templates/invoice/simple</code>', '<code>uploads/woocommerce-pdf-invoices/templates/invoice/simple</code>' ),
+					'options'  => $templates,
+					'default'  => 'minimal',
 				),
 				array(
 					'id'       => 'bewpi-color-theme',
@@ -92,7 +69,7 @@ if ( ! class_exists( 'BEWPI_Template_Settings' ) ) {
 					'section'  => 'general',
 					'type'     => 'color',
 					'desc'     => '',
-					'default'  => '#11a7e7',
+					'default'  => '#000000',
 				),
 				array(
 					'id'       => 'bewpi-theme-text-black',
@@ -117,7 +94,7 @@ if ( ! class_exists( 'BEWPI_Template_Settings' ) ) {
 					'page'     => self::SETTINGS_KEY,
 					'section'  => 'general',
 					'type'     => 'text',
-					'desc'     => __( '<a href="http://php.net/manual/en/datetime.formats.date.php">Format</a> of invoice date and order date.', 'woocommerce-pdf-invoices' ),
+					'desc'     => sprintf( __( '<a href="%s">Format</a> of invoice date and order date.', 'woocommerce-pdf-invoices' ), 'http://php.net/manual/en/datetime.formats.date.php' ),
 					'default'  => get_option( 'date_format' ),
 					'attrs'    => array( 'required' ),
 				),
@@ -167,6 +144,18 @@ if ( ! class_exists( 'BEWPI_Template_Settings' ) ) {
 					'default'  => 0,
 				),
 				array(
+					'id'       => 'bewpi-packing-slips',
+					'name'     => self::PREFIX . 'disable_packing_slips',
+					'title'    => '',
+					'callback' => array( $this, 'input_callback' ),
+					'page'     => self::SETTINGS_KEY,
+					'section'  => 'packing_slips',
+					'type'     => 'checkbox',
+					'desc'     => __( 'Disable Packing Slips', 'woocommerce-pdf-invoices' ),
+					'class'    => 'bewpi-checkbox-option-title',
+					'default'  => 0,
+				),
+				array(
 					'id'       => 'bewpi-company-name',
 					'name'     => self::PREFIX . 'company_name',
 					'title'    => __( 'Company name', 'woocommerce-pdf-invoices' ),
@@ -196,7 +185,7 @@ if ( ! class_exists( 'BEWPI_Template_Settings' ) ) {
 					'page'     => self::SETTINGS_KEY,
 					'section'  => 'header',
 					'type'     => 'text',
-					'desc'     => __( 'Displayed in upper-right corner near logo.', 'woocommerce-pdf-invoices' ),
+					'desc'     => sprintf( __( 'Allowed HTML tags: %s.', 'woocommerce-pdf-invoices' ), self::formatted_html_tags() ),
 					'default'  => '',
 				),
 				array(
@@ -207,7 +196,7 @@ if ( ! class_exists( 'BEWPI_Template_Settings' ) ) {
 					'page'     => self::SETTINGS_KEY,
 					'section'  => 'header',
 					'type'     => 'text',
-					'desc'     => __( 'Displayed below company address.', 'woocommerce-pdf-invoices' ),
+					'desc'     => sprintf( __( 'Allowed HTML tags: %s.', 'woocommerce-pdf-invoices' ), self::formatted_html_tags() ),
 					'default'  => '',
 				),
 				array(
@@ -229,8 +218,9 @@ if ( ! class_exists( 'BEWPI_Template_Settings' ) ) {
 					'page'     => self::SETTINGS_KEY,
 					'section'  => 'header',
 					'type'     => 'text',
-					'desc'     => __( 'Displayed in big colored bar directly after invoice total.', 'woocommerce-pdf-invoices' ),
-					'default'  => __( 'Thank you for your purchase!', 'woocommerce-pdf-invoices' ),
+					'desc'     => sprintf( __( 'Allowed HTML tags: %s.', 'woocommerce-pdf-invoices' ), self::formatted_html_tags() ) . ' '
+					              . __( 'Visible in big colored bar directly after invoice total.', 'woocommerce-pdf-invoices' ),
+					'default'  => '',
 				),
 				array(
 					'id'       => 'bewpi-show-ship-to',
@@ -240,7 +230,10 @@ if ( ! class_exists( 'BEWPI_Template_Settings' ) ) {
 					'page'     => self::SETTINGS_KEY,
 					'section'  => 'body',
 					'type'     => 'checkbox',
-					'desc'     => __( 'Show customers shipping address<br/><div class="bewpi-notes">Customers shipping address won\'t be displayed when order has only virtual products.</div>', 'woocommerce-pdf-invoices' ),
+					'desc'     => __( 'Show customers shipping address', 'woocommerce-pdf-invoices' )
+					              . '<br/><div class="bewpi-notes">'
+					              . __( 'Customers shipping address won\'t be visible when order has only virtual products.', 'woocommerce-pdf-invoices' )
+					              . '</div>',
 					'class'    => 'bewpi-checkbox-option-title',
 					'default'  => 1,
 				),
@@ -264,8 +257,9 @@ if ( ! class_exists( 'BEWPI_Template_Settings' ) ) {
 					'page'     => self::SETTINGS_KEY,
 					'section'  => 'body',
 					'type'     => 'text',
-					'desc'     => sprintf( __( 'Displayed below customer notes and above footer. Want to attach additional pages to the invoice? Take a look at the <a href="%s">Premium</a> plugin.', 'woocommerce-pdf-invoices' ), 'http://wcpdfinvoices.com' ),
-					'default'  => __( 'Items will be shipped within 2 days.', 'woocommerce-pdf-invoices' ),
+					'desc'     => sprintf( __( 'Allowed HTML tags: %s.', 'woocommerce-pdf-invoices' ), self::formatted_html_tags() ) . ' '
+					              . sprintf( __( 'Visible below customer notes and above footer. Want to attach additional pages to the invoice? Take a look at <a href="%1$s">%2$s</a> plugin.', 'woocommerce-pdf-invoices' ), 'http://wcpdfinvoices.com', 'WooCommerce PDF Invoices Premium' ),
+					'default'  => '',
 				),
 				array(
 					'id'       => 'bewpi-left-footer-column',
@@ -275,8 +269,8 @@ if ( ! class_exists( 'BEWPI_Template_Settings' ) ) {
 					'page'     => self::SETTINGS_KEY,
 					'section'  => 'footer',
 					'type'     => 'text',
-					'desc'     => '',
-					'default'  => sprintf( __( '<b>Payment method</b> %s', 'woocommerce-pdf-invoices' ), '[payment_method]' ),
+					'desc'     => sprintf( __( 'Allowed HTML tags: %s.', 'woocommerce-pdf-invoices' ), self::formatted_html_tags() ),
+					'default'  => '',
 				),
 				array(
 					'id'       => 'bewpi-right-footer-column',
@@ -286,7 +280,7 @@ if ( ! class_exists( 'BEWPI_Template_Settings' ) ) {
 					'page'     => self::SETTINGS_KEY,
 					'section'  => 'footer',
 					'type'     => 'text',
-					'desc'     => __( 'Leave empty to show page numbering.', 'woocommerce-pdf-invoices' ),
+					'desc'     => sprintf( __( 'Allowed HTML tags: %s.', 'woocommerce-pdf-invoices' ), self::formatted_html_tags() ),
 					'default'  => '',
 				),
 				array(
@@ -300,11 +294,11 @@ if ( ! class_exists( 'BEWPI_Template_Settings' ) ) {
 					'desc'     => '',
 					'options'  => array(
 						array(
-							'name'  => __( 'WooCommerce order number', 'woocommerce-pdf-invoices' ),
+							'id'  => __( 'WooCommerce order number', 'woocommerce-pdf-invoices' ),
 							'value' => 'woocommerce_order_number',
 						),
 						array(
-							'name'  => __( 'Sequential number', 'woocommerce-pdf-invoices' ),
+							'id'  => __( 'Sequential number', 'woocommerce-pdf-invoices' ),
 							'value' => 'sequential_number',
 						),
 					),
@@ -314,7 +308,7 @@ if ( ! class_exists( 'BEWPI_Template_Settings' ) ) {
 					'id'       => 'bewpi-reset-counter',
 					'name'     => self::PREFIX . 'reset_counter',
 					'title'    => '',
-					'callback' => array( $this, 'input_callback' ),
+					'callback' => array( $this, 'reset_counter_callback' ),
 					'page'     => self::SETTINGS_KEY,
 					'section'  => 'invoice_number',
 					'type'     => 'checkbox',
@@ -327,11 +321,13 @@ if ( ! class_exists( 'BEWPI_Template_Settings' ) ) {
 					'id'       => 'bewpi-next-invoice-number',
 					'name'     => self::PREFIX . 'next_invoice_number',
 					'title'    => __( 'Next', 'woocommerce-pdf-invoices' ),
-					'callback' => array( $this, 'input_callback' ),
+					'callback' => array( $this, 'next_invoice_number_callback' ),
 					'page'     => self::SETTINGS_KEY,
 					'section'  => 'invoice_number',
 					'type'     => 'number',
-					'desc'     => __( 'Next invoice number when resetting counter.<br/><b>Note:</b> Only available for Sequential numbering. All PDF invoices with invoice number greater then next invoice number will be deleted.', 'woocommerce-pdf-invoices' ),
+					'desc'     => __( 'Next invoice number when resetting counter.', 'woocommerce-pdf-invoices' )
+					              . '<br/>'
+					              . __( '<b>Note:</b> Only available for Sequential numbering. All PDF invoices with invoice number greater then next invoice number will be deleted!', 'woocommerce-pdf-invoices' ),
 					'default'  => 1,
 					'attrs'    => array(
 						'readonly',
@@ -357,7 +353,7 @@ if ( ! class_exists( 'BEWPI_Template_Settings' ) ) {
 				array(
 					'id'       => 'bewpi-invoice-number-prefix',
 					'name'     => self::PREFIX . 'invoice_number_prefix',
-					'title'    => __( '[prefix]', 'woocommerce-pdf-invoices' ),
+					'title'    => __( 'Prefix', 'woocommerce-pdf-invoices' ),
 					'callback' => array( $this, 'input_callback' ),
 					'page'     => self::SETTINGS_KEY,
 					'section'  => 'invoice_number',
@@ -368,7 +364,7 @@ if ( ! class_exists( 'BEWPI_Template_Settings' ) ) {
 				array(
 					'id'       => 'bewpi-invoice-number-suffix',
 					'name'     => self::PREFIX . 'invoice_number_suffix',
-					'title'    => __( '[suffix]', 'woocommerce-pdf-invoices' ),
+					'title'    => __( 'Suffix', 'woocommerce-pdf-invoices' ),
 					'callback' => array( $this, 'input_callback' ),
 					'page'     => self::SETTINGS_KEY,
 					'section'  => 'invoice_number',
@@ -384,7 +380,9 @@ if ( ! class_exists( 'BEWPI_Template_Settings' ) ) {
 					'page'     => self::SETTINGS_KEY,
 					'section'  => 'invoice_number',
 					'type'     => 'text',
-					'desc'     => sprintf( __( 'Allowed placeholders: <code>%1$s</code> <code>%2$s</code> <code>%3$s</code> <code>%4$s</code> <code>%5$s</code> <code>%6$s</code><br/><b>Note:</b> <code>%3$s</code> is required and slashes aren\'t supported.', 'woocommerce-pdf-invoices' ), '[prefix]', '[suffix]', '[number]', '[order-number]', '[order-date]', '[m]', '[Y]', '[y]' ),
+					'desc'     => sprintf( __( 'Available placeholders: %s.', 'woocommerce-pdf-invoices' ), self::formatted_number_placeholders() )
+					              . '<br>'
+					              . sprintf( __( '<b>Note:</b> %s is required and slashes aren\'t supported.', 'woocommerce-pdf-invoices' ), '<code>[number]</code>' ),
 					'default'  => '[number]-[Y]',
 					'attrs'    => array( 'required' ),
 				),
@@ -397,8 +395,10 @@ if ( ! class_exists( 'BEWPI_Template_Settings' ) ) {
 					'section'  => 'invoice_number',
 					'type'     => 'checkbox',
 					'desc'     => __( 'Reset yearly', 'woocommerce-pdf-invoices' )
-								. '<br/><div class="bewpi-notes">'
-								. __( 'Automatically reset invoice numbers on new year\'s day. <br/><b>Note</b>: You will have to generate all invoices again when changing option.', 'woocommerce-pdf-invoices' )
+					              . '<br/><div class="bewpi-notes">'
+					              . __( 'Automatically reset invoice numbers on new year\'s day.', 'woocommerce-pdf-invoices' )
+					              . '<br/>'
+					              . __( '<b>Note</b>: You will have to generate all invoices again when changing option.', 'woocommerce-pdf-invoices' )
 								. '</div>',
 					'class'    => 'bewpi-checkbox-option-title',
 					'default'  => 1,
@@ -500,7 +500,8 @@ if ( ! class_exists( 'BEWPI_Template_Settings' ) ) {
 			$options  = array_merge( $defaults, $options );
 
 			// check for deleted custom template.
-			$templates = wp_list_pluck( $this->get_templates(), 'value' );
+			$templater = BEWPI()->templater();
+			$templates = array_map( 'basename', $templater->get_templates() );
 			if ( ! in_array( $options['bewpi_template_name'], $templates, true ) ) {
 				$options['bewpi_template_name'] = $defaults['bewpi_template_name'];
 			}
@@ -512,39 +513,35 @@ if ( ! class_exists( 'BEWPI_Template_Settings' ) ) {
 		 * General settings section information.
 		 */
 		public function general_desc_callback() {
-			_e( 'These are the general template options.', 'woocommerce-pdf-invoices' ); // WPCS: XSS OK.
+			printf( __( 'Want to customize the template? The <a href="%s">FAQ</a> will give you a brief description.', 'woocommerce-pdf-invoices' ), 'https://wordpress.org/plugins/woocommerce-pdf-invoices' );
 		}
 
 		/**
-		 * Invoice number section information.
+		 * Packing Slips description.
 		 */
-		public function invoice_number_desc_callback() {
-			_e( 'These are the invoice number options.', 'woocommerce-pdf-invoices' ); // WPCS: XSS OK.
+		public function packing_slip_desc_callback() {
+			_e( 'Packing Slips are <strong>only available</strong> when using minimal template.', 'woocommerce-pdf-invoices' );
 		}
 
 		/**
 		 * Invoice header section information.
 		 */
 		public function header_desc_callback() {
-			_e( 'The header will be visible on every page.', 'woocommerce-pdf-invoices' ); // WPCS: XSS OK.
+			_e( 'The header will be visible on every page.', 'woocommerce-pdf-invoices' );
 		}
 
 		/**
 		 * Invoice header section information.
 		 */
 		public function footer_desc_callback() {
-			echo __( 'The footer will be visible on every page.', 'woocommerce-pdf-invoices' ) // WPCS: XSS OK.
-			     . '<br/>'
-			     . $this->allowed_tags_text()
-			     . '<br/>'
-			     . sprintf( __( '<b>Hint</b>: Use <code>%1$s</code> placeholder to display the order payment method or <code>%2$s</code> to display shipping method.', 'woocommerce-pdf-invoices' ), '[payment_method]', '[shipping_method]' );
+			echo __( 'The footer will be visible on every page.', 'woocommerce-pdf-invoices' );
 		}
 
 		/**
 		 * Visible columns section information.
 		 */
 		public function visible_columns_desc_callback() {
-			_e( 'Enable or disable the columns.', 'woocommerce-pdf-invoices' ); // WPCSS: XSS OK.
+			_e( 'Enable or disable the columns.', 'woocommerce-pdf-invoices' );
 		}
 
 		/**
@@ -555,9 +552,10 @@ if ( ! class_exists( 'BEWPI_Template_Settings' ) ) {
 				$this,
 				'general_desc_callback',
 			), self::SETTINGS_KEY );
-			add_settings_section( 'invoice_number', __( 'Invoice Number Options', 'woocommerce-pdf-invoices' ), array(
+			add_settings_section( 'invoice_number', __( 'Invoice Number Options', 'woocommerce-pdf-invoices' ), null, self::SETTINGS_KEY );
+			add_settings_section( 'packing_slips', __( 'Packing Slip Options', 'woocommerce-pdf-invoices' ), array(
 				$this,
-				'invoice_number_desc_callback',
+				'packing_slip_desc_callback',
 			), self::SETTINGS_KEY );
 			add_settings_section( 'header', __( 'Header Options', 'woocommerce-pdf-invoices' ), array(
 				$this,
@@ -612,7 +610,9 @@ if ( ! class_exists( 'BEWPI_Template_Settings' ) ) {
 				}
 			}
 
-			$output['bewpi_next_invoice_number'] = intval( $input['bewpi_next_invoice_number'] );
+			if ( isset( $input['bewpi_reset_counter'] ) && $input['bewpi_reset_counter'] ) {
+				set_transient( 'bewpi_next_invoice_number', intval( $input['bewpi_next_invoice_number'] ) );
+			}
 
 			// return the array processing any additional functions filtered by this action.
 			return apply_filters( 'validate_input', $output, $input );
@@ -638,20 +638,10 @@ if ( ! class_exists( 'BEWPI_Template_Settings' ) ) {
 		}
 
 		/**
-		 * Initialize admin.
-		 */
-		public function admin_init() {
-			$this->load_settings();
-			$this->create_settings();
-		}
-
-		/**
 		 * Show all settings notices.
 		 */
 		public function show_settings_notices() {
 			settings_errors( self::SETTINGS_KEY );
 		}
 	}
-
-	new BEWPI_Template_Settings();
 }

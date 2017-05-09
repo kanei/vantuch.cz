@@ -37,7 +37,6 @@ class SchemaSettings
         add_action( 'admin_notices', array($this, 'admin_nag_set'));         
         register_activation_hook( __FILE__, array($this, 'welcome_screen_activate'));
         add_action( 'admin_init', array($this, 'welcome_screen_do_activation_redirect'));
-        add_action( 'admin_init', array($this, 'hunch_schema_activate_license'));
     }
 
 
@@ -142,34 +141,28 @@ class SchemaSettings
 			</h3>
 
             <section id="schema-app-welcome">
-                <h3>Instructions</h3>
-                <ol>
-                    <li>Enter your publisher settings in Wordpress Admin > Settings > Schema App</li>
-                    <li><a href='https://hunchmanifest.leadpages.co/leadbox/143ff4a73f72a2%3A1601ca700346dc/5764878782431232/'>Register for Schema App</a> if you want to add additional schema markup to your website.</li>
-                    <li>Add your Account ID in Settings page. </li>
-                    <li>Follow the <a target="_blank" href='https://www.schemaapp.com/tutorial/guide-optimizing-website-schema-org/'>Getting Started Guide</a> to optimize your website. </li>
-                </ol>
-                <p><em> Note: Schema App registration and Account ID is not neccessary to make the plugin create default schema.org markup for pages and posts. Account ID is used to connect your website to Schema App for automated markup deployment.</em></p>
-                <h3>Semantic Search Strategy</h3>
-                You can then employ a few different strategies to extend your structured data, schema.org, markup:
-                <h4>Markup Key Content</h4>
-                <ol>
-                    <li>Make a list of your top webpages (e.g. 5-10% of your total pages). E.g. Your homepage, products, services, key articles or team members.</li>
-                    <li>Follow the <a target="_blank" href='https://www.schemaapp.com/tutorial/guide-optimizing-website-schema-org/'>Getting Started Guide</a> for instructions and video tutorials to markup your top pages. </li>
-                    <li>Log into <a target="_blank" href='http://app.schemaapp.com/'>Schema App</a> then refer to the <a target="_blank" href='https://www.schemaapp.com/tutorial/guide-optimizing-website-schema-org/'>Getting Started Guide</a> for instructions.</li>
-                </ol>
-                <h4>Determine which <a target="_blank" href="https://developers.google.com/structured-data/">Google Structured Data Features</a> you are eligible for.</h4>
-                <ol>
-                    <li>Identify which of your pages match the Google feature and read the guidelines in the recommendation</li>
-                    <li>Log into <a target="_blank" href='http://app.schemaapp.com/'>Schema App</a> and select data item type from Schema Editor. </li>
-                    <li>Fill in fields required by Google Feature.</li>
-                </ol>
-                <h3>Support & Service</h3>
-                <p><a target="_blank" href='https://www.schemaapp.com/wordpress-plugin/faq/'>Check the Frequently Asked Questions (FAQ)</a></p>
-                <p>Support for Schema App and Semantic Search strategy and implementation is provided with <a href="mailto:support@hunchmanifest.com">support@hunchmanifest.com</a>. For free 
-                    users we make our best effort to respond to each response thoughtfully. For better support we offer <a href="http://www.schemaapp.com/product-pricing/#premium-support" target="_blank">Premium Support</a> package 
-                    for responses in 1 day.
-                </p>
+				<h3>Instructions</h3>
+				<ol>
+					<li>Enter your company/publisher settings in Wordpress Admin > Settings > Schema App. This creates default schema markup for pages, posts, search and categories.</li>
+					<li>For further organic search optimization, <a href="https://www.schemaapp.com/product-pricing/">sign up for Schema App</a>. Use Schema App to optimize your homepage (organization), Contact Page, Services, Products, Reviews, etc. Schema App includes support for <a href="http://schema.org/">schema.org</a> markup questions and Schema App tool help.  Once you've signed up:</li>
+					<ol>
+						<li>Find your <a href="https://app.schemaapp.com/integration/wordpress">Schema App Account ID</a> and add it to the Schema App Wordpress settings page to <a href="https://youtu.be/0WH9s26WSg4">automate schema markup deployment</a>.</li>
+						<li>Follow the <a href="https://www.schemaapp.com/tutorial/guide-optimizing-website-schema-org/">Getting Started Guide</a> to optimize your website content.</li>
+					</ol>
+				</ol>
+				<p><em>Note: Schema App registration and Account ID is not required to make the plugin create default <a href="http://schema.org/">schema.org</a> markup for pages and posts.</em></p>
+
+				<h3>Support & Service</h3>
+				<p><a href="https://www.schemaapp.com/wordpress-plugin/faq/">Schema App Wordpress plugin Frequently Asked Questions (FAQ)</a></p>
+				<p>Send support questions to <a href="mailto:support@hunchmanifest.com">support@hunchmanifest.com</a></p>
+
+				<h3>Schema Markup Resources</h3>
+				<ul>
+					<li><a href="https://www.youtube.com/channel/UCqVBXnwZ3YNf2BVP1jXcp6Q">Schema App Youtube Video Tutorials</a></li>
+					<li><a href="https://www.schemaapp.com/getting-started/">Getting Started Guide</a></li>
+					<li><a href="https://www.schemaapp.com/tutorial/how-to-do-schema-markup-for-local-business/">Ultimate Guide to Local Business Schema Markup</a></li>
+					<li><a href="https://search.google.com/structured-data/testing-tool/u/0/">Google Structured Data Testing Tool</a></li>
+				</ul>
             </section>
             <section id="schema-app-settings">
                 <form method="post" action="options.php">
@@ -196,26 +189,6 @@ class SchemaSettings
                     settings_fields( 'schema_option_group_license' );   
                     do_settings_sections( 'schema-app-license' ); 
                     ?>
-                    <table class="form-table">
-                        <tbody>
-                        <?php if (false !== $license) { ?>
-                            <tr valign="top">	
-                                <th scope="row" valign="top">
-                                    <?php _e('Activate License'); ?>
-                                </th>
-                                <td>
-                                    <?php if ($status !== false && $status == 'valid') { ?>
-                                        <span style="color:green;"><?php _e('active'); ?></span>
-                                    <?php } else {
-                                        wp_nonce_field('schema_sample_nonce', 'schema_sample_nonce');
-                                    ?>
-                                    <input type="submit" class="button-secondary" name="schema_license_activate" value="<?php _e('Activate License'); ?>"/>
-                                <?php } ?>
-                                </td>
-                            </tr>
-                        <?php } ?>
-                        </tbody>
-                    </table>	
                     <?php submit_button(); ?>
                 </form>
             </section>
@@ -246,13 +219,13 @@ class SchemaSettings
         }
         // Javascript
         wp_enqueue_media(); 
-        wp_enqueue_script('schema-admin-funcs', $this->PluginURL.'/js/schemaAdmin.js', array('jquery','media-editor'), '20160928');
+        wp_enqueue_script('schema-admin-funcs', $this->PluginURL.'js/schemaAdmin.js', array('jquery','media-editor'), '20160928');
         $tab = isset($_GET['tab']) ? $_GET['tab'] : 'schema-app-settings';
         wp_localize_script( 'schema-admin-funcs', 'schemaData', array(
             'tab' => $tab,
 	));
         // CSS Styles
-        wp_enqueue_style( 'schema-admin-style', $this->PluginURL.'/css/schemaStyle.css' );
+        wp_enqueue_style( 'schema-admin-style', $this->PluginURL.'css/schemaStyle.css' );
         
     }
     
@@ -324,6 +297,7 @@ class SchemaSettings
 		add_settings_field( 'SchemaWebSite', 'Show WebSite', array( $this, 'SettingsFieldSchemaWebSite' ), 'schema-app-setting', 'schema' );      
 		add_settings_field( 'SchemaDefaultImage', 'Default Image', array( $this, 'SettingsFieldSchemaDefaultImage' ), 'schema-app-setting', 'schema' );      
 		add_settings_field( 'SchemaLinkedOpenData', 'Linked Open Data', array( $this, 'SettingsFieldSchemaLinkedOpenData' ), 'schema-app-setting', 'schema' );      
+		add_settings_field( 'SchemaRemoveMicrodata', 'Remove Microdata', array( $this, 'SettingsFieldSchemaRemoveMicrodata' ), 'schema-app-setting', 'schema' );      
 
         
         //// Schema App License Page
@@ -538,6 +512,11 @@ class SchemaSettings
 			$new_input['SchemaLinkedOpenData'] = sanitize_text_field( $input['SchemaLinkedOpenData'] );
 		}
                 
+        if ( ! empty( $input['SchemaRemoveMicrodata'] ) )
+        {
+			$new_input['SchemaRemoveMicrodata'] = sanitize_text_field( $input['SchemaRemoveMicrodata'] );
+		}
+                
         if ( ! empty( $input['Version'] ) )
         {
                 $new_input['Version'] = sanitize_text_field( $input['Version'] );
@@ -559,11 +538,35 @@ class SchemaSettings
     public function sanitize_license( $input ) {
         $new_input = array();
 
-        // License tab
-        if( isset( $input['schema_license_wc'] ) && !empty($input['schema_license_wc']) )
+        if ( ! empty( $input['schema_license_wc'] ) )
+        {
             $new_input['schema_license_wc'] = sanitize_text_field( $input['schema_license_wc'] );
-        if( isset( $input['schema_license_wc_status'] ) && !empty($input['schema_license_wc_status']) )
-            $new_input['schema_license_wc_status'] = sanitize_text_field( $input['schema_license_wc_status'] );
+		}
+
+		if ( ! empty( $input['schema_license_wc_status'] ) )
+		{
+			$new_input['schema_license_wc_status'] = sanitize_text_field( $input['schema_license_wc_status'] );
+		}
+
+        if ( ! empty( $new_input['schema_license_wc'] ) )
+		{
+			$SchemaServer = new SchemaServer();
+
+			$Response = $SchemaServer->activateLicense( array( 'license' => $new_input['schema_license_wc'], 'item_name' => urlencode( SchemaSettings::SCHEMA_ITEM_NAME ), 'url' => home_url() ) );
+
+			if ( $Response[0] == true )
+			{
+				$new_input['schema_license_wc_status'] = 'Active';
+
+				add_settings_error( 'schema_wc_activation_err', esc_attr( 'settings_updated' ), $Response[1], 'updated' );
+			}
+			else
+			{
+				$new_input['schema_license_wc_status'] = 'Inactive';
+
+				add_settings_error( 'schema_wc_activation_err', esc_attr( 'settings_updated' ), $Response[1] . ". Visit <a target='_blank' href='http://app.schemaapp.com/licenses'>Schema App Licenses</a> for more information", 'error' );
+			}
+		}
 
         return $new_input;
     }
@@ -572,9 +575,9 @@ class SchemaSettings
      * Print the Section text
      */
     public function print_section_plugin() {
-        print "<p>By default the Schema App Tools creates <a target='_blank' href='https://www.schemaapp.com/wordpress-plugin/'>basic structured data</a> for all pages and posts.</p>";
-        print "<p>For greater organic search results, add additional structured data to your content with <a target='_blank' href='http://www.schemaapp.com'>Schema App</a>. Schema App generates and automatically deploys schema.org markup from your inputs. <a href='https://hunchmanifest.leadpages.co/leadbox/143ff4a73f72a2%3A1601ca700346dc/5764878782431232/'> Register with Schema App</a>. </p>";
-        print "<p>Once registered with Schema App, add your Account ID to connect the Schema App Editor to your website for automated code deployment.  The Account ID is the key Schema App uses to identifying your website(s). The Account ID can be used across multiple websites. ";
+        print "<p>By default the Schema App Tools creates <a target='_blank' href='https://www.schemaapp.com/wordpress-plugin/'>basic structured data</a> for all pages and posts. ";
+        print "For greater organic search results, add additional structured data to your content with <a target='_blank' href='https://www.schemaapp.com/schema-org-json-ld-markup-editor/'>Schema App</a>. Schema App generates and automatically deploys schema.org markup from your inputs. <a href='https://www.schemaapp.com/product-pricing/'> Register with Schema App</a>. ";
+        print "Once registered, add your Account ID to connect Schema App to wordpress for automated code deployment.</p>";
     }
     
     /** 
@@ -701,6 +704,15 @@ class SchemaSettings
 
 		print '<input type="checkbox" name="schema_option_name[SchemaLinkedOpenData]" value="1" ' . checked( 1, $Value, false ) . '>';
 		print '<p>Publish website schema.org data items as Linked Open Data</p>';
+	}
+
+
+	public function SettingsFieldSchemaRemoveMicrodata( $Options )
+	{
+		$Value = empty( $this->Settings['SchemaRemoveMicrodata'] ) ? 0 : $this->Settings['SchemaRemoveMicrodata'];
+
+		print '<input type="checkbox" name="schema_option_name[SchemaRemoveMicrodata]" value="1" ' . checked( 1, $Value, false ) . '>';
+		print '<p>Remove Microdata from header and content.</p>';
 	}
 
 
@@ -972,45 +984,4 @@ class SchemaSettings
 
     }
     
-    /**
-     * Activate license listener, activation process
-     */
-    public function hunch_schema_activate_license() {
-	// listen for our activate button to be clicked
-	if( isset( $_POST['schema_license_activate'] ) ) {
-            
-            // run a quick security check 
-            if( ! check_admin_referer( 'schema_sample_nonce', 'schema_sample_nonce' ) ) 	
-                return; // get out if we didn't click the Activate button
-            
-            // retrieve the license from the database
-            $license = trim( $_POST['schema_option_name_license']['schema_license_wc'] );
-
-            // data to send in our API request
-            $api_params = array( 
-                'license' 	=> $license, 
-                'item_name'     => urlencode( self::SCHEMA_ITEM_NAME ), // the name of our product
-                'url'           => home_url()
-            );
-            
-            $server = new SchemaServer();
-            $licenseData = $server->activateLicense($api_params);
-
-            // Check for no activation errors
-            if ( $licenseData[0] == true ) {
-                //Alter the options appropriately, should be part of the schema_option_name_license array
-                update_option('schema_license_wc_status', 'Active' );
-                add_settings_error(
-                    'schema_wc_activation_err', esc_attr('settings_updated'), $licenseData[1], 'updated'
-                );
-            } else {
-                // Report the errors
-                update_option('schema_license_wc_status', 'Inactive');
-                add_settings_error(
-                    'schema_wc_activation_err', esc_attr('settings_updated'), $licenseData[1] . ". Visit <a target='_blank' href='http://app.schemaapp.com/licenses'>Schema App Licenses</a> for more information", 'error'
-                );
-            }
-	}
-    }
-
 }

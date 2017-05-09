@@ -6,27 +6,22 @@ Author URI: https://www.hunchmanifest.com
 Author: Mark van Berkel (vberkel)
 Requires at least: 3.5
 Tested up to: 4.7
-Stable tag: 1.6.1
+Stable tag: 1.7.1
 License: GPL2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 Get Schema.org structured data for all pages, posts, categories and profile pages on activation. Use Schema App to customize any Schema markup. 
 
 == Description ==
-This plugin, working with the [Schema App Tools](https://www.schemaapp.com) makes doing schema markup easy. 
 
-By default, the Schema App Plugin optimizes all your pages, posts, author pages and more using information that already exists on your Wordpress website.  All you have to do is 1 minute of setup and then the optimization is done for you. 
+**"There are several dedicated plugins that you can use. In my opinion, the best is Schema App Structured Data."**
+[Neil Patel's Blog on Structured Data](http://neilpatel.com/blog/structured-data/)
 
-The plugin also provides all three Google Site Structure features including [Breadcrumbs](https://developers.google.com/search/docs/data-types/breadcrumbs), [Sitelinks Searchbox](https://developers.google.com/search/docs/data-types/sitelinks-searchbox) and [Your Site Name in Results](https://developers.google.com/search/docs/data-types/sitename).
+**What Markup does Schema App Wordpress Plugin Create?**
 
-Want to optimize your entire site? The [Schema App JSON-LD Markup Generator](https://www.schemaapp.com/schema-org-json-ld-markup-editor/) allows you to add additional Schema markup to your Wordpress site without having to be a structured data expert. Now you can optimize your homepage with your business information, your about page with information about the people at your company, services you sell, events, job postings, etc. If there is something strategic on your site you want Google to know about, you can optimize it with Schema App JSON-LD Markup Generator. 
+By activating the plugin Schema App Wordpress plugin automatically creates [schema.org](http://schema.org/) markup for the all your pages, posts, author and category content leveraging information that already exists in your Wordpress website. Just activate the plugin, adding your logo and name of your business, BAM, your content is optimized to be fully understood by search engines resulting in higher traffic, higher click through rates and more.  The plugin also provides all three Google Site Structure features including Breadcrumbs, Sitelinks Searchbox and Your Site Name in Results.  Schema App Wordpress plugin also integrates with [Schema App Tools](https://www.schemaapp.com) to automatically deploy custom content (see below). 
 
-Schema App JSON-LD Markup Generator has the entire Schema.org vocabulary and automates validation of inputs, and creation/deployment of schema.org code. You don't need a developer to use our tools and you can update your markup anytime without having to do re-work.
-
-<strong>Free Accounts</strong> can create and customize up to 50 data items for 10 webpages. When combined with the highest quality Article and BlogPosting Schema markup in Wordpress users get great value for free.
-
-= Baseline Schema.org Markup =
-Just by installing the plugin you will get schema.org compliant markup for the all your page and post content. Page types such as Search, Author and Category also get default markup. 
+**What type of markup is created with this plugin?**
 
 * Page : http://schema.org/Article
 * Post : http://schema.org/BlogPosting
@@ -37,31 +32,20 @@ Just by installing the plugin you will get schema.org compliant markup for the a
 * Blog : http://schema.org/Blog
 * BreadcrumbList : http://schema.org/BreadcrumbList
 * WebSite : http://schema.org/WebSite
-* Style Search Results (Breadcrumbs, Sitelinks Search Box, Show Name in Search)
 
-> <strong>Schema App Premium Features</strong>
-> 
-> Schema App has a freemium pricing model. To remove data item limits or enable advanced features such as Validation, Semantic Analytics, Schema.org Reporting are available with [Schema App Pro and Agency](http://www.schemaapp.com/product-pricing/) accounts. 
-> Extend your schema.org structured data to speak to Google's many advanced search features with your Wordpress site using [Schema App](http://www.schemaapp.com). Common features include:
->
-> Customize Knowledge Graph (Corporate Contacts, Social Profile Links)
-> Event Promotion (for Performers, Venues, Ticketers)
-> Actions (Music Play, Movie Watch, Promote Critic Reviews)
-> Content Carousels (Live Blogs)
-> Rich Snippets (Products, Reviews, Recipe, Events, Articles, Videos)
-> Local Business (Place Actions, e.g. Reservation, Order)
-> 
-> <strong>Manage multiple sites?</strong>
-> 
-> [Schema App](https://www.schemaapp.com) also allows you to manage markup across domains, making it easy to scale your schema.org deployments and manage them easily. If you want to add structured data to your WordPress website in the most productive and smart way, you have found it!
-> 
-> <strong>Schema App WooCommerce</strong><br>
-> An ecommerce add-on [Schema App WooCommerce](https://www.schemaapp.com/product/schema-app-woocommerce/) integrates with this Schema App plugin. This add-on plugin is the most comprehensive Schema.org plugin for WooCommerce, doubling the structured data available to search engines.
-> 
-> <strong>Premium Support</strong><br>
-> Want some help to get all the benefits of structured data on a small website but don’t need a Pro account? Buy the [Premium Support package](http://www.schemaapp.com/product-pricing/#premium-support) so that you get direct (email) access to our professional support team who will answer all your questions related to implementing Schema App.
-> 
-> We know that Structured Data and Schema.org can be a bit overwhelming, so don’t hesitate to ask our support team if you don’t understand how to achieve your desired results. Our support is made up of semantic search experts so know that you’re going to get great support.
+**[Schema App Wordpress Plugin FAQ](https://www.schemaapp.com/wordpress-plugin/faq/)**
+
+**Optimize Website Fully with Schema App Tools**
+
+There is a lot of benefit of adding schema markup to fully describe your business including increased organic traffic, higher search rank and rich results. To achieve this you need to optimize your whole website with schema markup. [Schema App Tools](https://www.schemaapp.com/) enable marketers to create custom [schema.org](http://schema.org/) markup for a website's Local Business,  Organization, Services, Reviews, Contact Page and more. Schema App Tools have the complete [schema.org](http://schema.org/) vocabulary, requires no JSON-LD coding, and help you do ongoing schema markup maintenance when Google changes their recommendations. [Learn more about the Schema App Tools](https://www.schemaapp.com/schema-org-json-ld-markup-editor/). Schema App Tools subscriptions include support from our experts in schema markup. 
+
+**Manage multiple sites?**
+
+Schema App Tools allow you to easily manage schema markup across multiple domains and provides scalable solutions for sites with large amounts of data. If you want to add schema markup to your WordPress website in the most productive and smart way, it's Schema App. 
+
+**Using WooCommerce?**
+
+Schema App also offers a WooCommerce plugin to optimize your products and get product rich snippets. Learn more here. https://www.schemaapp.com/product/schema-woocommerce-plugin/
 
 == Installation ==
 
@@ -84,6 +68,16 @@ You\'ll find the [FAQ on SchemaApp.com] (http://www.schemaapp.com/wordpress/faq/
 5. Link to Validation
 
 == Changelog ==
+= 1.7.1 =
+- Fix, Server configuration
+- Fix, Missing description, use own method
+
+= 1.7.0 = 
+- Feature, Microdata filter option
+- Fix, communication with custom Schema App markup. Try Curl first otherwise use file_get_contents
+- Fix, Simplify Activation Sequence
+- Documentation, improve marketing copy, instructions
+
 = 1.6.1 =
 - Fix, Server Errors on some web server
 

@@ -6,8 +6,8 @@
  */
 class SchemaServer {
     
-    const EDITOR = "http://app.schemaapp.com/editor";
-    const FETCH = "/schemaorg/fetch";
+    const EDITOR = "https://app.schemaapp.com/editor";
+    const FETCH = "/cache/fetch";
     const ACTIVATE = "/service/activate.json";
     
     private $options;
@@ -36,65 +36,84 @@ class SchemaServer {
 
     }
     
-    /**
-     * Get Resource JSON_LD content
-     * 
-     * @param type $uri
-     * @return string
-     */
-    public function getResource($uri = "", $pretty = false) {
+        /**
+         * Get Resource JSON_LD content
+         * 
+         * @param type $uri
+         * @return string
+         */
+        public function getResource($uri = "", $pretty = false) {
 
-        // Check if the GRAPH URI is set
-        if ( empty($this->options['graph_uri'] ) )
-            return "";
+                // Check if the GRAPH URI is set
+                if (empty($this->options['graph_uri']))
+                        return "";
 
-        $resource = "";
-        if ( strcmp($uri, "") !== 0 ) {
-            $resource = $uri;
-        } elseif ( strcmp($this->resource, "") !== 0 ) {
-            $resource = $this->resource;
-        } else {
-            return "";
+                $resource = "";
+                if (strcmp($uri, "") !== 0) {
+                        $resource = $uri;
+                } elseif (strcmp($this->resource, "") !== 0) {
+                        $resource = $this->resource;
+                } else {
+                        return "";
+                }
+
+
+                $TransientId = 'HunchSchema-Markup-' . md5($resource);
+                $Transient = get_transient($TransientId);
+                if ($Transient !== false) {
+                        return $Transient;
+                }
+
+                // Try to use CURL first, otherwise try file_get_contents
+                if ( function_exists('curl_version') ) {
+                        $api = $this->readLink($resource);
+                        $curl = curl_init();
+                        curl_setopt($curl, CURLOPT_URL, $api);
+                        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+                        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+                        curl_setopt($curl, CURLOPT_TIMEOUT, 5);
+                        $schemadata = curl_exec($curl);
+
+                        if (curl_exec($curl) !== false) {
+                                // Check for empty result, HTTP Response Code 204 is legit, no custom data
+                                if (empty($schemadata) || $schemadata === "null") {
+                                        $schemadata = "";
+                                } elseif ($pretty && strnatcmp(phpversion(), '5.4.0') >= 0) {
+                                        $schemaObj = json_decode($schemadata);
+                                        $schemadata = json_encode($schemaObj, JSON_PRETTY_PRINT);
+                                }
+                                
+                                set_transient($TransientId, $schemadata, 86400);                               
+                        } else {
+                                $schemadata = "";
+                        }
+                        curl_close($curl);
+                } else {
+                        $ctx = stream_context_create(array(
+                            'http' => array(
+                                'method' => "GET",
+                                'timeout' => 5,
+                            )
+                        ));
+                        // Process API, get results
+                        if (false !== ($schemadata = @file_get_contents($api, false, $ctx))) {
+                                // Check for empty result, HTTP Response Code 204 is legit, no custom data
+                                if (empty($schemadata) || $schemadata === "null") {
+                                    $schemadata = "";
+                                } elseif ( $pretty && strnatcmp(phpversion(), '5.4.0') >= 0) {
+                                    $schemaObj = json_decode($schemadata);
+                                    $schemadata = json_encode($schemaObj, JSON_PRETTY_PRINT);
+                                }
+                                
+                                set_transient( $TransientId, $schemadata, 86400 );                                
+                        } else {
+                            // error happened
+                            $schemadata = "";
+                        }
+                }
+
+                return $schemadata;
         }
-
-
-		$TransientId = 'HunchSchema-Markup-' . md5( $resource );
-		$Transient = get_transient( $TransientId );
-
-		if ( $Transient !== false )
-		{
-			return $Transient;
-		}
-
-
-        $api = $this->readLink($resource);        
-        $schemadata = "";
-        $ctx = stream_context_create(array(
-            'http' => array(
-                'method' => "GET",
-                'timeout' => 5,
-            )
-        ));
-
-        // Process API, get results
-        if (false !== ($schemadata = @file_get_contents($api, false, $ctx))) {
-            // Check for empty result, HTTP Response Code 204 is legit, no custom data
-            if (empty($schemadata) || $schemadata === "null") {
-                $schemadata = "";
-            } elseif ( $pretty && strnatcmp(phpversion(), '5.4.0') >= 0) {
-                $schemaObj = json_decode($schemadata);
-                $schemadata = json_encode($schemaObj, JSON_PRETTY_PRINT);
-            }
-
-			set_transient( $TransientId, $schemadata, 86400 );
-
-        } else {
-            // error happened
-            $schemadata = "";
-        }
-
-        return $schemadata;
-    }
     
     /**
      * Get the Link to Update a Resource that exists

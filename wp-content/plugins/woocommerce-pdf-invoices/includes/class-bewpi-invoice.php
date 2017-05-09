@@ -10,9 +10,7 @@
  * @version     2.5.4
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+defined( 'ABSPATH' ) or exit;
 
 if ( ! class_exists( 'BEWPI_Invoice' ) ) {
 	/**
@@ -25,21 +23,17 @@ if ( ! class_exists( 'BEWPI_Invoice' ) ) {
 		 * @param int $order_id WooCommerce Order ID.
 		 */
 		public function __construct( $order_id ) {
-			$this->order            = wc_get_order( $order_id );
-			$this->type             = 'simple';
+			$this->order        = wc_get_order( $order_id );
+			$this->type         = 'invoice/simple';
+			BEWPI()->templater()->set_invoice( $this );
 			parent::__construct( $order_id );
-			$template_dirname       = $this->get_template_dir();
-			$this->html_templates   = array(
-				'header' => $template_dirname . 'header.php',
-				'footer' => $template_dirname . 'footer.php',
-				'body'   => $template_dirname . 'body.php',
-				'style'  => $template_dirname . 'style.css',
-			);
 		}
 
 		/**
 		 * Formatted custom order subtotal.
 		 * Shipping including or excluding tax.
+		 *
+		 * @deprecated No longer used within template files. Custom templates should be replaced.
 		 *
 		 * @return string
 		 */
@@ -57,6 +51,8 @@ if ( ! class_exists( 'BEWPI_Invoice' ) ) {
 
 		/**
 		 * Formatted custom order total.
+		 *
+		 * @deprecated No longer used within template files. Custom templates should be replaced.
 		 *
 		 * @return string
 		 */

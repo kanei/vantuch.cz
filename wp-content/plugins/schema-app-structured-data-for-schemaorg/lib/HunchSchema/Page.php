@@ -32,12 +32,6 @@ class HunchSchema_Page extends HunchSchema_Thing
 		$this->schemaType = $MarkupType ? $MarkupType : $this->schemaType;
 
 
-        if (is_admin()) {
-            $description = $this->getExcerpt();
-        } else {
-            $description = wp_trim_excerpt();
-        }
-
         $this->schema = array(
             '@context' => 'http://schema.org/',
             '@type' => $this->schemaType,
@@ -47,7 +41,7 @@ class HunchSchema_Page extends HunchSchema_Thing
 				"@id" => $Permalink,
 			),
             'headline' => get_the_title(),
-            'description' => $description,
+            'description' => $this->getExcerpt(),
             'datePublished' => get_the_date('Y-m-d'),
             'dateModified' => get_the_modified_date('Y-m-d'),
             'author' => $this->getAuthor(),

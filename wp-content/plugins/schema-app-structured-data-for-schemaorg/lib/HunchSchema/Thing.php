@@ -106,19 +106,32 @@ class HunchSchema_Thing {
 		{
 			global $post;
 
-			$text = $post->post_content;
+			if ( post_password_required( $post ) )
+			{
+				return 'This is a protected post.';
+			}
 
-			$text = strip_shortcodes( $text );
+			if ( ! empty( $post->post_excerpt ) )
+			{
+				return apply_filters( 'get_the_excerpt', $post->post_excerpt, $post );
+			}
 
-			$text = apply_filters( 'the_content', $text );
-			$text = str_replace(']]>', ']]&gt;', $text);
+			if ( ! empty( $post->post_content ) )
+			{
+				$text = $post->post_content;
 
-			$excerpt_length = apply_filters( 'excerpt_length', 55 );
-			$excerpt_more = apply_filters( 'excerpt_more', ' ' . '[&hellip;]' );
+				$text = strip_shortcodes( $text );
 
-			$text = wp_trim_words( $text, $excerpt_length, $excerpt_more );
+				$text = apply_filters( 'the_content', $text );
+				$text = str_replace(']]>', ']]&gt;', $text);
 
-			return $text;
+				$excerpt_length = apply_filters( 'excerpt_length', 55 );
+				$excerpt_more = apply_filters( 'excerpt_more', ' ' . '[&hellip;]' );
+
+				$text = wp_trim_words( $text, $excerpt_length, $excerpt_more );
+
+				return $text;
+			}
 		}
 
 
