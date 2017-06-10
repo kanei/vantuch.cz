@@ -186,7 +186,7 @@ class SchemaServer {
         // decode the license data
         $license_data = json_decode( wp_remote_retrieve_body( $response ) );
         
-        if ( $response_code == 201 ) {
+        if ( in_array($response_code, array(200, 201) ) ) {
             return array(true, $license_data);
         } else {
             return array(false, $license_data);

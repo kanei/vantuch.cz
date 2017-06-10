@@ -1,8 +1,10 @@
 # Raygun4js
 
-[Raygun.io][raygunio] plugin for JavaScript
+[Raygun.io][raygunio] provider for client-side JavaScript
 
 [raygunio]: https://raygun.io
+
+[![Build Status](https://travis-ci.org/MindscapeHQ/raygun4js.svg?branch=master)](https://travis-ci.org/MindscapeHQ/raygun4js)
 
 ## Getting Started
 
@@ -51,7 +53,9 @@ If you do not want errors to be caught while the page is loading, [use this snip
 
 ### Synchronous methods
 
-Note that using these methods will not catch errors thrown while the page is loading. The script needs to be referenced before your other site/app scripts, and will block the page load while it is being downloaded.
+Note that using these methods will not catch errors thrown while the page is loading. The script needs to be referenced before your other site/app scripts, and will block the page load while it is being downloaded/parsed/executed.
+
+This will also disrupt Pulse timings, making them erroneous. For Pulse, it is especially importing that the async snippet method above is used, instead of one of the following.
 
 #### With Bower
 
@@ -68,6 +72,30 @@ This lets you require the library with tools such as Webpack or Browserify.
 #### From NuGet
 
 Visual Studio users can get it by opening the Package Manager Console and typing `Install-Package raygun4js`
+
+#### React Native/as a UMD module
+
+React Native and other bundled app frameworks that uses packaging/module loading libraries can use Raygun4JS as a UMD module:
+
+```
+// Install the library
+
+npm install raygun4js --save
+
+// In a central module, reference and install the library
+
+import rg4js from 'raygun4js'; // Import the library with this syntax
+var rg4js = require('raygun4js'); // Or this syntax
+
+rg4js('enableCrashReporting', true);
+rg4js('apiKey', 'paste_your_api_key_here');
+// Any other config options you want such as rg4js('setUser', ...) [see below]
+rg4js('boot'); // For React Native only: add this after all other config options have been called
+```
+
+All unhandled errors will then be sent to Raygun. You can also `require('raygun4js')` in any other modules and use the rest of the V2 API below - including `rg4js('send', error)` for manual error sending.
+
+If you use this approach, we appreciate your feedback as this is a new feature for the library.
 
 #### Manual download
 
@@ -158,7 +186,7 @@ objects (for partial matches). Each should match the hostname or TLD that you wa
 
 `excludedUserAgents` - Prevents errors from being sent from certain user agents by providing an array of strings. This is very helpful to exclude errors reported by certain browsers or test automation with `CasperJS`, `PhantomJS` or any other testing utility that sends a custom user agent. If a part of the client's `navigator.userAgent` matches one of the given strings in the array, then the client will be excluded from error reporting.
 
-`disableCrashReporting` - Prevent uncaught errors from being sent.
+`disableErrorTracking` - Prevent uncaught errors from being sent.
 
 `disablePulse` - Prevent Pulse real user monitoring events from being sent.
 
@@ -180,7 +208,7 @@ rg4js('options', {
   wrapAsynchronousCallbacks: true,
   excludedHostnames: ['\.local'],
   excludedUserAgents: ['Mosaic'],
-  disableCrashReporting: false,
+  disableErrorTracking: false,
   disablePulse: false,
   pulseMaxVirtualPageDuration: 1800000,
   pulseIgnoreUrlCasing: false
@@ -225,6 +253,54 @@ $scope.$on('$routeChangeSuccess', function () {
   });
 });
 ```
+
+### Breadcrumbs API
+
+#### Configuration options
+
+These can be controlled via the v2 API
+
+```javascript
+rg4js('one-of-the-below-options')
+```
+
+`disableAutoBreadcrumbs` - Disable all the automatic breadcrumb integrations (clicks, requests, console logs and navigation events). This has an inverse `enableAutoBreadcrumbs` which is the default
+
+`disableAutoBreadcrumbsConsole` - Disable just automatic breadcrumb creation from console messages
+
+`disableAutoBreadcrumbsNavigation` - Disable just automatic breadcrumb creation from navigation events
+
+`disableAutoBreadcrumbsClicks` - Disable just automatic breadcrumb creation from element clicks
+
+`disableAutoBreadcrumbsXHR` - Disable just automatic breadcrumb creation XMLHttpRequests
+
+All of the above have an inverse `enableAutoBreadcrumbs<type>` which is the default
+
+`setAutoBreadcrumbsXHRIgnoredHosts` - This can be set to an array of hosts to not create a breadcrumb for requests/responses to. It can either be a string that an indexOf check against the host is made, or a regex which is matched against the host.
+
+`setBreadcrumbLevel` - Set the minimum level of breadcrumb to record. This works the same as log levels, you may set it to debug, info, warning and error and it will only keep breadcrumbs with a level equal or above what this is set to. Defaults to info.
+
+`logContentsOfXhrCalls` - If set to true will include the body contents of XHR request and responses in Breadcrumb metadata, defaults to false
+
+#### Logging a breadcrumb
+
+Breadcrumbs can be manually logged via `rg4js('recordBreadcrumb', ...)`
+
+There are two argument formats
+
+`rg4js('recordBreadcrumb', 'breadcrumb-message', {object: 'that will be attached to the breadcrumb custom data'})`
+
+This is the quickest way to log basic breadcrumbs, requiring only a message and optionally an object to attach some metadata
+
+If you wish to have further control of the breadcrumb and configure the level (debug, info, warning, error) or set the class/method the breadcrumb was logged from
+
+`rg4js('recordBreadcrumb', {message: 'breadcrumb-message', metadata: {goes: 'here'}, level: 'info', location: 'class:method'})`
+
+You may use the above argument format
+
+#### Payload size conservation
+
+To help ensure your payload does not become too large only the most recent 32 breadcrumbs are kept, as well as limiting the size of recorded network request/response texts to 500 characters.
 
 ### Multiple Raygun objects on a single page
 
@@ -336,7 +412,7 @@ You can also pass custom data with manual send calls, with an options object. Th
 ```javascript
 rg4js('send', {
   error: e,
-  customData: [{ foo: 'bar' }];
+  customData: [{ foo: 'bar' }]
 });
 ```
 
@@ -416,7 +492,7 @@ Only `identifier` or the first parameter is required. This method takes addition
 setUser: function (user, isAnonymous, email, fullName, firstName, uuid)
 ```
 
-`user` is the user identifier. This will be used to uniquely identify the user within Raygun. This is the only required parameter, but is only required if you are using user tracking.
+`user|identifier` is the user identifier. This will be used to uniquely identify the user within Raygun. This is the only required parameter, but is only required if you are using user tracking.
 
 `isAnonymous` is a bool indicating whether the user is anonymous or actually has a user account. Even if this is set to true, you should still give the user a unique identifier of some kind.
 

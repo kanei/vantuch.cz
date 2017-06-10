@@ -57,6 +57,11 @@ class SchemaFront
     {
 		global $post;
 
+		if ( empty( $post ) )
+		{
+			return;
+		}
+
 		$DisableMarkup = is_singular() ? get_post_meta( $post->ID, '_HunchSchemaDisableMarkup', true ) : false;
 
 		if ( ! $DisableMarkup )
@@ -89,7 +94,7 @@ class SchemaFront
 			{
 				if ( $JSON )
 				{
-					$JSONSchemaMarkup[] = $SchemaMarkup;
+					$JSONSchemaMarkup[] = json_decode( $SchemaMarkup );
 				}
 				else
 				{
@@ -105,7 +110,7 @@ class SchemaFront
 				{
 					if ( $JSON )
 					{
-						$JSONSchemaMarkup[] = $SchemaMarkupWebSite;
+						$JSONSchemaMarkup[] = json_decode( $SchemaMarkupWebSite );
 					}
 					else
 					{
@@ -122,7 +127,7 @@ class SchemaFront
 				{
 					if ( $JSON )
 					{
-						$JSONSchemaMarkup[] = $SchemaMarkupBreadcrumb;
+						$JSONSchemaMarkup[] = json_decode( $SchemaMarkupBreadcrumb );
 					}
 					else
 					{
@@ -133,7 +138,16 @@ class SchemaFront
 
 			if ( $JSON && ! empty( $JSONSchemaMarkup ) )
 			{
-				print '[' . implode( '],[', $JSONSchemaMarkup  ) . ']';
+				if ( count( $JSONSchemaMarkup ) == 1 )
+				{
+					$JSONSchemaMarkup = reset( $JSONSchemaMarkup );
+
+					print json_encode( $JSONSchemaMarkup );
+				}
+				else
+				{
+					print json_encode( $JSONSchemaMarkup );
+				}
 			}
 		}     
     }

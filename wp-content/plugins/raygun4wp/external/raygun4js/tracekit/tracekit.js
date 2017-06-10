@@ -12,6 +12,7 @@ var _oldTraceKit = window.TraceKit;
 // global reference to slice
 var _slice = [].slice;
 var UNKNOWN_FUNCTION = '?';
+var Raygun;
 
 
 /**
@@ -28,6 +29,17 @@ function _has(object, key) {
 function _isUndefined(what) {
     return typeof what === 'undefined';
 }
+
+/**
+ * TraceKit gets loaded before Raygun
+ * Raygun uses this callback to give TraceKit an instance of Raygun
+ * This is required to use the Utilities module
+ */
+TraceKit.setRaygun = function setRaygun(rg) {
+    if (!Raygun) {
+        Raygun = rg;
+    }
+};
 
 /**
  * TraceKit.noConflict: Export TraceKit out to another variable
@@ -211,7 +223,11 @@ TraceKit.report = (function reportModuleWrapper() {
      * @param {Error} ex
      */
     function report(ex) {
-        var args = _slice.call(arguments, 1);
+        var args;
+        if (typeof document !== 'undefined') {
+            args = _slice.call(arguments, 1);
+        }
+        
         if (lastExceptionStack) {
             if (lastException === ex) {
                 return; // already caught by an inner catch block, ignore
@@ -239,7 +255,10 @@ TraceKit.report = (function reportModuleWrapper() {
             }
         }, (stack.incomplete ? 2000 : 0));
 
-        throw ex; // re-throw to propagate to the top level (and cause window.onerror)
+        if (!Raygun.Utilities.isReactNative()) {
+            throw ex; // re-throw to propagate to the top level (and cause window.onerror)
+        }
+        // Else case for this is handled in attach
     }
 
     report.subscribe = subscribe;
@@ -329,26 +348,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
           return [];
         }
 
-        if (!TraceKit.remoteFetching) { //Only attempt request if remoteFetching is on.
-            return '';
-        }
-        try {
-            var getXHR = function() {
-                try {
-                    return new window.XMLHttpRequest();
-                } catch (e) {
-                    // explicitly bubble up the exception if not found
-                    return new window.ActiveXObject('Microsoft.XMLHTTP');
-                }
-            };
-
-            var request = getXHR();
-            request.open('GET', url, false);
-            request.send('');
-            return request.responseText;
-        } catch (e) {
-            return '';
-        }
+        return ''; // Remote fetching disabled due to deprecated synchronous XHR support in browsers
     }
 
     /**
@@ -364,9 +364,17 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
 
             url = url || "";
 
-            if (url.indexOf && url.indexOf(document.domain) !== -1) {
+            var domain;
+            if (typeof document !== 'undefined') {
+                domain = document.domain;
+            } else {
+                domain = window.location.hostname;
+            }
+
+            if (url.indexOf && url.indexOf(domain) !== -1) {
                 source = loadSource(url);
             }
+
             sourceCache[url] = source ? source.split('\n') : [];
         }
 
@@ -625,22 +633,40 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
      * Computes stack trace information from the stack property.
      * Chrome and Gecko use this property.
      * Added WinJS regex for Raygun4JS's offline caching support
+     * Added stack string sanitization for React Native in release mode, for JavaScriptCore, which uses the Gecko regex
      * @param {Error} ex
      * @return {?Object.<string, *>} Stack trace information.
      */
     function computeStackTraceFromStackProp(ex) {
+        var parseError;
+
         if (!ex.stack) {
-            return null;
+            return { "tracekitResult": "nostack" };
         }
 
-        var chrome = /^\s*at (.*?) ?\(?((?:file|http|https|chrome-extension):.*?):(\d+)(?::(\d+))?\)?\s*$/i,
-            gecko = /^\s*(.*?)(?:\((.*?)\))?@?((?:file|http|https|chrome):.*?):(\d+)(?::(\d+))?\s*$/i,
-            winjs = /^\s*at (?:((?:\[object object\])?.+) )?\(?((?:ms-appx|http|https):.*?):(\d+)(?::(\d+))?\)?\s*$/i,
+        var chrome = /^\s*at (.*?) ?\(((?:file|https?|\s*|blob|chrome-extension|native|webpack|eval|<anonymous>).*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i,
+            gecko = /^\s*(.*?)(?:\((.*?)\))?(?:^|@)((?:file|https?|blob|chrome|webpack|\[native).*?)(?::(\d+))?(?::(\d+))?\s*$/i,
+            winjs = /^\s*at (?:((?:\[object object\])?.+) )?\(?((?:ms-appx|https?|webpack|blob):.*?):(\d+)(?::(\d+))?\)?\s*$/i,
             lines = ex.stack.split('\n'),
             stack = [],
             parts,
             element,
             reference = /^(.*) is undefined$/.exec(ex.message);
+
+        if (Raygun.Utilities.isReactNative()) {
+            var reactNativeDevicePathStripRegex = /^(.*@)?.*\/[^\.]+(\.app|CodePush)\/?(.*)/;
+            var sourcemapPrefix = 'file://reactnative.local/';
+
+            for (var i = 0; i < lines.length; i++) {
+                parts = reactNativeDevicePathStripRegex.exec(lines[i]);
+
+                if (parts !== null) {
+                    var functionName = parts[1] ? parts[1] : 'anonymous@';
+                    var filenameLineNumAndColumnNum = parts[3];
+                    lines[i] = functionName + sourcemapPrefix + filenameLineNumAndColumnNum;
+                }
+            }
+        }
 
         for (var i = 0, j = lines.length; i < j; ++i) {
             if ((parts = gecko.exec(lines[i]))) {
@@ -659,12 +685,12 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
                     'column': parts[4] ? +parts[4] : null
                 };
             } else if ((parts = winjs.exec(lines[i]))) {
-              element = {
+            element = {
                 'url': parts[2],
                 'func': parts[1] || UNKNOWN_FUNCTION,
                 'line': +parts[3],
                 'column': parts[4] ? +parts[4] : null
-              };
+            };
             } else {
                 continue;
             }
@@ -673,7 +699,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
                 element.func = guessFunctionName(element.url, element.line);
             }
 
-            if (element.line) {
+            if (typeof document !== 'undefined' && element.line) {
                 element.context = gatherContext(element.url, element.line);
             }
 
@@ -691,14 +717,17 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             return null;
         }
 
-        return {
+        var res = {
             'mode': 'stack',
-            'name': ex.name,
-            'message': ex.message,
-            'url': document.location.href,
+            'name': ex ? ex.name : '',
+            'message': ex ? ex.message : '',
+            'url': typeof document !== 'undefined' ? document.location.href : '',
             'stack': stack,
-            'useragent': navigator.userAgent
+            'useragent': navigator ? navigator.userAgent : '',
+            'stackstring': ex && ex.stack ? ex.stack.toString() : ''
         };
+
+        return res;
     }
 
     /**
@@ -714,7 +743,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
         var stacktrace = ex.stacktrace;
 
         var testRE = / line (\d+), column (\d+) in (?:<anonymous function: ([^>]+)>|([^\)]+))\((.*)\) in (.*):\s*$/i,
-            lines = stacktrace !== null ? stacktrace.split('\n') : stacktrace,
+            lines = stacktrace ? stacktrace.split('\n') : [],
             stack = [],
             parts;
 
@@ -755,7 +784,8 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             'message': ex.message,
             'url': document.location.href,
             'stack': stack,
-            'useragent': navigator.userAgent
+            'useragent': navigator.userAgent,
+            'stackstring': stacktrace
         };
     }
 
@@ -1069,7 +1099,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
         }
 
         return {
-            'mode': 'failed'
+            'tracekitResult': 'failedToComputeAnyStackTrace'
         };
     }
 

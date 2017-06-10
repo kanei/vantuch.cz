@@ -23,12 +23,14 @@ class SchemaSettings
      */
     public function __construct($HunchSchemaPluginURL, $HunchSchemaPluginVersion)
     {
+		global $wp_version;
+
         $this->PluginURL = $HunchSchemaPluginURL;
         $this->PluginVersion = $HunchSchemaPluginVersion;
         $this->Settings = get_option( 'schema_option_name' );
         $this->SettingsGenesis = get_option( 'schema_option_name_genesis' );
         $this->license = get_option( 'schema_option_name_license' );
-        $this->wc_status = get_option( 'schema_license_wc_status' );
+        $this->wc_status = $this->license['schema_license_wc_status'] ? $this->license['schema_license_wc_status'] : get_option( 'schema_license_wc_status' );
         
         add_action( 'admin_init', array($this, 'admin_nag_handle'));
         add_action( 'admin_init', array( $this, 'page_init' ) );        
@@ -37,6 +39,12 @@ class SchemaSettings
         add_action( 'admin_notices', array($this, 'admin_nag_set'));         
         register_activation_hook( __FILE__, array($this, 'welcome_screen_activate'));
         add_action( 'admin_init', array($this, 'welcome_screen_do_activation_redirect'));
+
+		/*if ( version_compare( $wp_version, '4.4', '>=' ) )
+		{
+			add_action( 'category_edit_form_fields', array( $this, 'HookCategoryEditFormFields' ), 10, 2 );
+			add_action( 'edited_category', array( $this, 'HookEditedCategory' ), 10, 2 );
+		}*/
     }
 
 
@@ -138,6 +146,12 @@ class SchemaSettings
 				<?php if ( function_exists( 'genesis' ) ) : ?>
 					<a class="nav-tab" href="<?php echo admin_url() ?>options-general.php?page=schema-app-setting-genesis">Genesis</a>
 				<?php endif; ?>
+				<?php if ( class_exists( 'SchemaAppAdvanced' ) ) : ?>
+					<?php if ( class_exists( 'WooCommerce' ) ) : ?>
+						<a class="nav-tab" href="<?php echo admin_url() ?>options-general.php?page=schema-app-setting-WooCommerce">WooCommerce</a>
+					<?php endif; ?>
+					<a class="nav-tab" href="<?php echo admin_url() ?>options-general.php?page=schema-app-setting-Rating">Rating</a>
+				<?php endif; ?>
 			</h3>
 
             <section id="schema-app-welcome">
@@ -203,6 +217,32 @@ class SchemaSettings
 						?>
 					</form>
 				</section>
+			<?php endif; ?>
+
+			<?php if ( class_exists( 'SchemaAppAdvanced' ) ) : ?>
+
+				<?php if ( class_exists( 'WooCommerce' ) ) : ?>
+					<section id="schema-app-settings-WooCommerce">
+						<form method="post" action="options.php">
+							<?php
+								settings_fields( 'SchemaAppAdvanced' );
+								do_settings_sections( 'SchemaAppAdvanced-WooCommerce' );
+								submit_button(); 
+							?>
+						</form>
+					</section>
+				<?php endif; ?>
+
+				<section id="schema-app-settings-Rating">
+					<form method="post" action="options.php">
+						<?php
+							settings_fields( 'SchemaAppAdvanced' );
+							do_settings_sections( 'SchemaAppAdvanced-Rating' );
+							submit_button(); 
+						?>
+					</form>
+				</section>
+
 			<?php endif; ?>
 
         </div>
@@ -983,5 +1023,39 @@ class SchemaSettings
         }
 
     }
-    
+
+
+	/*public function HookCategoryEditFormFields( $Tag, $Taxonomy )
+	{
+		$URL = get_term_meta( $Tag->term_id, 'HunchSchemaURL', true );
+
+		?>
+
+			<tr class="form-field term-hunch-schema-url-wrap">
+				<th scope="row">
+					<label for="HunchSchemaURL">Schema URL</label>
+				</th>
+				<td>
+					<input name="HunchSchemaURL" id="HunchSchemaURL" type="text" value="<?php echo esc_attr( $URL ); ?>">
+					<p class="description">Schema URL from Wikipedia.</p>
+				</td>
+			</tr>
+
+		<?php
+
+	}
+
+
+	public function HookEditedCategory( $TermId, $TermTaxonomyId )
+	{
+		if ( ! empty( $_POST['HunchSchemaURL'] ) )
+		{
+			update_term_meta( $TermId, 'HunchSchemaURL', sanitize_text_field( $_POST['HunchSchemaURL'] ) );
+		}
+		else
+		{
+			delete_term_meta( $TermId, 'HunchSchemaURL' );
+		}
+	}*/
+
 }

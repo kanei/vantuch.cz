@@ -6,7 +6,7 @@ Author URI: https://www.hunchmanifest.com
 Author: Mark van Berkel (vberkel)
 Requires at least: 3.5
 Tested up to: 4.7
-Stable tag: 1.7.1
+Stable tag: 1.7.4
 License: GPL2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -68,6 +68,17 @@ You\'ll find the [FAQ on SchemaApp.com] (http://www.schemaapp.com/wordpress/faq/
 5. Link to Validation
 
 == Changelog ==
+= 1.7.4 = 
+- Fix, WooCommerce activation
+
+= 1.7.3 = 
+- Feature, integration point for Schema App Advanced
+- Fix, cannot access property PHP notice
+
+= 1.7.2 =
+- Feature, For Page markup add name, url, comment, commentCount
+- Fix, Improve Linked Data output
+
 = 1.7.1 =
 - Fix, Server configuration
 - Fix, Missing description, use own method

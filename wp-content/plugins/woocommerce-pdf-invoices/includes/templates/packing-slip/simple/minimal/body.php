@@ -15,7 +15,7 @@
  * @version 0.0.1
  */
 
-$templater                      = BEWPI()->templater();
+$templater                      = WPI()->templater();
 $order                          = $templater->order;
 $formatted_shipping_address     = $order->get_formatted_shipping_address();
 $formatted_billing_address      = $order->get_formatted_billing_address();
@@ -23,13 +23,12 @@ $line_items                     = $order->get_items( 'line_item' );
 $color                          = $templater->get_option( 'bewpi_color_theme' );
 ?>
 
-<div class="title">
-	<div>
-		<h2><?php _e( 'Packing Slip', 'woocommerce-pdf-invoices' ); ?></h2>
-	</div>
-	<div class="watermark"></div>
-</div>
 <table>
+	<tr class="title">
+		<td colspan="3">
+			<h2><?php _e( 'Packing Slip', 'woocommerce-pdf-invoices' ); ?></h2>
+		</td>
+	</tr>
 	<tr class="information">
 		<td width="50%">
 			<?php echo nl2br( $templater->get_option( 'bewpi_company_address' ) ); ?>
@@ -70,14 +69,12 @@ $color                          = $templater->get_option( 'bewpi_color_theme' );
 		<tr class="item">
 			<td width="75%">
 				<?php
-				$is_visible        = $product && $product->is_visible();
-
 				echo $item['name'];
 
 				do_action( 'woocommerce_order_item_meta_start', $item_id, $item, $order );
 
-				$templater->wc_display_item_meta( $item );
-				$templater->wc_display_item_downloads( $item );
+				$templater->wc_display_item_meta( $item, true );
+				$templater->wc_display_item_downloads( $item, true );
 
 				do_action( 'woocommerce_order_item_meta_end', $item_id, $item, $order );
 				?>

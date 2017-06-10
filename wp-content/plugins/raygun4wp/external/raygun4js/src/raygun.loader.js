@@ -5,6 +5,7 @@
 
   var snippetOptions = window[window['RaygunObject']].o;
   var hasLoaded = false,
+    globalExecutorInstalled = false,
     errorQueue,
     delayedCommands = [],
     apiKey,
@@ -18,18 +19,20 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
   errorQueue = window[window['RaygunObject']].q;
   var rg = Raygun;
 
-  var delayedExecutionFunctions = ['trackEvent', 'send'];
+  var delayedExecutionFunctions = ['trackEvent', 'send', 'recordBreadcrumb'];
 
-  var parseSnippetOptions = function (queueDelayedCommands) {
+  var parseSnippetOptions = function () {
+    snippetOptions = window[window['RaygunObject']].o;
+
     for (var i in snippetOptions) {
       var pair = snippetOptions[i];
       if (pair) {
-        if (delayedExecutionFunctions.indexOf(pair[0]) === -1) { // Config pair, can execute immediately
+        if (delayedExecutionFunctions.indexOf(pair[0]) === -1) {
+          // Config pair, can execute immediately
           executor(pair);
-        } else { // Pair which requires lib to be fully parsed, delay till onload
-          if (queueDelayedCommands) {
-            delayedCommands.push(pair);
-          }
+        } else {
+          // Action (posting) pair which requires lib to be fully parsed, delay till after Raygun obj has been init'd
+          delayedCommands.push(pair);
         }
       }
     }
@@ -41,6 +44,10 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
 
     if (key) {
       switch (key) {
+        // React Native only
+        case 'boot':
+          onLoadHandler();
+          break;
         // Immediate execution config functions
         case 'noConflict':
           noConflict = value;
@@ -127,16 +134,62 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
             rg.trackEvent(value.type, { path: value.path });
           }
           break;
+        case 'recordBreadcrumb':
+          rg.recordBreadcrumb(pair[1], pair[2]);
+          break;
+        case 'enableAutoBreadcrumbs':
+          rg.enableAutoBreadcrumbs();
+          break;
+        case 'disableAutoBreadcrumbs':
+          rg.disableAutoBreadcrumbs();
+          break;
+        case 'enableAutoBreadcrumbsConsole':
+          rg.enableAutoBreadcrumbs('Console');
+          break;
+        case 'disableAutoBreadcrumbsConsole':
+          rg.disableAutoBreadcrumbs('Console');
+          break;
+        case 'enableAutoBreadcrumbsNavigation':
+          rg.enableAutoBreadcrumbs('Navigation');
+          break;
+        case 'disableAutoBreadcrumbsNavigation':
+          rg.disableAutoBreadcrumbs('Navigation');
+          break;
+        case 'enableAutoBreadcrumbsClicks':
+          rg.enableAutoBreadcrumbs('Clicks');
+          break;
+        case 'disableAutoBreadcrumbsClicks':
+          rg.disableAutoBreadcrumbs('Clicks');
+          break;
+        case 'enableAutoBreadcrumbsXHR':
+          rg.enableAutoBreadcrumbs('XHR');
+          break;
+        case 'disableAutoBreadcrumbsXHR':
+          rg.disableAutoBreadcrumbs('XHR');
+          break;
+        case 'setBreadcrumbLevel':
+          rg.setBreadcrumbOption('breadcrumbsLevel', pair[1]);
+          break;
+        case 'setAutoBreadcrumbsXHRIgnoredHosts':
+          rg.setBreadcrumbOption('xhrIgnoredHosts', pair[1]);
+          break;
+        case 'logContentsOfXhrCalls':
+          rg.setBreadcrumbOption('logXhrContents', pair[1]);
+          break;
       }
     }
   };
 
-  parseSnippetOptions(true);
+  var installGlobalExecutor = function () {
+    window[window['RaygunObject']] = function () {
+      return executor(arguments);
+    };
+
+    globalExecutorInstalled = true;
+  };
 
   var onLoadHandler = function () {
-    if (!hasLoaded) {
-      parseSnippetOptions(false);
-    }
+    parseSnippetOptions();
 
     if (noConflict) {
       rg = Raygun.noConflict();
@@ -175,23 +228,30 @@ var snippetOnErrorSignature = ["function (b,c,d,f,g){", "||(g=new Error(b)),a[e]
 
     delayedCommands = [];
 
-    window[window['RaygunObject']] = function () {
-      return executor(arguments);
-    };
+    if (!globalExecutorInstalled) {
+      installGlobalExecutor();
+    }
+
     window[window['RaygunObject']].q = errorQueue;
   };
 
-  if (document.readyState === 'complete') {
-    onLoadHandler();
-  } else if (window.addEventListener) {
-    window.addEventListener('load', onLoadHandler);
+  if (!Raygun.Utilities.isReactNative()) {
+    if (document.readyState === 'complete') {
+      onLoadHandler();
+    } else if (window.addEventListener) {
+      window.addEventListener('load', onLoadHandler);
+    } else {
+      window.attachEvent('onload', onLoadHandler);
+    }
   } else {
-    window.attachEvent('onload', onLoadHandler);
+    // Special case for React Native: set up the executor immediately,
+    // then a manual rg4js('boot') call will trigger onLoadHandler, as the above events aren't available
+    installGlobalExecutor();
   }
 
 })(window, window.__instantiatedRaygun);
 
-try 
+try
 { 
     delete window.__instantiatedRaygun;
 } 

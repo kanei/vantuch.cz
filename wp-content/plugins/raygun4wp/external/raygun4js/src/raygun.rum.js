@@ -46,6 +46,11 @@ var raygunRumFactory = function (window, $, Raygun) {
                 }
             }
 
+            if (navigator.userAgent.match("RaygunPulseInsightsCrawler"))
+            {
+                return;
+            }
+
             makePostCorsRequest(url, data);
         };
         this.sessionId = null;
@@ -187,6 +192,10 @@ var raygunRumFactory = function (window, $, Raygun) {
             if (typeof path === 'string') {
                 if (path.length > 0 && path[0] !== '/') {
                     path = path + '/';
+                }
+
+                if (path.length > 800) {
+                    path = path.substring(0, 800);
                 }
 
                 this.virtualPage = path;
@@ -476,8 +485,14 @@ var raygunRumFactory = function (window, $, Raygun) {
                 pathName = pathName.toLowerCase();
             }
 
+            var url = window.location.protocol + '//' + window.location.host + pathName;
+
+            if (url.length > 800) {
+                url = url.substring(0, 800);
+            }
+
             return {
-                url: window.location.protocol + '//' + window.location.host + pathName,
+                url: url,
                 userAgent: navigator.userAgent,
                 timing: getEncodedTimingData(window.performance.timing, 0),
                 size: 0
@@ -489,8 +504,14 @@ var raygunRumFactory = function (window, $, Raygun) {
                 virtualPage = virtualPage.toLowerCase();
             }
 
+            var url = window.location.protocol + '//' + window.location.host + virtualPage;
+
+            if (url.length > 800) {
+                url = url.substring(0, 800);
+            }
+
             return {
-                url: window.location.protocol + '//' + window.location.host + virtualPage,
+                url: url,
                 userAgent: navigator.userAgent,
                 timing: generateVirtualEncodedTimingData(previousVirtualPageLoadTimestamp, initalStaticPageLoadTimestamp),
                 size: 0
@@ -502,6 +523,10 @@ var raygunRumFactory = function (window, $, Raygun) {
 
             if (self.ignoreUrlCasing) {
                 url = url.toLowerCase();
+            }
+
+            if (url.length > 800) {
+                url = url.substring(0, 800);
             }
 
             return {

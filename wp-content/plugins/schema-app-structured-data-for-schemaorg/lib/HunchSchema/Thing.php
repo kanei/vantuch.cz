@@ -269,7 +269,7 @@ class HunchSchema_Thing {
                 return $Author;
         }
 
-        protected function getPublisher() {
+        public function getPublisher() {
                 static $publisher;
 
                 if (!$publisher)

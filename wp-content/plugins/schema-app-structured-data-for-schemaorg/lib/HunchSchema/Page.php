@@ -41,14 +41,21 @@ class HunchSchema_Page extends HunchSchema_Thing
 				"@id" => $Permalink,
 			),
             'headline' => get_the_title(),
+            'name' => get_the_title(),
             'description' => $this->getExcerpt(),
             'datePublished' => get_the_date('Y-m-d'),
             'dateModified' => get_the_modified_date('Y-m-d'),
             'author' => $this->getAuthor(),
             'publisher' => $this->getPublisher(),
             'image' => $this->getImage(),
+            'url' => $Permalink,
         );
 
+		if ( get_comments_number() )
+		{
+			$this->schema['commentCount'] = get_comments_number();
+			$this->schema['comment'] = $this->getComments();
+		}
 
         return $this->toJson( $this->schema, $pretty );
     }
