@@ -73,6 +73,7 @@ class SchemaFront
 			$SchemaMarkup = $SchemaServer->getResource();
 
 			$JSONSchemaMarkup = array();
+			$SchemaMarkupType = '';
 
 			if ( $SchemaMarkup === "" )
 			{
@@ -80,15 +81,23 @@ class SchemaFront
 
 				if ( $SchemaMarkupCustom )
 				{
+					$SchemaMarkupType = 'Custom';
 					$SchemaMarkup = $SchemaMarkupCustom;
 				}
 				else if ( isset( $SchemaThing ) )
 				{
+					$SchemaMarkupType = 'Default';
 					$SchemaMarkup = $SchemaThing->getResource();
 				}
 			}
+			else
+			{
+				$SchemaMarkupType = 'App';
+			}
 
-			$SchemaMarkup = apply_filters( 'hunch_schema_markup', $SchemaMarkup, $PostType );
+			do_action( 'hunch_schema_markup_render', $SchemaMarkup, $SchemaMarkupType, $post, $PostType, $JSON );
+
+			$SchemaMarkup = apply_filters( 'hunch_schema_markup', $SchemaMarkup, $SchemaMarkupType, $post, $PostType );
 
 			if ( $SchemaMarkup !== "" )
 			{

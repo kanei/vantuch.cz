@@ -3,8 +3,8 @@ Contributors: baaaaas
 Donate link: 
 Tags: woocommerce pdf invoices, invoice, packing slips, delivery note, packing list, shipping list, generate, pdf, woocommerce, attachment, email, customer invoice, processing, vat, tax, sequential, number, dropbox, google drive, onedrive, egnyte, cloud, storage
 Requires at least: 4.0
-Tested up to: 4.7
-Stable tag: 2.9.1
+Tested up to: 4.8
+Stable tag: 2.9.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -233,6 +233,13 @@ Use below code to display meta-data. Replace `{META_KEY}` with the actual key. I
 Important: A custom template is required to add a custom field to the PDF invoice.
 
 == Changelog ==
+
+= 2.9.2 - June 12, 2017 =
+
+- Added: Filter to change the value of the option when using `WPI()->get_option()`. See [Issue #190](https://github.com/baselbers/woocommerce-pdf-invoices/issues/190).
+- Added: SKU to packing slip.
+- Fixed: Packing slips redirecting to Edit Order page when using micro template. Consider using minimal template. Micro template is deprecated and will probably no longer be supported in future versions.
+- Fixed: WC 2.6 compatibility.
 
 = 2.9.1 - May 15, 2017 =
 

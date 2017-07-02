@@ -185,6 +185,8 @@ class SchemaEditor {
 			</tbody>
 		</table>
 
+		<?php do_action( 'hunch_schema_meta_box', $post ); ?>
+
         <?php
     }
 

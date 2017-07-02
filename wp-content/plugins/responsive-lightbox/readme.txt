@@ -4,7 +4,7 @@ Donate link: http://www.dfactory.eu/
 Tags: gallery, images, lightbox, photos, theme, photo, image, picture, slideshow, modal, overlay, video
 Requires at least: 4.0
 Tested up to: 4.7.5
-Stable tag: 1.7.1
+Stable tag: 1.7.2
 License: MIT License
 License URI: http://opensource.org/licenses/MIT
 
@@ -69,6 +69,10 @@ No questions yet.
 2. screenshot-2.jpg
 
 == Changelog ==
+
+= 1.7.2 =
+* Fix: Cross-site scripting (XSS) vulnerability
+* Tweak: Improved Jetpack gallery compatibility
 
 = 1.7.1 =
 * New: Tos "R" Us overlay close option
@@ -318,8 +322,5 @@ Initial release
 
 == Upgrade Notice ==
 
-= 1.7.1 =
-* New: Tos "R" Us overlay close option
-* Fix: License activation issues
-* Tweak: Featherlight script update to 1.7.0
-* Tweak: Imagelightbox script update
+= 1.7.2 =
+* Fix: Cross-site scripting (XSS) vulnerability

@@ -5,8 +5,8 @@ Tags: schema, structured data, schema.org, rich snippets, json-ld
 Author URI: https://www.hunchmanifest.com
 Author: Mark van Berkel (vberkel)
 Requires at least: 3.5
-Tested up to: 4.7
-Stable tag: 1.7.4
+Tested up to: 4.8
+Stable tag: 1.7.8
 License: GPL2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -68,6 +68,20 @@ You\'ll find the [FAQ on SchemaApp.com] (http://www.schemaapp.com/wordpress/faq/
 5. Link to Validation
 
 == Changelog ==
+= 1.7.8 =
+- Feature, new schema type filter
+- Info, added schema tree
+
+= 1.7.7 = 
+- Fix, improve compatibility with Advanced
+- Info, tested on WP 4.8
+
+= 1.7.6 = 
+- Fix, activation improvements, new hooks
+
+= 1.7.5 = 
+- Fix, adjust filter 'hunch_schema_markup', action 'hunch_schema_markup_render'
+
 = 1.7.4 = 
 - Fix, WooCommerce activation
 

@@ -1080,8 +1080,8 @@ class Responsive_Lightbox_Settings {
 	 * @return void
 	 */
 	public function options_page() {
-		$tab_key = isset( $_GET['tab'] ) ? $_GET['tab'] : 'settings';
-		$section_key = isset( $_GET['section'] ) ? $_GET['section'] : ( ! empty( $this->tabs[$tab_key]['default_section'] ) ? $this->tabs[$tab_key]['default_section'] : '' );
+		$tab_key = isset( $_GET['tab'] ) ? esc_attr( $_GET['tab'] ) : 'settings';
+		$section_key = isset( $_GET['section'] ) ? esc_attr( $_GET['section'] ) : ( ! empty( $this->tabs[$tab_key]['default_section'] ) ? $this->tabs[$tab_key]['default_section'] : '' );
 
 		echo '
 		<div class="wrap">' . screen_icon() . '

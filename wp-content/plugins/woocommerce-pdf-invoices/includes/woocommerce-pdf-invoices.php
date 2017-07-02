@@ -456,13 +456,13 @@ if ( ! class_exists( 'BE_WooCommerce_PDF_Invoices' ) ) {
 				return $attachments;
 			}
 
-			$skip = apply_filters( 'bewpi_skip_invoice_generation', false, $status, $order );
+			$skip = apply_filters( 'bewpi_skip_invoice_generation', false, $status, $order->get_total() );
 			if ( $skip ) {
 				return $attachments;
 			}
 
-			$general_options = get_option( 'bewpi_general_settings' );
-			if ( $order->get_total() === 0.00 && (bool) $general_options['bewpi_disable_free_products'] ) {
+			$order_total = BEWPI_WC_Order_Compatibility::get_prop( $order, 'total' );
+			if ( (double) $order_total === 0.00 && WPI()->get_option( 'general', 'disable_free_products' ) ) {
 				return $attachments;
 			}
 
@@ -475,6 +475,7 @@ if ( ! class_exists( 'BE_WooCommerce_PDF_Invoices' ) ) {
 			}
 
 			// check if email is enabled.
+			$general_options = get_option( 'bewpi_general_settings' );
 			if ( ! isset( $general_options[ $status ] ) || ! $general_options[ $status ] ) {
 				return $attachments;
 			}
@@ -713,7 +714,7 @@ if ( ! class_exists( 'BE_WooCommerce_PDF_Invoices' ) ) {
 		 * @param WC_Order $order WC_Order object.
 		 */
 		public static function set_order( $order_id, $posted_data, $order ) {
-			BEWPI()->templater()->set_order( $order );
+			WPI()->templater()->set_order( $order );
 		}
 
 		/**
@@ -726,21 +727,23 @@ if ( ! class_exists( 'BE_WooCommerce_PDF_Invoices' ) ) {
 		 */
 		public static function get_option( $group, $name = '' ) {
 			$option = apply_filters( 'bewpi_option', false, $group, $name );
-			if ( $option !== false ) {
-				return $option;
+
+			if ( false === $option ) {
+				$options = get_option( 'bewpi_' . $group . '_settings' );
+				if ( false === $options ) {
+					return false;
+				}
+
+				if ( ! isset( $options[ 'bewpi_' . $name ] ) ) {
+					return false;
+				}
+
+				$option = $options[ 'bewpi_' . $name ];
 			}
 
-			$options = get_option( 'bewpi_' . $group . '_settings' );
-			if ( $options === false ) {
-				return false;
-			}
+			$hook = sprintf( 'bewpi_pre_option-%1$s-%2$s', $group, $name );
 
-			$name = 'bewpi_' . $name;
-			if ( ! isset( $options[ $name ] ) ) {
-				return false;
-			}
-
-			return $options[ $name ];
+			return apply_filters( $hook, $option );
 		}
 
 		/**

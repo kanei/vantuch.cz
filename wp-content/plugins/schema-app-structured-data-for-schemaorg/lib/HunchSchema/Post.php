@@ -15,6 +15,7 @@ class HunchSchema_Post extends HunchSchema_Page
         parent::getResource($pretty);
         $this->schema['@type'] = $this->schemaType;
 
+
         // Get the Categories
         $categories = get_the_category();
         if (count($categories) > 0) {
@@ -23,6 +24,7 @@ class HunchSchema_Post extends HunchSchema_Page
             }
             $this->schema['about'] = $categoryNames;
         }
+
 
 		$this->schema['wordCount'] = str_word_count( $post->post_content );
 		$this->schema['keywords'] = $this->getTags();

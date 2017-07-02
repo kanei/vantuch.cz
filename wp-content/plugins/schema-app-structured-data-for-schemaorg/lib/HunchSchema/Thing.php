@@ -41,6 +41,8 @@ class HunchSchema_Thing {
                         $postType = 'Blog';
                 }
 
+				$postType = apply_filters( 'hunch_schema_thing_post_type', $postType );
+
                 $class = 'HunchSchema_' . $postType;
 
                 if (class_exists($class))
@@ -268,6 +270,7 @@ class HunchSchema_Thing {
 
                 return $Author;
         }
+
 
         public function getPublisher() {
                 static $publisher;

@@ -2,7 +2,7 @@
 /*
 Plugin Name: Responsive Lightbox
 Description: Responsive Lightbox allows users to view larger versions of images and galleries in a lightbox (overlay) effect optimized for mobile devices.
-Version: 1.7.1
+Version: 1.7.2
 Author: dFactory
 Author URI: http://www.dfactory.eu/
 Plugin URI: http://www.dfactory.eu/plugins/responsive-lightbox/
@@ -37,7 +37,7 @@ include_once( RESPONSIVE_LIGHTBOX_PATH . 'includes/class-widgets.php' );
  * Responsive Lightbox class.
  *
  * @class Responsive_Lightbox
- * @version	1.7.1
+ * @version	1.7.2
  */
 class Responsive_Lightbox {
 
@@ -160,7 +160,7 @@ class Responsive_Lightbox {
 				'gallery_fade_out'			=> 300
 			)
 		),
-		'version'			=> '1.7.1',
+		'version'			=> '1.7.2',
 		'activation_date'	=> ''
 	);
 	public $options = array();
