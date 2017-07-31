@@ -6,7 +6,7 @@ Author URI: https://www.hunchmanifest.com
 Author: Mark van Berkel (vberkel)
 Requires at least: 3.5
 Tested up to: 4.8
-Stable tag: 1.7.8
+Stable tag: 1.8.0
 License: GPL2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -68,9 +68,8 @@ You\'ll find the [FAQ on SchemaApp.com] (http://www.schemaapp.com/wordpress/faq/
 5. Link to Validation
 
 == Changelog ==
-= 1.7.8 =
-- Feature, new schema type filter
-- Info, added schema tree
+= 1.8.0 = 
+- Feature, AMP structured data support to improve on the WP /amp/ page's structured data
 
 = 1.7.7 = 
 - Fix, improve compatibility with Advanced

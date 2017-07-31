@@ -32,6 +32,7 @@ class ComposerStaticInitc5320bd3a3438b53bbd924af31580299
         'BEWPI_WC_Data_Compatibility' => __DIR__ . '/../..' . '/includes/compatibility/abstract-wc-data-compatibility.php',
         'BEWPI_WC_DateTime' => __DIR__ . '/../..' . '/includes/compatibility/class-wc-datetime.php',
         'BEWPI_WC_Order_Compatibility' => __DIR__ . '/../..' . '/includes/compatibility/class-wc-order-compatibility.php',
+        'BEWPI_WC_Payment_Gateway_Compatibility' => __DIR__ . '/../..' . '/includes/compatibility/class-wc-payment-gateway-compatibility.php',
         'BEWPI_WC_Product_Compatibility' => __DIR__ . '/../..' . '/includes/compatibility/class-wc-product-compatibility.php',
         'BE_WooCommerce_PDF_Invoices' => __DIR__ . '/../..' . '/includes/woocommerce-pdf-invoices.php',
         'CGIF' => __DIR__ . '/..' . '/mpdf/mpdf/classes/gif.php',

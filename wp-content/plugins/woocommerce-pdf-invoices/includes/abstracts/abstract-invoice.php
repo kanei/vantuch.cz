@@ -72,8 +72,6 @@ if ( ! class_exists( 'BEWPI_Abstract_Invoice' ) ) {
 
 			$this->full_path = self::exists( $order_id );
 			if ( $this->full_path ) {
-				$order_id = BEWPI_WC_Order_Compatibility::get_id( $this->order );
-
 				$this->number   = get_post_meta( $order_id, '_bewpi_invoice_number', true );
 				$this->date     = get_post_meta( $order_id, '_bewpi_invoice_date', true );
 				$this->year     = date_i18n( 'Y', strtotime( $this->date ) );
@@ -97,12 +95,12 @@ if ( ! class_exists( 'BEWPI_Abstract_Invoice' ) ) {
 		 */
 		public function get_formatted_number() {
 			// format number with the number of digits.
-			$digitized_invoice_number = sprintf( '%0' . $this->template_options['bewpi_invoice_number_digits'] . 's', $this->number );
+			$digitized_invoice_number = sprintf( '%0' . WPI()->get_option( 'template', 'invoice_number_digits' ) . 's', $this->number );
 			$formatted_invoice_number = str_replace(
 				array( '[number]', '[order-date]', '[order-number]', '[Y]', '[y]', '[m]' ),
 				array(
 					$digitized_invoice_number,
-					apply_filters( 'bewpi_formatted_invoice_number_order_date', $this->get_formatted_order_date() ),
+					date_i18n( apply_filters( 'bewpi_formatted_invoice_number_order_date_format', 'Y-m-d' ), strtotime( $this->date ) ),
 					$this->order->get_order_number(),
 					$this->year,
 					date_i18n( 'y', strtotime( $this->date ) ),
@@ -129,9 +127,19 @@ if ( ! class_exists( 'BEWPI_Abstract_Invoice' ) ) {
 		/**
 		 * Format and localize (MySQL) invoice date.
 		 *
+		 * @deprecated Use get_formatted_date instead.
 		 * @return string
 		 */
 		public function get_formatted_invoice_date() {
+			return date_i18n( $this->get_date_format(), strtotime( $this->date ) );
+		}
+
+		/**
+		 * Format and localize (MySQL) invoice date.
+		 *
+		 * @return string
+		 */
+		public function get_formatted_date() {
 			return date_i18n( $this->get_date_format(), strtotime( $this->date ) );
 		}
 
@@ -219,7 +227,7 @@ if ( ! class_exists( 'BEWPI_Abstract_Invoice' ) ) {
 		 *
 		 * @return int
 		 */
-		private function get_next_invoice_number() {
+		protected function get_next_invoice_number() {
 			// uses WooCommerce order numbers as invoice numbers?
 			if ( 'woocommerce_order_number' === $this->template_options['bewpi_invoice_number_type'] ) {
 				return $this->order->get_order_number();

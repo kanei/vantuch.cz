@@ -31,7 +31,7 @@ class BEWPI_Template {
 	/**
 	 * WooCommerce PDF Invoices invoice.
 	 *
-	 * @var BEWPI_Invoice.
+	 * @var BEWPI_Abstract_Invoice.
 	 */
 	public $invoice;
 
@@ -94,9 +94,10 @@ class BEWPI_Template {
 	 */
 	public function get_template( $type ) {
 		$template = array();
+		$order_id = BEWPI_WC_Order_Compatibility::get_id( WPI()->templater()->get_order() );
 
 		// get template name from template options.
-		$name = $this->get_option( 'bewpi_template_name' );
+		$name = apply_filters( 'wpi_template_name', WPI()->get_option( 'template', 'template_name' ), $type, $order_id );
 
 		// first check custom directory, second plugin directory.
 		foreach ( $this->directories as $directory ) {
@@ -119,6 +120,13 @@ class BEWPI_Template {
 		}
 
 		return $template;
+	}
+
+	/**
+	 * @param $directory
+	 */
+	public function add_directory( $directory ) {
+		$this->directories[] = $directory;
 	}
 
 	/**
@@ -326,7 +334,7 @@ class BEWPI_Template {
 	/**
 	 * Set invoice.
 	 *
-	 * @param BEWPI_Invoice $invoice WooCommerce PDF Invoices invoice object.
+	 * @param BEWPI_Abstract_Invoice $invoice invoice object.
 	 */
 	public function set_invoice( $invoice ) {
 		$this->invoice = $invoice;

@@ -210,6 +210,17 @@ abstract class BEWPI_Abstract_Settings {
 	}
 
 	/**
+	 * Format all available invoice number placeholders.
+	 *
+	 * @return string
+	 */
+	protected static function formatted_number_placeholders() {
+		$placeholders = array( '[number]', '[order-number]', '[order-date]', '[m]', '[Y]', '[y]' );
+
+		return '<code>' . join( '</code>, <code>', $placeholders ) . '</code>';
+	}
+
+	/**
 	 * Gets all the tags that are allowed.
 	 *
 	 * @return string|void
@@ -348,8 +359,7 @@ abstract class BEWPI_Abstract_Settings {
 			?>
 		/>
 		<?php if ( $is_checkbox ) { ?>
-			<label for="<?php echo $args['id']; ?>"
-			       class="<?php echo $class; ?>"><?php echo $args['desc']; ?></label>
+			<label for="<?php echo $args['id']; ?>" class="<?php echo $class; ?>"><?php echo $args['desc']; ?></label>
 		<?php } else { ?>
 			<div class="<?php echo $class; ?>"><?php echo $args['desc']; ?></div>
 		<?php } ?>
@@ -378,7 +388,21 @@ abstract class BEWPI_Abstract_Settings {
 	 * @return array
 	 */
 	protected function get_defaults() {
-		return wp_list_pluck( $this->fields, 'default', 'name' );
+		$fields   = $this->fields;
+		$defaults = array();
+
+		// Remove multiple checkbox types from settings.
+		foreach ( $fields as $index => $field ) {
+			if ( isset( $field['type'] ) && 'multiple_checkbox' === $field['type'] ) {
+				// Add options defaults.
+				$defaults[ $field['name'] ] = wp_list_pluck( $field['options'], 'default', 'value' );
+				unset( $fields[ $index ] );
+			}
+		}
+
+		$defaults = wp_parse_args( $defaults, wp_list_pluck( $fields, 'default', 'name' ) );
+
+		return $defaults;
 	}
 
 	/**
@@ -387,9 +411,29 @@ abstract class BEWPI_Abstract_Settings {
 	 * @return bool
 	 */
 	protected function set_defaults() {
-		$options = array_merge( $this->defaults, (array) get_option( $this->settings_key ) );
+		$options = get_option( $this->settings_key );
 
-		return update_option( $this->settings_key, $options );
+		// Initialize options.
+		if ( false === $options ) {
+			return add_option( $this->settings_key, $this->defaults );
+		}
+
+		// Recursive merge options with defaults.
+		foreach ( $this->defaults as $key => $value ) {
+
+			if ( ! isset( $options[ $key ] ) ) {
+				continue;
+			}
+
+			if ( is_array( $options[ $key ] ) ) {
+				$this->defaults[ $key ] = array_merge( $value, $options[ $key ] );
+			} else {
+				$this->defaults[ $key ] = $options[ $key ];
+			}
+
+		}
+
+		return update_option( $this->settings_key, $this->defaults );
 	}
 
 	/**

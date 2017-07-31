@@ -34,10 +34,13 @@ class SchemaFront
 			// Priority 15 ensures it runs after Genesis itself has setup.
 			add_action( 'genesis_setup', array( $this, 'GenesisSetup' ), 15 );
 		}
+
+		add_action( 'amp_post_template_head', array( $this, 'AMPPostTemplateHead' ) );
+		add_filter( 'amp_post_template_metadata', '__return_false' );
     }
 
 
-	function HandleCache()
+	public function HandleCache()
 	{
 		if ( isset( $_GET['Action'], $_GET['URL'] ) && $_GET['Action'] == 'HSDeleteMarkupCache' )
 		{
@@ -162,7 +165,7 @@ class SchemaFront
     }
 
 
-	function LinkedOpenData( $WP )
+	public function LinkedOpenData( $WP )
 	{
 		if ( ! empty( $this->Settings['SchemaLinkedOpenData'] ) )
 		{
@@ -184,13 +187,13 @@ class SchemaFront
 	}
 
 
-	function TemplateRedirect()
+	public function TemplateRedirect()
 	{
 		ob_start( array( $this, 'RemoveMicrodata' ) );
 	}
 
 
-	function RemoveMicrodata( $Buffer )
+	public function RemoveMicrodata( $Buffer )
 	{
 		$Buffer = preg_replace( '/[\s\n]*<(link|meta)(\s|[^>]+\s)itemprop=[\'"][^\'"]*[\'"][^>]*>[\s\n]*/imS', '', $Buffer );
 
@@ -203,7 +206,7 @@ class SchemaFront
 	}
 
 
-	function AdminBarMenu( $WPAdminBar )
+	public function AdminBarMenu( $WPAdminBar )
 	{
 		$Permalink = HunchSchema_Thing::getPermalink();
 
@@ -226,7 +229,7 @@ class SchemaFront
 	}
 
 
-	function GenesisSetup()
+	public function GenesisSetup()
 	{
 		$Attributes = get_option( 'schema_option_name_genesis' );
 
@@ -240,13 +243,19 @@ class SchemaFront
 	}
 
 
-	function GenesisAttribute( $Attribute )
+	public function GenesisAttribute( $Attribute )
 	{
 		$Attribute['itemtype'] = '';
 		$Attribute['itemprop'] = '';
 		$Attribute['itemscope'] = '';
 
 		return $Attribute;
+	}
+
+
+	public function AMPPostTemplateHead( $Template )
+	{
+		$this->hunch_schema_add( false );
 	}
 
 }

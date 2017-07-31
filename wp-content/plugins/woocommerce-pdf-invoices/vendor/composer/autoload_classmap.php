@@ -21,6 +21,7 @@ return array(
     'BEWPI_WC_Data_Compatibility' => $baseDir . '/includes/compatibility/abstract-wc-data-compatibility.php',
     'BEWPI_WC_DateTime' => $baseDir . '/includes/compatibility/class-wc-datetime.php',
     'BEWPI_WC_Order_Compatibility' => $baseDir . '/includes/compatibility/class-wc-order-compatibility.php',
+    'BEWPI_WC_Payment_Gateway_Compatibility' => $baseDir . '/includes/compatibility/class-wc-payment-gateway-compatibility.php',
     'BEWPI_WC_Product_Compatibility' => $baseDir . '/includes/compatibility/class-wc-product-compatibility.php',
     'BE_WooCommerce_PDF_Invoices' => $baseDir . '/includes/woocommerce-pdf-invoices.php',
     'CGIF' => $vendorDir . '/mpdf/mpdf/classes/gif.php',
