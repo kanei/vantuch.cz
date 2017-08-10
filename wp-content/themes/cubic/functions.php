@@ -174,7 +174,7 @@ function cubic_scripts() {
 		wp_enqueue_style( 'cubic-parent-style-rtl', get_template_directory_uri() . '/rtl.css', array( 'cubic-parent-style' ) );
 	}
 
-    wp_enqueue_style( 'cubic-style', get_stylesheet_uri(), array( 'cubic-parent-style' ) );
+    wp_enqueue_style( 'boardwalk-style' );
 
     if ( ( is_search() && have_posts() ) || is_archive() || is_home() ) {
 		wp_enqueue_script( 'cubic-hentry', get_stylesheet_directory_uri() . '/js/hentry.js', array( 'jquery' ), '20150113', true );
@@ -188,3 +188,6 @@ add_action( 'wp_enqueue_scripts', 'cubic_scripts', 11 );
  * Load Jetpack compatibility file.
  */
 require get_stylesheet_directory() . '/inc/jetpack.php';
+
+
+

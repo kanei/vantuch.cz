@@ -49,23 +49,115 @@ You can add links to a multitude of social services in the footer by following t
 
 == Changelog ==
 
-= 1.0.5 - Sep 28 2015 =
+= 7 June 2017 =
+* Update JavaScript that toggles hidden widget area, to make sure new video and audio widgets are displaying correctly when opened.
+
+= 27 April 2017 =
+* Set default Infinite Scroll post per page to 9 instead of 7 to stick with square grid
+
+= 22 March 2017 =
+* add Custom Colors annotations directly to the theme
+
+= 2 March 2017 =
+* Update headerstart images to make sure they're all large enough.
+
+= 2 January 2017 =
+* Add `grid-layout` tag to style.css.
+
+= 3 November 2016 =
+* Add Headstart translations.
+
+= 8 August 2016 =
+* Update attachment URLs to smaller images.
+
+= 21 July 2016 =
+* Remove enqueue script function unneeded, we can simply call the parent function and it will load the right stylesheet
+
+= 22 June 2016 =
+* Remove extra style to the site description when custom fonts are active.
+
+= 5 May 2016 =
+* Move annotations into the `inc` directory.
+
+= 4 May 2016 =
+* Move existing annotations into their respective theme directories.
+
+= 18 April 2016 =
+* Apply Video Post Format correct style when adding a VideoPress shortcode.
+
+= 10 March 2016 =
+* Force a page to appear after 5 sconds document is ready to avoid whitescreen of death with hanging JS.
+
+= 20 January 2016 =
+* Remove custom PollDaddy styles
+
+= 27 November 2015 =
+* Define more standard CSS properties for the Featured Image. `initial` is too clever for Internet Explorer.
+
+= 28 September 2015 =
 * Update screenshot
 
-= 1.0.4 - Sep 27 2015 =
-* Minor bug fix
+= 20 August 2015 =
+* Add text domain and/or remove domain path.
 
-= 1.0.3 - Mar 15 2015 =
-* Fix Page Header position issue when Site Header is sticky
+= 15 July 2015 =
+* Always use https when loading Google Fonts. See #3221;
 
-= 1.0.2 - Mar 14 2015 =
+= 9 July 2015 =
+* Boardwalk/Cubic: Add a class of "pace-done" to body when Sharedaddy official sharing buttons are being displayed. By adding this class we manually skip the pace loader and directly display the page.
+
+= 10 June 2015 =
+* Adding slideshow gallery images to list of exceptions, so that images won't be wrapped in extra span, breaking the slideshow; Fixes 3191;
+
+= 7 April 2015 =
+* Update screenshot to 1200x900
+
+= 14 March 2015 =
+* Make sure Page Header doesn't use the fixed position from Boardwalk
+* Fix Page Header position when Site Header is sticky
 * Add support for Infinite Scroll (type: scroll)
 
-= 1.0.1 - Mar 08 2015 =
-* Update license URI
+= 12 March 2015 =
+* Remove Featured Image fallback -- It's part of Boardwalk now
 
-= 1.0 - Jan 15 2015 =
-* Initial release
+= 10 March 2015 =
+* fix variable name in conditional
+* Reinstating [24585] with a minor edit
+* revert r24585. Breaking for posts without any images.
+* add featured image fallback to index view
+
+= 8 March 2015 =
+* Update license uri
+
+= 24 February 2015 =
+* Trigger a screen resize when opening the sidebar to make sure that the gallery widget is being displayed.
+* Fix page-header issue on archive/search page when unfixed header theme option is ticked
+
+= 15 January 2015 =
+* Add new screenshot and update readme with image credit
+* Make sure tables don't overflow in Entry Content.
+* Make sure tables don't overflow
+* Make sure we don't add entry-media to entry-content
+* Style native core video when it's in a video post format
+* Fix VideoPress resizing/margin
+* Make sure thumbnails aren't squashed when they are too small
+* Remove border from linked images
+* Don't resize images if they are in a table
+* Fix image min-height issue: target the correct class
+* Fix line-height for the title in index/archive view
+
+= 14 January 2015 =
+* Add RTL stylesheet
+* Update readme's dscription
+* Add language file
+* Add readme file (description will need changes)
+* Introduce new breakpoint to display 3 squares on a same row -- previous breakpoint was making squares too small and not really readable
+* Fix typo
+
+= 13 January 2015 =
+* Add screenshot
+* Update description
+* Rename theme (was previously Square)
 
 == Credits ==
 

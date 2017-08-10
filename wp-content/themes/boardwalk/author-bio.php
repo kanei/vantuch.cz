@@ -28,15 +28,3 @@
 		</p><!-- .author-bio -->
 	</div><!-- .author-description -->
 </div><!-- .entry-author -->
-
-<div class="entry-adsense">
-	<!-- Responsive -->
-	<ins class="adsbygoogle"
-		 style="display:block"
-		 data-ad-client="ca-pub-8650917758207848"
-		 data-ad-slot="2916869352"
-		 data-ad-format="auto"></ins>
-	<script>
-		(adsbygoogle = window.adsbygoogle || []).push({});
-	</script>
-</div>

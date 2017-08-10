@@ -26,7 +26,7 @@
 			</nav><!-- .social-navigation -->
 		<?php endif; ?>
 		<div class="site-info">
-			Marek Vantuch © 2016
+			Marek Vantuch © 2017
 		</div><!-- .site-info -->
 	</footer><!-- #colophon -->
 </div><!-- #page -->

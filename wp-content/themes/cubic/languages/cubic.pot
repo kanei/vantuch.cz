@@ -1,14 +1,14 @@
-# Copyright (C) 2015 Automattic
+# Copyright (C) 2017 Automattic
 # This file is distributed under the GNU General Public License.
 msgid ""
 msgstr ""
 "Project-Id-Version: Cubic 1.0.5\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/support/theme/cubic\n"
-"POT-Creation-Date: 2015-03-13 03:38:50+00:00\n"
+"POT-Creation-Date: 2017-03-23 06:46:15+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2015-MO-DA HO:MI+ZONE\n"
+"PO-Revision-Date: 2017-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 
@@ -46,6 +46,14 @@ msgstr ""
 #: functions.php:69
 msgctxt "Playfair Display font: add new subset (cyrillic)"
 msgid "no-subset"
+msgstr ""
+
+#: inc/wpcom-colors.php:286
+msgid "Background"
+msgstr ""
+
+#: inc/wpcom-colors.php:387
+msgid "Accent"
 msgstr ""
 
 #. Theme Name of the plugin/theme
