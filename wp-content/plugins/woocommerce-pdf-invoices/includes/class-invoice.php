@@ -61,6 +61,35 @@ if ( ! class_exists( 'BEWPI_Invoice' ) ) {
 		}
 
 		/**
+		 * Check if PDF invoice is sent to client.
+		 *
+		 * @since 2.9.4
+		 * @return bool
+		 */
+		public function is_sent() {
+			$order_id = BEWPI_WC_Order_Compatibility::get_id( $this->order );
+			$is_sent  = get_post_meta( $order_id, 'bewpi_pdf_invoice_sent', true );
+
+			// Backporting.
+			if ( false === $is_sent ) {
+				return true;
+			}
+
+			return 1 === absint( $is_sent ) ? true : false;
+		}
+
+		/**
+		 * Get invoice number type.
+		 *
+		 * @return string
+		 */
+		public static function get_number_type() {
+			$number_type = WPI()->get_option( 'template', 'invoice_number_type' );
+
+			return (string) $number_type;
+		}
+
+		/**
 		 * Formatted custom order subtotal.
 		 * Shipping including or excluding tax.
 		 *

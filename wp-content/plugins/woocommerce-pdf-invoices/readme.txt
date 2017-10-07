@@ -4,7 +4,7 @@ Donate link:
 Tags: woocommerce pdf invoices, invoice, packing slips, delivery note, packing list, shipping list, generate, pdf, woocommerce, attachment, email, customer invoice, processing, vat, tax, sequential, number, dropbox, google drive, onedrive, egnyte, cloud, storage
 Requires at least: 4.0
 Tested up to: 4.8
-Stable tag: 2.9.3
+Stable tag: 2.9.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -30,13 +30,17 @@ This WooCommerce plugin generates PDF invoices and PDF packing slips, attaches i
 
 > **WooCommerce PDF Invoices Premium**<br /><br />
 > This plugin offers a premium version which comes with the following features:<br /><br />
-> - Design PDF invoices with custom fonts.<br />
-> - Multilingual PDF invoices with WPML and Polylang<br />
+> - Attach PDF invoices to many more email types including third party plugins<br />
+> - Send credit notes and cancelled PDF invoices<br />
+> - Fully customize PDF invoice table content by modifying line item columns and total rows<br />
+> - Automatically send PDF invoices as a reminder configurable within a specific period of time<br />
 > - Bulk generate PDF invoices<br />
 > - Bulk export and/or download PDF invoices<br />
-> - Periodically bill by generating and sending global invoices<br />
-> - Add additional PDF files to PDF invoices.<br />
-> - Send customer invoices directly to multiple recipients like suppliers.<br />
+> - Bill periodically by generating and sending global invoices<br />
+> - Let customers decide to generate a PDF invoice on checkout<br />
+> - Change the font of the PDF invoices<br />
+> - Add additional PDF files to PDF invoices<br />
+> - Send customer invoices directly to multiple recipients<br />
 > - Compatible with [WooCommerce Subscriptions](http://www.woothemes.com/products/woocommerce-subscriptions) plugin emails.<br /><br />
 > [Upgrade to WooCommerce PDF Invoices Premium >>](http://wcpdfinvoices.com)
 
@@ -268,6 +272,21 @@ add_filter( 'wpi_template_name', 'change_template_based_on_order_language', 10, 
 `
 
 == Changelog ==
+
+= 2.9.5 - September 20, 2017 =
+
+- Fixed: Download invoice from my account page not showing.
+- Fixed: Non-dismissable rate admin notice.
+
+= 2.9.4 - September 13, 2017 =
+
+- Added: Added invoice actions to view, update and delete invoice.
+- Added: Action 'wpi_watermark_end' to add multiple watermarks.
+- Improved: Language files by adding more keywords.
+- Fixed: Company logo not found when protocol has been changed.
+- Fixed: [prefix] and/or [suffix] hardcoded in invoice number.
+- Fixed: Fixed body options section not showing on settings page.
+- Fixed: 'Fatal Error: non-numeric value encountered' when using position absolute.
 
 = 2.9.3 - July 5, 2017 =
 

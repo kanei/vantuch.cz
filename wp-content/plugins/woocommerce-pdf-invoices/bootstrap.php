@@ -3,7 +3,7 @@
  * Plugin Name:       WooCommerce PDF Invoices
  * Plugin URI:        https://wordpress.org/plugins/woocommerce-pdf-invoices
  * Description:       Automatically generate and attach customizable PDF Invoices to WooCommerce emails and connect with Dropbox, Google Drive, OneDrive or Egnyte.
- * Version:           2.9.3
+ * Version:           2.9.5
  * Author:            Bas Elbers
  * Author URI:        http://wcpdfinvoices.com
  * License:           GPL-2.0+
@@ -17,14 +17,18 @@ defined( 'ABSPATH' ) or exit;
 /**
  * @deprecated instead use WPI_VERSION.
  */
-define( 'BEWPI_VERSION', '2.9.3' );
+define( 'BEWPI_VERSION', '2.9.5' );
 
-define( 'WPI_VERSION', '2.9.3' );
+define( 'WPI_VERSION', '2.9.5' );
 
 /**
  * Load WooCommerce PDF Invoices plugin.
  */
 function _bewpi_load_plugin() {
+
+	if ( ! class_exists( 'WooCommerce' ) ) {
+		return;
+	}
 
 	/**
 	 * @deprecated instead use `WPI_FILE`.
@@ -55,7 +59,9 @@ function _bewpi_load_plugin() {
 		define( 'WPI_DIR', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
 	}
 
-	require_once WPI_DIR . '/vendor/autoload.php';
+	if ( file_exists( WPI_DIR . '/vendor/autoload.php' ) ) {
+		require_once WPI_DIR . '/vendor/autoload.php';
+	}
 
 	/**
 	 * Main instance of BE_WooCommerce_PDF_Invoices.
@@ -132,6 +138,10 @@ function _bewpi_on_plugin_update() {
 		// version 2.9.2- need to update "Attach to Emails" option to recursive structure.
 		if ( version_compare( $current_version, '2.9.2' ) <= 0 ) {
 			update_email_types_options_to_recursive();
+		}
+
+		if ( version_compare( $current_version, '2.9.3' ) <= 0 ) {
+			update_email_types_options();
 		}
 
 		set_time_limit( $max_execution_time );
@@ -291,7 +301,6 @@ function update_email_types_options_to_recursive() {
 	$email_types     = array( 'new_order', 'customer_on_hold_order', 'customer_processing_order', 'customer_completed_order', 'customer_invoice', 'new_renewal_order', 'customer_completed_switch_order', 'customer_processing_renewal_order', 'customer_completed_renewal_order', 'customer_renewal_invoice' );
 
 	foreach ( $email_types as $email_type ) {
-
 		if ( isset( $general_options[ $email_type ] ) ) {
 			$general_options['bewpi_email_types'] = array(
 				$email_type => $general_options[ $email_type ],
@@ -300,10 +309,27 @@ function update_email_types_options_to_recursive() {
 			// Remove older option.
 			unset( $general_options[ $email_type ] );
 		}
-
 	}
 
 	update_option( 'bewpi_general_settings', $general_options );
+}
+
+/**
+ * Update email types for plugin version 2.9.4+.
+ */
+function update_email_types_options() {
+	$general_settings = get_option( 'bewpi_general_settings' );
+	$email_types = array();
+
+	foreach ( (array) $general_settings['bewpi_email_types'] as $email_type => $enabled ) {
+		if ( $enabled ) {
+			$email_types[] = $email_type;
+		}
+	}
+
+	$general_settings['bewpi_email_types'] = $email_types;
+
+	update_option( 'bewpi_general_settings', $general_settings );
 }
 
 /**
