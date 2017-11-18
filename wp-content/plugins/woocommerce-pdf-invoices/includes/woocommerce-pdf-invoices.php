@@ -55,9 +55,29 @@ if ( ! class_exists( 'BE_WooCommerce_PDF_Invoices' ) ) {
 		}
 
 		/**
+		 * Setup multisite sepcific upload dir.
+		 *
+		 * @param array $upload_dir uploads dir data.
+		 *
+		 * @return array
+		 */
+		public function setup_multisite_upload_dir( $upload_dir ) {
+			$upload_dir['basedir'] = $upload_dir['basedir'] . '/sites/' . get_current_blog_id();
+			$upload_dir['path']    = $upload_dir['basedir'] . $upload_dir['subdir'];
+			$upload_dir['baseurl'] = $upload_dir['baseurl'] . '/sites/' . get_current_blog_id();
+			$upload_dir['url']     = $upload_dir['baseurl'] . $upload_dir['subdir'];
+
+			return $upload_dir;
+		}
+
+		/**
 		 * WooCommerce Constructor.
 		 */
 		private function __construct() {
+			if ( is_multisite() ) {
+				add_filter( 'upload_dir', array( $this, 'setup_multisite_upload_dir' ) );
+			}
+
 			$this->define_constants();
 			$this->load_plugin_textdomain();
 			$this->init_hooks();
@@ -178,6 +198,7 @@ if ( ! class_exists( 'BE_WooCommerce_PDF_Invoices' ) ) {
 				'add_plugin_action_links',
 			) );
 			add_filter( 'plugin_row_meta', array( $this, 'add_plugin_row_meta' ), 10, 2 );
+			add_action( 'admin_notices', array( $this, 'admin_notice_rate' ) );
 
 			BEWPI_Abstract_Settings::init_hooks();
 			BEWPI_Admin_Notices::init_hooks();
@@ -456,7 +477,7 @@ if ( ! class_exists( 'BE_WooCommerce_PDF_Invoices' ) ) {
 			wp_register_script( 'wc-enhanced-select', WC()->plugin_url() . '/assets/js/admin/wc-enhanced-select.js', array(
 				'jquery',
 				'jquery-ui-sortable',
-				'select2',
+				version_compare( WC()->version, '3.2.0', '>=' ) ? 'selectWoo' : 'select2',
 			), WC()->version );
 
 			$screen    = get_current_screen();
@@ -530,7 +551,7 @@ if ( ! class_exists( 'BE_WooCommerce_PDF_Invoices' ) ) {
 			}
 
 			// Skip invoice generation.
-			$skip = apply_filters( 'bewpi_skip_invoice_generation', false, $status, $order->get_total() );
+			$skip = apply_filters( 'bewpi_skip_invoice_generation', false, $status, $order );
 			if ( $skip ) {
 				return $attachments;
 			}
@@ -556,8 +577,30 @@ if ( ! class_exists( 'BE_WooCommerce_PDF_Invoices' ) ) {
 				$full_path = $invoice->update();
 			}
 
+			if ( apply_filters( 'wpi_skip_pdf_invoice_attachment', false, $status, $order ) ) {
+				return $attachments;
+			}
+
+			// Attach invoice to email.
 			$attachments[] = $full_path;
-			update_post_meta( $order_id, 'bewpi_pdf_invoice_sent', 1 );
+
+			/**
+			 * Check if current email is a customer email.
+			 *
+			 * @var WC_Email $email
+			 */
+			$is_customer_email = false;
+			foreach ( WC()->mailer()->get_emails() as $email ) {
+				if ( $email->id === $status ) {
+					$is_customer_email = $email->is_customer_email();
+					break;
+				}
+			}
+
+			// Only mark the invoice as sent for customer emails.
+			if ( $is_customer_email ) {
+				update_post_meta( $order_id, 'bewpi_pdf_invoice_sent', 1 );
+			}
 
 			return $attachments;
 		}
@@ -696,6 +739,14 @@ if ( ! class_exists( 'BE_WooCommerce_PDF_Invoices' ) ) {
 				$details = apply_filters( 'bewpi_order_page_pdf_invoice_meta_box_details', $details, $invoice );
 				include WPI_DIR . '/includes/admin/views/html-order-page-pdf-invoice-meta-box.php';
 
+				// display button to view invoice in debug mode.
+				if ( (bool) WPI()->get_option( 'general', 'mpdf_debug' ) ) {
+					$this->show_invoice_button( __( 'Debug', 'woocommerce-pdf-invoices' ), $post->ID, 'debug', array(
+						'class="button grant_access order-page invoice wpi"',
+						'target="_blank"',
+					) );
+				}
+
 				// display button to view invoice.
 				$this->show_invoice_button( __( 'View', 'woocommerce-pdf-invoices' ), $post->ID, 'view', array(
 					'class="button grant_access order-page invoice wpi"',
@@ -817,6 +868,41 @@ if ( ! class_exists( 'BE_WooCommerce_PDF_Invoices' ) ) {
 		}
 
 		/**
+		 * Get plugin install date.
+		 *
+		 * @return DateTime|bool
+		 */
+		private function get_install_date() {
+			if ( version_compare( WPI_VERSION, '2.6.1' ) >= 0 ) {
+				// since 2.6.1+ option name changed and date has mysql format.
+				return DateTime::createFromFormat( 'Y-m-d H:i:s', get_site_option( 'bewpi_install_date' ) );
+			}
+
+			return DateTime::createFromFormat( 'Y-m-d', get_site_option( 'bewpi-install-date' ) );
+		}
+
+		/**
+		 * Display rate notice after 10 days based on installation date.
+		 */
+		public function admin_notice_rate() {
+			if ( get_site_transient( 'wpi_admin_notice_rate' ) ) {
+				return;
+			}
+
+			// install date should be valid.
+			$install_date = $this->get_install_date();
+			if ( false === $install_date ) {
+				return;
+			}
+
+			// at least 10 days should be past to display notice.
+			if ( new DateTime( '10 days ago' ) >= $install_date ) {
+				include WPI_DIR . '/includes/admin/views/html-rate-notice.php';
+				set_site_transient( 'wpi_admin_notice_rate', true );
+			}
+		}
+
+		/**
 		 * Get invoice by order ID.
 		 *
 		 * @param int $order_id order ID.
@@ -913,6 +999,18 @@ if ( ! class_exists( 'BE_WooCommerce_PDF_Invoices' ) ) {
 		 */
 		public function get_prop( $order, $prop, $context = 'edit' ) {
 			return BEWPI_WC_Order_Compatibility::get_prop( $order, $prop, $context );
+		}
+
+		/**
+		 * Get order meta.
+		 *
+		 * @param WC_Order $order Order object.
+		 * @param string   $meta_key Post meta key.
+		 *
+		 * @return bool/string
+		 */
+		public function get_meta( $order, $meta_key ) {
+			return get_post_meta( BEWPI_WC_Order_Compatibility::get_id( $order ), $meta_key, true );
 		}
 
 		/**

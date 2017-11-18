@@ -137,71 +137,86 @@ class HunchSchema_Thing {
 		}
 
 
-        protected function getImage() {
-                if (has_post_thumbnail())
-                {
-                        $Image = wp_get_attachment_image_src(get_post_thumbnail_id(), 'single-post-thumbnail');
+        protected function getImage()
+        {
+			if ( has_post_thumbnail() )
+			{
+				$Image = wp_get_attachment_image_src( get_post_thumbnail_id(), 'full' );
 
-                        return array(
-                                '@type' => 'ImageObject',
-                                'url' => $Image[0],
-                                'height' => $Image[2],
-                                'width' => $Image[1]
-                        );
-                } else
-                {
-                        global $post;
+				return array
+				(
+					'@type' => 'ImageObject',
+					'url' => $Image[0],
+					'height' => $Image[2],
+					'width' => $Image[1]
+				);
+			}
+			else
+			{
+				global $post;
 
-                        if ($post->post_content)
-                        {
-                                $Document = new DOMDocument();
-                                @$Document->loadHTML($post->post_content);
-                                $DocumentImages = $Document->getElementsByTagName('img');
+				if ( $post->post_content )
+				{
+					$Document = new DOMDocument();
+					@$Document->loadHTML( $post->post_content );
+					$DocumentImages = $Document->getElementsByTagName( 'img' );
 
-                                if ($DocumentImages->length)
-                                {
-                                        return array(
-                                                '@type' => 'ImageObject',
-                                                'url' => $DocumentImages->item(0)->getAttribute('src'),
-                                                'height' => $DocumentImages->item(0)->getAttribute('height'),
-                                                'width' => $DocumentImages->item(0)->getAttribute('width')
-                                        );
-                                }
-                                else
-                                {
-                                        if (!empty($this->Settings['SchemaDefaultImage']))
-                                        {
-                                                global $wpdb;
-
-                                                $Attachment = $wpdb->get_row( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE guid = %s", $this->Settings['SchemaDefaultImage'] ) );
-
-                                                if ( $Attachment )
-                                                {
-                                                        $Image = wp_get_attachment_image_src( $Attachment->ID, 'full' );
-
-                                                        return array
-                                                        (
-                                                                '@type' => 'ImageObject',
-                                                                'url' => $this->Settings['SchemaDefaultImage'],
-                                                                'width' => $Image[1],
-                                                                'height' => $Image[2]
-                                                        );
-                                                }
-                                                else
-                                                {
-                                                        return array
-                                                        (
-                                                                '@type' => 'ImageObject',
-                                                                'url' => $this->Settings['SchemaDefaultImage'],
-                                                                'width' => 100,
-                                                                'height' => 100
-                                                        );
-                                                }
-                                        }
-                                }
-                        }
-                }
+					if ( $DocumentImages->length )
+					{
+						return array
+						(
+							'@type' => 'ImageObject',
+							'url' => $DocumentImages->item(0)->getAttribute( 'src' ),
+							'height' => $DocumentImages->item(0)->getAttribute( 'height' ),
+							'width' => $DocumentImages->item(0)->getAttribute( 'width' )
+						);
+					}
+					else
+					{
+						return $this->getDefaultImage();
+					}
+				}
+				else
+				{
+					return $this->getDefaultImage();
+				}
+			}
         }
+
+
+        protected function getDefaultImage()
+        {
+			if ( ! empty( $this->Settings['SchemaDefaultImage'] ) )
+			{
+				global $wpdb;
+
+				$Attachment = $wpdb->get_row( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE guid = %s", $this->Settings['SchemaDefaultImage'] ) );
+
+				if ( $Attachment )
+				{
+					$Image = wp_get_attachment_image_src( $Attachment->ID, 'full' );
+
+					return array
+					(
+						'@type' => 'ImageObject',
+						'url' => $this->Settings['SchemaDefaultImage'],
+						'width' => $Image[1],
+						'height' => $Image[2]
+					);
+				}
+				else
+				{
+					return array
+					(
+						'@type' => 'ImageObject',
+						'url' => $this->Settings['SchemaDefaultImage'],
+						'width' => 100,
+						'height' => 100
+					);
+				}
+			}
+		}
+
 
         protected function getTags() {
                 global $post;

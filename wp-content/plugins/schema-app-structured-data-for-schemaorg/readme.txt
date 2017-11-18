@@ -6,7 +6,7 @@ Author URI: https://www.hunchmanifest.com
 Author: Mark van Berkel (vberkel)
 Requires at least: 3.5
 Tested up to: 4.8
-Stable tag: 1.8.0
+Stable tag: 1.8.1
 License: GPL2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,7 +21,7 @@ Get Schema.org structured data for all pages, posts, categories and profile page
 
 By activating the plugin Schema App Wordpress plugin automatically creates [schema.org](http://schema.org/) markup for the all your pages, posts, author and category content leveraging information that already exists in your Wordpress website. Just activate the plugin, adding your logo and name of your business, BAM, your content is optimized to be fully understood by search engines resulting in higher traffic, higher click through rates and more.  The plugin also provides all three Google Site Structure features including Breadcrumbs, Sitelinks Searchbox and Your Site Name in Results.  Schema App Wordpress plugin also integrates with [Schema App Tools](https://www.schemaapp.com) to automatically deploy custom content (see below). 
 
-**What type of markup is created with this plugin?**
+**What type of markup is automatically created with this plugin?**
 
 * Page : http://schema.org/Article
 * Post : http://schema.org/BlogPosting
@@ -33,9 +33,11 @@ By activating the plugin Schema App Wordpress plugin automatically creates [sche
 * BreadcrumbList : http://schema.org/BreadcrumbList
 * WebSite : http://schema.org/WebSite
 
+All of these pages get extremely detailed schema.org data based on what's possibly mapped from the database. Customization of Page and Post schema markup can be done by directly editing the generated JSON-LD for each page. 
+
 **[Schema App Wordpress Plugin FAQ](https://www.schemaapp.com/wordpress-plugin/faq/)**
 
-**Optimize Website Fully with Schema App Tools**
+**Extended Optimization with Schema App Tools**
 
 There is a lot of benefit of adding schema markup to fully describe your business including increased organic traffic, higher search rank and rich results. To achieve this you need to optimize your whole website with schema markup. [Schema App Tools](https://www.schemaapp.com/) enable marketers to create custom [schema.org](http://schema.org/) markup for a website's Local Business,  Organization, Services, Reviews, Contact Page and more. Schema App Tools have the complete [schema.org](http://schema.org/) vocabulary, requires no JSON-LD coding, and help you do ongoing schema markup maintenance when Google changes their recommendations. [Learn more about the Schema App Tools](https://www.schemaapp.com/schema-org-json-ld-markup-editor/). Schema App Tools subscriptions include support from our experts in schema markup. 
 
@@ -68,8 +70,12 @@ You\'ll find the [FAQ on SchemaApp.com] (http://www.schemaapp.com/wordpress/faq/
 5. Link to Validation
 
 == Changelog ==
-= 1.8.0 = 
-- Feature, AMP structured data support to improve on the WP /amp/ page's structured data
+= 1.8.1 =
+- Fix, Genesis deactivation settings
+- Fix, Article Image Missing for Blog Page
+
+= 1.8.0 =
+- Feature, AMP structured data support to improve on the WP /amp/ page’s structured data
 
 = 1.7.7 = 
 - Fix, improve compatibility with Advanced

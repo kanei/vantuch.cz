@@ -29,11 +29,8 @@ class SchemaFront
 			add_action( 'admin_bar_menu', array( $this, 'AdminBarMenu' ), 999 );
 		}
 
-		if ( function_exists( 'genesis' ) )
-		{
-			// Priority 15 ensures it runs after Genesis itself has setup.
-			add_action( 'genesis_setup', array( $this, 'GenesisSetup' ), 15 );
-		}
+		// Priority 15 ensures it runs after Genesis itself has setup.
+		add_action( 'genesis_setup', array( $this, 'GenesisSetup' ), 15 );
 
 		add_action( 'amp_post_template_head', array( $this, 'AMPPostTemplateHead' ) );
 		add_filter( 'amp_post_template_metadata', '__return_false' );

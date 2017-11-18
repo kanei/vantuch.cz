@@ -4,7 +4,7 @@ Donate link:
 Tags: woocommerce pdf invoices, invoice, packing slips, delivery note, packing list, shipping list, generate, pdf, woocommerce, attachment, email, customer invoice, processing, vat, tax, sequential, number, dropbox, google drive, onedrive, egnyte, cloud, storage
 Requires at least: 4.0
 Tested up to: 4.8
-Stable tag: 2.9.5
+Stable tag: 2.9.10
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,7 +33,7 @@ This WooCommerce plugin generates PDF invoices and PDF packing slips, attaches i
 > - Attach PDF invoices to many more email types including third party plugins<br />
 > - Send credit notes and cancelled PDF invoices<br />
 > - Fully customize PDF invoice table content by modifying line item columns and total rows<br />
-> - Automatically send PDF invoices as a reminder configurable within a specific period of time<br />
+> - Automatically send a reminder email configurable within a specific period of time and display a payment due date<br />
 > - Bulk generate PDF invoices<br />
 > - Bulk export and/or download PDF invoices<br />
 > - Bill periodically by generating and sending global invoices<br />
@@ -271,7 +271,77 @@ function change_template_based_on_order_language( $template_name, $template_type
 add_filter( 'wpi_template_name', 'change_template_based_on_order_language', 10, 3 );
 `
 
+### How to add invoice information meta? ###
+Use below code to add invoice information meta to the PDF invoice template.
+
+`
+/**
+ * Add PDF invoice information meta (from third party plugins).
+ *
+ * @param array         $info Invoice info meta.
+ * @param BEWPI_Invoice $invoice Invoice object.
+ * @since 2.9.8
+ *
+ * @return array.
+ */
+function add_invoice_information_meta( $info, $invoice ) {
+	$payment_gateway = wc_get_payment_gateway_by_order( $invoice->order );
+
+	// Add PO Number from 'WooCommerce Purchase Order Gateway' plugin.
+	if ( $payment_gateway && 'woocommerce_gateway_purchase_order' === $payment_gateway->get_method_title() ) {
+		$po_number = WPI()->get_meta( $invoice->order, '_po_number' );
+		if ( $po_number ) {
+			$info['po_number'] = array(
+				'title' => __( 'Purchase Order Number:', 'woocommerce-pdf-invoices' ),
+				'value' => $po_number,
+			);
+		}
+	}
+
+	// Add VAT Number from 'WooCommerce EU VAT Number' plugin.
+	$vat_number = WPI()->get_meta( $invoice->order, '_vat_number' );
+	if ( $vat_number ) {
+		$info['vat_number'] = array(
+			'title' => __( 'VAT Number:', 'woocommerce-pdf-invoices' ),
+			'value' => $vat_number,
+		);
+	}
+
+	return $info;
+}
+add_filter( 'wpi_invoice_information_meta', 'add_invoice_information_meta', 10, 2 );
+`
+
 == Changelog ==
+
+= 2.9.10 - November 13, 2017 =
+
+- Added: Multisite compatibility by changing uploads directory.
+- Added: WC required version comments.
+- Fixed: Missing $line_items on invoice template for has_only_virtual_products().
+- Fixed: Fatal error non-numeric value.
+- Fixed: Enhanced select options not removable.
+
+= 2.9.9 - October 19, 2017 =
+
+- Fixed: Parse error: syntax error, unexpected '::'.
+
+= 2.9.8 - October 18, 2017 =
+
+- Added: 'add_invoice_information_meta' filter to add/remove PDF invoice information meta. See FAQ for example code. Make sure to update your custom template!
+- Added: 'wpi_item_description_data' filter to modify product description data.
+- Fixed: Options with enhanced selections resetting sort order.
+
+= 2.9.7 - October 12, 2017 =
+
+- Fixed: WC 3.2.0 compatibility.
+- Fixed: 'bewpi_skip_invoice_generation' filter parameter using order object instead of order total.
+
+= 2.9.6 - October 10, 2017 =
+
+- Added: Filter 'wpi_skip_pdf_invoice_attachment' to skip PDF invoice email attachment.
+- Fixed: Non-dismissable notice by temporary disabling it.
+- Fixed: PDF invoice marked as sent when sent to admin.
 
 = 2.9.5 - September 20, 2017 =
 
