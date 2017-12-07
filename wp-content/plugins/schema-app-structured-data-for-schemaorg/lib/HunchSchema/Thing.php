@@ -345,6 +345,81 @@ class HunchSchema_Thing {
 			return $publisher;
         }
 
+
+		public function getVideos()
+		{
+			global $post;
+
+			$YouTubeVideoIds = $this->getYouTubeVideoIds( $post->post_content );
+
+			if ( count( $YouTubeVideoIds ) )
+			{
+				if ( count( $YouTubeVideoIds ) == 1 )
+				{
+					return $this->getYouTubeVideo( $YouTubeVideoIds[0] );
+				}
+				else
+				{
+					$Videos = array();
+
+					foreach ( $YouTubeVideoIds as $YouTubeVideoId )
+					{
+						$Videos[] = $this->getYouTubeVideo( $YouTubeVideoId );
+					}
+
+					return $Videos;
+				}
+			}
+
+			return;
+		}
+
+
+		protected function getYouTubeVideo( $Id )
+		{
+			if ( ! empty( $Id ) )
+			{
+				$TransientId = sprintf( 'HunchSchema-Markup-YouTube-%s', $Id );
+
+				$Transient = get_transient( $TransientId );
+
+				if ( $Transient !== false )
+				{
+					return $Transient;
+				}
+
+
+				$Response = wp_remote_retrieve_body( wp_remote_get( sprintf( 'https://api.hunchmanifest.com/schemaorg/video.json?ids=%s', $Id ) ) );
+
+				if ( ! empty( $Response ) )
+				{
+					set_transient( $TransientId, json_decode( $Response ), ( 14 * DAY_IN_SECONDS ) );
+
+					return json_decode( $Response );
+				}
+			}
+
+			return;
+		}
+
+
+		protected function getYouTubeVideoIds( $String )
+		{
+			if ( ! empty( $String ) )
+			{
+				// https?://(?:[0-9A-Z-]+\.)?(?:youtu\.be/|youtube(?:-nocookie)?\.com\S*?[^\w\s-])([\w-]{11})(?=[^\w-]|$)(?![?=&+%\w.-]*(?:[\'"][^<>]*>|</a>))[?=&+%\w.-]*
+				preg_match_all( '~https?://(?:[0-9A-Z-]+\.)?(?:youtu\.be/|youtube(?:-nocookie)?\.com\S*?[^\w\s-])([\w-]{11})(?=[^\w-]|$)[?=&+%\w.-]*~im', $String, $Matches );
+
+				if ( isset( $Matches[1] ) && count( $Matches[1] ) )
+				{
+					return $Matches[1];
+				}
+			}
+
+			return array();
+		}
+
+
         /**
          * Converts the schema information to JSON-LD
          * 

@@ -9,8 +9,6 @@ defined('ABSPATH') OR die('This script cannot be accessed directly.');
  */
 class HunchSchema_Page extends HunchSchema_Thing
 {
-    public $schemaType = "Article";
-
     /**
      * Get Default Schema.org for Resource
      * 
@@ -28,26 +26,29 @@ class HunchSchema_Page extends HunchSchema_Thing
 			$Permalink = get_site_url();
         }
 
+        $MarkupTypeDefault = ! empty( $this->Settings['SchemaDefaultTypePage'] ) ? $this->Settings['SchemaDefaultTypePage'] : 'Article';
         $MarkupType = get_post_meta( $post->ID, '_HunchSchemaType', true );
-		$this->schemaType = $MarkupType ? $MarkupType : $this->schemaType;
+		$this->schemaType = $MarkupType ? $MarkupType : $MarkupTypeDefault;
 
 
-        $this->schema = array(
+        $this->schema = array
+        (
             '@context' => 'http://schema.org/',
             '@type' => $this->schemaType,
             'mainEntityOfPage' => array
             (
-				"@type" => "WebPage",
-				"@id" => $Permalink,
+				'@type' => 'WebPage',
+				'@id' => $Permalink,
 			),
             'headline' => get_the_title(),
             'name' => get_the_title(),
             'description' => $this->getExcerpt(),
-            'datePublished' => get_the_date('Y-m-d'),
+            'datePublished' => get_the_date( 'Y-m-d' ),
             'dateModified' => get_the_modified_date('Y-m-d'),
             'author' => $this->getAuthor(),
             'publisher' => $this->getPublisher(),
             'image' => $this->getImage(),
+            'video' => $this->getVideos(),
             'url' => $Permalink,
         );
 

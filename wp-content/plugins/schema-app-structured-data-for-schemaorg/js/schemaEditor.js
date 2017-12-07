@@ -92,6 +92,11 @@ jQuery(document).ready(function ($) {
 
 		if ( ! Elm.prop( 'disabled' ) )
 		{
+			Elm.val( Elm.val().replace( '<script>', '' ) );
+			Elm.val( Elm.val().replace( '<script type="application/ld+json">', '' ) );
+			Elm.val( Elm.val().replace( "<script type='application/ld+json'>", '' ) );
+			Elm.val( Elm.val().replace( '</script>', '' ) );
+
 			ElmWrap.find( '.ErrorMessage' ).empty();
 			Elm.closest( '.MetaSchemaMarkup' ).find( '.Updating' ).show();
 

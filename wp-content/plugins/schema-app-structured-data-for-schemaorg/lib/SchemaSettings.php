@@ -60,6 +60,14 @@ class SchemaSettings
 	}
 
 
+	public function hook_plugin_action_links( $links )
+	{
+		array_push( $links, sprintf( '<a href="%s">Settings</a>', admin_url( 'options-general.php?page=schema-app-setting' ) ) );
+
+		return $links;
+	}
+
+
     /**
      * 
      * @return type
@@ -290,17 +298,19 @@ class SchemaSettings
 		do_action( 'hunch_schema_settings_section', 'schema_option_name', 'schema-app-setting', 'publisher_settings' );
 
 
-		add_settings_section( 'toolbar', 'Toolbar', null, 'schema-app-setting' );  
-		add_settings_field( 'ToolbarShowTestSchema', 'Show Test Schema', array( $this, 'SettingsFieldToolbarShowTestSchema' ), 'schema-app-setting', 'toolbar' );      
+		add_settings_section( 'schema-default', 'Schema Default Settings', null, 'schema-app-setting' );  
+		add_settings_field( 'SchemaDefaultTypePost', 'Post Default Schema Type', array( $this, 'SettingsFieldSchemaDefaultTypePost' ), 'schema-app-setting', 'schema-default' );
+		add_settings_field( 'SchemaDefaultTypePage', 'Page Default Schema Type', array( $this, 'SettingsFieldSchemaDefaultTypePage' ), 'schema-app-setting', 'schema-default' );
+		add_settings_field( 'SchemaDefaultImage', 'Default Image', array( $this, 'SettingsFieldSchemaDefaultImage' ), 'schema-app-setting', 'schema-default' );
 
 		// Arguments: Settings Name, Settings Page, Settings Section
-		do_action( 'hunch_schema_settings_section', 'schema_option_name', 'schema-app-setting', 'toolbar' );
+		do_action( 'hunch_schema_settings_section', 'schema_option_name', 'schema-app-setting', 'schema-default' );
 
 
-		add_settings_section( 'schema', 'Schema', null, 'schema-app-setting' );  
+		add_settings_section( 'schema', 'Other Schema Options', null, 'schema-app-setting' );  
+		add_settings_field( 'ToolbarShowTestSchema', 'Show Test Schema', array( $this, 'SettingsFieldSchemaShowTestSchema' ), 'schema-app-setting', 'schema' );      
 		add_settings_field( 'SchemaBreadcrumb', 'Show Breadcrumb', array( $this, 'SettingsFieldSchemaBreadcrumb' ), 'schema-app-setting', 'schema' );      
 		add_settings_field( 'SchemaWebSite', 'Show WebSite', array( $this, 'SettingsFieldSchemaWebSite' ), 'schema-app-setting', 'schema' );      
-		add_settings_field( 'SchemaDefaultImage', 'Default Image', array( $this, 'SettingsFieldSchemaDefaultImage' ), 'schema-app-setting', 'schema' );      
 		add_settings_field( 'SchemaLinkedOpenData', 'Linked Open Data', array( $this, 'SettingsFieldSchemaLinkedOpenData' ), 'schema-app-setting', 'schema' );      
 		add_settings_field( 'SchemaRemoveMicrodata', 'Remove Microdata', array( $this, 'SettingsFieldSchemaRemoveMicrodata' ), 'schema-app-setting', 'schema' );      
 
@@ -490,54 +500,17 @@ class SchemaSettings
 				wp_remote_get( sprintf( 'https://api%s.hunchmanifest.com/utility/template?template=http://hunchmanifest.com/ontology/schemarules#AddSiteAccount&accountId=%s&siteUrl=%s&software=Wordpress', $APISubDomain, $new_input['graph_uri'], site_url() ), array( 'timeout' => 15, 'sslverify' => false ) );
 			}
 		}
-        
-        if( isset( $input['publisher_type'] ) && !empty($input['publisher_type']) )
-            $new_input['publisher_type'] = sanitize_text_field( $input['publisher_type'] );
-        if( isset( $input['publisher_name'] ) && !empty($input['publisher_name']) )
-            $new_input['publisher_name'] = sanitize_text_field( $input['publisher_name'] );
-        if( isset( $input['publisher_image'] ) && !empty($input['publisher_image']) )
-            $new_input['publisher_image'] = sanitize_text_field( $input['publisher_image'] );
 
-        if ( ! empty( $input['ToolbarShowTestSchema'] ) )
-        {
-			$new_input['ToolbarShowTestSchema'] = sanitize_text_field( $input['ToolbarShowTestSchema'] );
+
+		foreach ( array( 'publisher_type', 'publisher_name', 'publisher_image', 'SchemaDefaultTypePost', 'SchemaDefaultTypePage', 'SchemaDefaultImage', 'ToolbarShowTestSchema', 'SchemaBreadcrumb', 'SchemaWebSite', 'SchemaLinkedOpenData', 'SchemaRemoveMicrodata', 'Version', 'NoticeDismissWooCommerceAddon' ) as $FieldName )
+		{
+			if ( ! empty( $input[$FieldName] ) )
+			{
+				$new_input[$FieldName] = sanitize_text_field( $input[$FieldName] );
+			}
 		}
 
-        if ( ! empty( $input['SchemaBreadcrumb'] ) )
-        {
-			$new_input['SchemaBreadcrumb'] = sanitize_text_field( $input['SchemaBreadcrumb'] );
-		}
-        
-        if ( ! empty( $input['SchemaWebSite'] ) )
-        {
-			$new_input['SchemaWebSite'] = sanitize_text_field( $input['SchemaWebSite'] );
-		}
-        
-        if ( ! empty( $input['SchemaDefaultImage'] ) )
-        {
-			$new_input['SchemaDefaultImage'] = sanitize_text_field( $input['SchemaDefaultImage'] );
-		}
-                
-        if ( ! empty( $input['SchemaLinkedOpenData'] ) )
-        {
-			$new_input['SchemaLinkedOpenData'] = sanitize_text_field( $input['SchemaLinkedOpenData'] );
-		}
-                
-        if ( ! empty( $input['SchemaRemoveMicrodata'] ) )
-        {
-			$new_input['SchemaRemoveMicrodata'] = sanitize_text_field( $input['SchemaRemoveMicrodata'] );
-		}
-                
-        if ( ! empty( $input['Version'] ) )
-        {
-                $new_input['Version'] = sanitize_text_field( $input['Version'] );
-        }
 
-        if ( ! empty( $input['NoticeDismissWooCommerceAddon'] ) )
-        {
-                $new_input['NoticeDismissWooCommerceAddon'] = sanitize_text_field( $input['NoticeDismissWooCommerceAddon'] );
-        }
-        
         return $new_input;
     }
     
@@ -674,7 +647,63 @@ class SchemaSettings
     }
 
 
-	public function SettingsFieldToolbarShowTestSchema( $Options )
+	public function SettingsFieldSchemaDefaultTypePost( $Options )
+	{
+		$Value = ! empty ( $this->Settings['SchemaDefaultTypePost'] ) ? esc_attr( $this->Settings['SchemaDefaultTypePost'] ) : '';
+
+		?>
+
+			<select name="schema_option_name[SchemaDefaultTypePost]">
+				<option value="">Blog Posting</option>
+				<option value="Article" <?php selected( $Value, 'Article' ); ?>>Article</option>
+				<option value="LiveBlogPosting" <?php selected( $Value, 'LiveBlogPosting' ); ?>>&nbsp; Live Blog Posting</option>
+				<option value="NewsArticle" <?php selected( $Value, 'NewsArticle' ); ?>>News Article</option>
+				<option value="Report" <?php selected( $Value, 'Report' ); ?>>Report</option>
+				<option value="ScholarlyArticle" <?php selected( $Value, 'ScholarlyArticle' ); ?>>Scholarly Article</option>
+				<option value="MedicalScholarlyArticle" <?php selected( $Value, 'MedicalScholarlyArticle' ); ?>>&nbsp; Medical Scholarly Article</option>
+				<option value="SocialMediaPosting" <?php selected( $Value, 'SocialMediaPosting' ); ?>>Social Media Posting</option>
+				<option value="DiscussionForumPosting" <?php selected( $Value, 'DiscussionForumPosting' ); ?>>&nbsp; Discussion Forum Posting</option>
+				<option value="TechArticle" <?php selected( $Value, 'TechArticle' ); ?>>Tech Article</option>
+				<option value="APIReference" <?php selected( $Value, 'APIReference' ); ?>>&nbsp; API Reference</option>
+			</select>
+
+		<?php
+	}
+
+
+	public function SettingsFieldSchemaDefaultTypePage( $Options )
+	{
+		$Value = ! empty ( $this->Settings['SchemaDefaultTypePage'] ) ? esc_attr( $this->Settings['SchemaDefaultTypePage'] ) : '';
+
+		?>
+
+			<select name="schema_option_name[SchemaDefaultTypePage]">
+				<option value="">Article</option>
+				<option value="BlogPosting" <?php selected( $Value, 'BlogPosting' ); ?>>Blog Posting</option>
+				<option value="LiveBlogPosting" <?php selected( $Value, 'LiveBlogPosting' ); ?>>&nbsp; Live Blog Posting</option>
+				<option value="NewsArticle" <?php selected( $Value, 'NewsArticle' ); ?>>News Article</option>
+				<option value="Report" <?php selected( $Value, 'Report' ); ?>>Report</option>
+				<option value="ScholarlyArticle" <?php selected( $Value, 'ScholarlyArticle' ); ?>>Scholarly Article</option>
+				<option value="MedicalScholarlyArticle" <?php selected( $Value, 'MedicalScholarlyArticle' ); ?>>&nbsp; Medical Scholarly Article</option>
+				<option value="SocialMediaPosting" <?php selected( $Value, 'SocialMediaPosting' ); ?>>Social Media Posting</option>
+				<option value="DiscussionForumPosting" <?php selected( $Value, 'DiscussionForumPosting' ); ?>>&nbsp; Discussion Forum Posting</option>
+				<option value="TechArticle" <?php selected( $Value, 'TechArticle' ); ?>>Tech Article</option>
+				<option value="APIReference" <?php selected( $Value, 'APIReference' ); ?>>&nbsp; API Reference</option>
+			</select>
+
+		<?php
+	}
+
+
+	public function SettingsFieldSchemaDefaultImage( $Options )
+	{
+		$Value = empty ( $this->Settings['SchemaDefaultImage'] ) ? "" : esc_attr( $this->Settings['SchemaDefaultImage'] );
+		print '<input id="SchemaDefaultImage" class="regular-text" type="text" name="schema_option_name[SchemaDefaultImage]" value="' . $Value . '" title="' . $Value . '"> <button id="SchemaDefaultImageSelect" class="button">Select</button>';
+		print '<p>Default image for BlogPosting (Posts) or Article (Pages) when none is available.</p>';
+	}
+
+
+	public function SettingsFieldSchemaShowTestSchema( $Options )
 	{
 		$Value = empty( $this->Settings['ToolbarShowTestSchema'] ) ? 0 : $this->Settings['ToolbarShowTestSchema'];
 
@@ -700,14 +729,6 @@ class SchemaSettings
 		print '<p>Add <a href="https://schema.org/WebSite" target="_blank">WebSite</a> Markup to your homepage to enable <a href="https://developers.google.com/search/docs/data-types/sitelinks-searchbox" target="_blank">Site Search</a> and <a href="https://developers.google.com/search/docs/data-types/sitename" target="_blank">Site Name</a> features.</p>';
 	}
     
-
-	public function SettingsFieldSchemaDefaultImage( $Options )
-	{
-		$Value = empty ( $this->Settings['SchemaDefaultImage'] ) ? "" : esc_attr( $this->Settings['SchemaDefaultImage'] );
-		print '<input id="SchemaDefaultImage" class="regular-text" type="text" name="schema_option_name[SchemaDefaultImage]" value="' . $Value . '" title="' . $Value . '"> <button id="SchemaDefaultImageSelect" class="button">Select</button>';
-		print '<p>Default image for BlogPosting (Posts) or Article (Pages) when none is available.</p>';
-	}
-
 
 	public function SettingsFieldSchemaLinkedOpenData( $Options )
 	{

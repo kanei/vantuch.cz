@@ -6,14 +6,14 @@
  */
 class HunchSchema_Post extends HunchSchema_Page
 {
-    public $schemaType = "BlogPosting";
-
     public function getResource($pretty = false)
     {
         global $post;
 
         parent::getResource($pretty);
-        $this->schema['@type'] = $this->schemaType;
+
+
+        $this->schema['@type'] = ! empty( $this->Settings['SchemaDefaultTypePost'] ) ? $this->Settings['SchemaDefaultTypePost'] : 'BlogPosting';
 
 
         // Get the Categories

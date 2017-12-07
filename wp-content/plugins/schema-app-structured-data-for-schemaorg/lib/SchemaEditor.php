@@ -35,7 +35,7 @@ class SchemaEditor {
 
         // Javascript
         wp_enqueue_media(); 
-        wp_enqueue_script('schema-admin-funcs', $this->PluginURL . 'js/schemaEditor.js', array('jquery'), '20161116');
+        wp_enqueue_script('schema-admin-funcs', $this->PluginURL . 'js/schemaEditor.js', array('jquery'), '20171127');
         
     }
     

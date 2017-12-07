@@ -6,7 +6,7 @@ Author URI: https://www.hunchmanifest.com
 Author: Mark van Berkel (vberkel)
 Requires at least: 3.5
 Tested up to: 4.8
-Stable tag: 1.8.1
+Stable tag: 1.9.2
 License: GPL2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,6 +21,10 @@ Get Schema.org structured data for all pages, posts, categories and profile page
 
 By activating the plugin Schema App Wordpress plugin automatically creates [schema.org](http://schema.org/) markup for the all your pages, posts, author and category content leveraging information that already exists in your Wordpress website. Just activate the plugin, adding your logo and name of your business, BAM, your content is optimized to be fully understood by search engines resulting in higher traffic, higher click through rates and more.  The plugin also provides all three Google Site Structure features including Breadcrumbs, Sitelinks Searchbox and Your Site Name in Results.  Schema App Wordpress plugin also integrates with [Schema App Tools](https://www.schemaapp.com) to automatically deploy custom content (see below). 
 
+**Video Feature in version 1.9** 
+
+[Google's Powerful Video Features](https://developers.google.com/search/docs/data-types/videos) are now added automatically for all YouTube videos. 
+
 **What type of markup is automatically created with this plugin?**
 
 * Page : http://schema.org/Article
@@ -33,13 +37,22 @@ By activating the plugin Schema App Wordpress plugin automatically creates [sche
 * BreadcrumbList : http://schema.org/BreadcrumbList
 * WebSite : http://schema.org/WebSite
 
-All of these pages get extremely detailed schema.org data based on what's possibly mapped from the database. Customization of Page and Post schema markup can be done by directly editing the generated JSON-LD for each page. 
+All of these pages get extremely detailed schema.org data based on what's possibly mapped from the database. Customization of Page and Post schema markup can be done through default settings (e.g. posts can default to NewsArticle) as well as by directly editing the generated JSON-LD for each page. 
 
 **[Schema App Wordpress Plugin FAQ](https://www.schemaapp.com/wordpress-plugin/faq/)**
 
 **Extended Optimization with Schema App Tools**
 
-There is a lot of benefit of adding schema markup to fully describe your business including increased organic traffic, higher search rank and rich results. To achieve this you need to optimize your whole website with schema markup. [Schema App Tools](https://www.schemaapp.com/) enable marketers to create custom [schema.org](http://schema.org/) markup for a website's Local Business,  Organization, Services, Reviews, Contact Page and more. Schema App Tools have the complete [schema.org](http://schema.org/) vocabulary, requires no JSON-LD coding, and help you do ongoing schema markup maintenance when Google changes their recommendations. [Learn more about the Schema App Tools](https://www.schemaapp.com/schema-org-json-ld-markup-editor/). Schema App Tools subscriptions include support from our experts in schema markup. 
+There is a lot of benefit of adding schema markup to fully describe your business including increased organic traffic, higher search rank and rich results. To achieve this you need to optimize your whole website with schema markup. 
+
+[Schema App Tools](https://www.schemaapp.com/) enable marketers to create custom [schema.org](http://schema.org/) markup for a website's Local Business,  Organization, Services, Reviews, Contact Page and more. Schema App Tools have the complete [schema.org](http://schema.org/) vocabulary, requires no JSON-LD coding, and help you do ongoing schema markup maintenance when Google changes their recommendations. [Learn more about the Schema App Tools](https://www.schemaapp.com/schema-org-json-ld-markup-editor/). 
+
+Schema App Tools subscriptions include support from our experts in schema markup and access to the Schema App [Advanced Wordpress Plugin](https://www.schemaapp.com/schema-app-advanced-wordpress-plugin/). The Advanced Plugin compliments this base Schema Plugin by adding capabilities including:
+
+* WooCommerce Products
+* Link Category & Tag Definitions to Wikipedia, Wikidata
+* Page & Post Review Widget 
+* Custom Post & Field Mapping
 
 **Manage multiple sites?**
 
@@ -70,6 +83,20 @@ You\'ll find the [FAQ on SchemaApp.com] (http://www.schemaapp.com/wordpress/faq/
 5. Link to Validation
 
 == Changelog ==
+= 1.9.2 = 
+- Fix, YouTube Video warning
+
+= 1.9.1 =
+- Fix, Warning for pages without post data
+- Fix, JSON-LD Editor ignores input with script element
+- Fix, Settings set as Default BlogPosting
+
+= 1.9.0 =
+- Feature, VideoObject markup for YouTube videos in Pages and Posts
+- Feature, Page and Posts Default schema class options
+- Improve, Settings Page
+- Fix, datePublished change to improve localization
+
 = 1.8.1 =
 - Fix, Genesis deactivation settings
 - Fix, Article Image Missing for Blog Page
