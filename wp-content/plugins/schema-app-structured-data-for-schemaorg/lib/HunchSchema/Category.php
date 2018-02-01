@@ -18,7 +18,7 @@ class HunchSchema_Category extends HunchSchema_Thing {
 
             $hasPart[] = array
                 (
-                '@type' => 'BlogPosting',
+                '@type' => ! empty( $this->Settings['SchemaDefaultTypePost'] ) ? $this->Settings['SchemaDefaultTypePost'] : 'BlogPosting',
                 'headline' => get_the_title(),
                 'url' => get_the_permalink(),
                 'datePublished' => get_the_date('Y-m-d'),

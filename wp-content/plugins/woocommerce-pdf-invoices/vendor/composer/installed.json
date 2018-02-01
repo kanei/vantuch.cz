@@ -51,18 +51,51 @@
         ]
     },
     {
+        "name": "xrstf/composer-php52",
+        "version": "v1.0.20",
+        "version_normalized": "1.0.20.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/composer-php52/composer-php52.git",
+            "reference": "bd41459d5e27df8d33057842b32377c39e97a5a8"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/composer-php52/composer-php52/zipball/bd41459d5e27df8d33057842b32377c39e97a5a8",
+            "reference": "bd41459d5e27df8d33057842b32377c39e97a5a8",
+            "shasum": ""
+        },
+        "time": "2016-04-16T21:52:24+00:00",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-default": "1.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-0": {
+                "xrstf\\Composer52": "lib/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ]
+    },
+    {
         "name": "mpdf/mpdf",
         "version": "dev-mpdf",
         "version_normalized": "dev-mpdf",
         "source": {
             "type": "git",
             "url": "https://github.com/baselbers/mpdf.git",
-            "reference": "5cbaff4303604247f698afc6b13a51987a58f5bc"
+            "reference": "68208bff62412bf35958f6e1a139ca6d0277baf3"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/baselbers/mpdf/zipball/5cbaff4303604247f698afc6b13a51987a58f5bc",
-            "reference": "5cbaff4303604247f698afc6b13a51987a58f5bc",
+            "url": "https://api.github.com/repos/baselbers/mpdf/zipball/68208bff62412bf35958f6e1a139ca6d0277baf3",
+            "reference": "68208bff62412bf35958f6e1a139ca6d0277baf3",
             "shasum": ""
         },
         "require": {
@@ -76,7 +109,7 @@
         "suggest": {
             "ext-zlib": "Needed for compression of embedded resources, such as fonts"
         },
-        "time": "2017-05-23T11:52:01+00:00",
+        "time": "2017-07-27T12:40:02+00:00",
         "type": "library",
         "installation-source": "source",
         "autoload": {
@@ -113,38 +146,5 @@
             "source": "https://github.com/mpdf/mpdf",
             "docs": "http://mpdf.github.io"
         }
-    },
-    {
-        "name": "xrstf/composer-php52",
-        "version": "v1.0.20",
-        "version_normalized": "1.0.20.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/composer-php52/composer-php52.git",
-            "reference": "bd41459d5e27df8d33057842b32377c39e97a5a8"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/composer-php52/composer-php52/zipball/bd41459d5e27df8d33057842b32377c39e97a5a8",
-            "reference": "bd41459d5e27df8d33057842b32377c39e97a5a8",
-            "shasum": ""
-        },
-        "time": "2016-04-16T21:52:24+00:00",
-        "type": "library",
-        "extra": {
-            "branch-alias": {
-                "dev-default": "1.x-dev"
-            }
-        },
-        "installation-source": "dist",
-        "autoload": {
-            "psr-0": {
-                "xrstf\\Composer52": "lib/"
-            }
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "MIT"
-        ]
     }
 ]

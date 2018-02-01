@@ -291,7 +291,7 @@ if ( ! class_exists( 'BEWPI_Abstract_Invoice' ) ) {
 		 */
 		public function generate( $destination = 'F' ) {
 			if ( false === $this->full_path ) {
-				$this->date   = current_time( 'mysql' );
+				$this->date   = apply_filters( 'wpi_invoice_date', current_time( 'mysql' ), $this );
 				$this->number = $this->get_next_invoice_number();
 				$this->year   = date_i18n( 'Y', current_time( 'timestamp' ) );
 			} else {
@@ -301,6 +301,12 @@ if ( ! class_exists( 'BEWPI_Abstract_Invoice' ) ) {
 
 			// yearly sub-folders.
 			if ( (bool) WPI()->get_option( 'template', 'reset_counter_yearly' ) ) {
+				// Make new year dir.
+				$year_dir = WPI_ATTACHMENTS_DIR . '/' . $this->year;
+				if ( ! is_dir( $year_dir ) ) {
+					wp_mkdir_p( $year_dir );
+				}
+
 				$pdf_path = $this->year . '/' . $this->get_formatted_number() . '.pdf';
 			} else {
 				// one folder for all invoices.

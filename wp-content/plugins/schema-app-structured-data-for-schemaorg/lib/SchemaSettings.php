@@ -313,6 +313,7 @@ class SchemaSettings
 		add_settings_field( 'SchemaWebSite', 'Show WebSite', array( $this, 'SettingsFieldSchemaWebSite' ), 'schema-app-setting', 'schema' );      
 		add_settings_field( 'SchemaLinkedOpenData', 'Linked Open Data', array( $this, 'SettingsFieldSchemaLinkedOpenData' ), 'schema-app-setting', 'schema' );      
 		add_settings_field( 'SchemaRemoveMicrodata', 'Remove Microdata', array( $this, 'SettingsFieldSchemaRemoveMicrodata' ), 'schema-app-setting', 'schema' );      
+		add_settings_field( 'SchemaRemoveWPSEOMarkup', 'Remove WPSEO Markup', array( $this, 'SettingsFieldSchemaRemoveWPSEOMarkup' ), 'schema-app-setting', 'schema' );      
 
 		// Arguments: Settings Name, Settings Page, Settings Section
 		do_action( 'hunch_schema_settings_section', 'schema_option_name', 'schema-app-setting', 'schema' );
@@ -502,9 +503,9 @@ class SchemaSettings
 		}
 
 
-		foreach ( array( 'publisher_type', 'publisher_name', 'publisher_image', 'SchemaDefaultTypePost', 'SchemaDefaultTypePage', 'SchemaDefaultImage', 'ToolbarShowTestSchema', 'SchemaBreadcrumb', 'SchemaWebSite', 'SchemaLinkedOpenData', 'SchemaRemoveMicrodata', 'Version', 'NoticeDismissWooCommerceAddon' ) as $FieldName )
+		foreach ( array( 'publisher_type', 'publisher_name', 'publisher_image', 'SchemaDefaultTypePost', 'SchemaDefaultTypePage', 'SchemaDefaultImage', 'ToolbarShowTestSchema', 'SchemaBreadcrumb', 'SchemaWebSite', 'SchemaLinkedOpenData', 'SchemaRemoveMicrodata', 'SchemaRemoveWPSEOMarkup', 'Version', 'NoticeDismissWooCommerceAddon' ) as $FieldName )
 		{
-			if ( ! empty( $input[$FieldName] ) )
+			if ( isset( $input[$FieldName] ) && $input[$FieldName] != '' )
 			{
 				$new_input[$FieldName] = sanitize_text_field( $input[$FieldName] );
 			}
@@ -745,6 +746,24 @@ class SchemaSettings
 
 		print '<input type="checkbox" name="schema_option_name[SchemaRemoveMicrodata]" value="1" ' . checked( 1, $Value, false ) . '>';
 		print '<p>Remove Microdata from header and content.</p>';
+	}
+
+
+	public function SettingsFieldSchemaRemoveWPSEOMarkup( $Options )
+	{
+		// Default enabled
+		$Value = ( isset( $this->Settings['SchemaRemoveWPSEOMarkup'] ) && $this->Settings['SchemaRemoveWPSEOMarkup'] == 0 ) ? 0 : 1;
+
+		?>
+
+			<select name="schema_option_name[SchemaRemoveWPSEOMarkup]">
+				<option value="1" <?php selected( $Value, 1 ); ?>>Enabled</option>
+				<option value="0" <?php selected( $Value, 0 ); ?>>Disabled</option>
+			</select>
+			<p>Remove Website and Person/Company JSON/LD markup.</p>
+
+		<?php
+
 	}
 
 

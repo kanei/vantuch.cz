@@ -17,7 +17,7 @@ class SchemaFront
 
 		add_action( 'init', array( $this, 'HandleCache' ) );
 		add_action( 'wp', array( $this, 'LinkedOpenData' ), 10, 1 );
-		add_action( 'wp_head', array( $this, 'hunch_schema_add' ) );
+		add_action( 'wp_footer', array( $this, 'hunch_schema_add' ), 50 );
 
 		if ( ! empty( $this->Settings['SchemaRemoveMicrodata'] ) )
 		{
@@ -27,6 +27,12 @@ class SchemaFront
 		if ( ! empty( $this->Settings['ToolbarShowTestSchema'] ) )
 		{
 			add_action( 'admin_bar_menu', array( $this, 'AdminBarMenu' ), 999 );
+		}
+
+		// Default enabled
+		if ( ! isset( $this->Settings['SchemaRemoveWPSEOMarkup'] ) || $this->Settings['SchemaRemoveWPSEOMarkup'] == 1 )
+		{
+			add_filter( 'wpseo_json_ld_output', array( $this, 'RemoveWPSEOJsonLD' ), 10, 2 );
 		}
 
 		// Priority 15 ensures it runs after Genesis itself has setup.
@@ -75,8 +81,9 @@ class SchemaFront
 			$JSONSchemaMarkup = array();
 			$SchemaMarkupType = '';
 
-			if ( $SchemaMarkup === "" )
-			{
+                        // If Custom schema markup is empty or not found
+			if ( $SchemaMarkup === "" || $SchemaMarkup === false ) {
+
 				$SchemaMarkupCustom = get_post_meta( $post->ID, '_HunchSchemaMarkup', true );
 
 				if ( $SchemaMarkupCustom )
@@ -99,7 +106,7 @@ class SchemaFront
 
 			$SchemaMarkup = apply_filters( 'hunch_schema_markup', $SchemaMarkup, $SchemaMarkupType, $post, $PostType );
 
-			if ( $SchemaMarkup !== "" )
+			if ( $SchemaMarkup !== "" && ! is_null( $SchemaMarkup ) )
 			{
 				if ( $JSON )
 				{
@@ -107,7 +114,7 @@ class SchemaFront
 				}
 				else
 				{
-					printf( '<script type="application/ld+json">%s</script>', $SchemaMarkup );
+					printf( '<!-- Schema App --><script type="application/ld+json">%s</script><!-- Schema App -->' . "\n", $SchemaMarkup );
 				}
 			}
 
@@ -123,7 +130,7 @@ class SchemaFront
 					}
 					else
 					{
-						printf( '<script type="application/ld+json">%s</script>', $SchemaMarkupWebSite );
+						printf( '<!-- Schema App Website --><script type="application/ld+json">%s</script><!-- Schema App Website -->' . "\n", $SchemaMarkupWebSite );
 					}
 				}
 			}
@@ -140,7 +147,7 @@ class SchemaFront
 					}
 					else
 					{
-						printf( '<script type="application/ld+json">%s</script>', $SchemaMarkupBreadcrumb );
+						printf( '<!-- Schema App Breadcrumb --><script type="application/ld+json">%s</script><!-- Schema App Breadcrumb -->' . "\n", $SchemaMarkupBreadcrumb );
 					}
 				}
 			}
@@ -200,6 +207,17 @@ class SchemaFront
 		}
 
 		return $Buffer;
+	}
+
+
+	public function RemoveWPSEOJsonLD( $data, $context )
+	{
+		if ( in_array( $context, array( 'website', 'company', 'person' ) ) )
+		{
+			return array();
+		}
+
+		return $data;
 	}
 
 

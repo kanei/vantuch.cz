@@ -79,7 +79,7 @@ table.wpi.order-page-meta-box.pdf-invoice tr td:last-child {
 }
 
 a.wpi.order-page.invoice.button {
-    margin-right: 4px !important;
+    margin: 4px !important;
 }
 
 .bewpi-notes {

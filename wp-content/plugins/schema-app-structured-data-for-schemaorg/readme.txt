@@ -6,7 +6,7 @@ Author URI: https://www.hunchmanifest.com
 Author: Mark van Berkel (vberkel)
 Requires at least: 3.5
 Tested up to: 4.8
-Stable tag: 1.9.2
+Stable tag: 1.9.7
 License: GPL2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -83,6 +83,26 @@ You\'ll find the [FAQ on SchemaApp.com] (http://www.schemaapp.com/wordpress/faq/
 5. Link to Validation
 
 == Changelog ==
+= 1.9.7 = 
+- Fix, Improve cached data checking 
+
+= 1.9.6 = 
+- Fix, WooCommerce Activation error
+- Fix, Breadcrumb List Item, unique @id
+- Fix, CollectionPage items check for and use configured default
+- Improve, add low priority to hunch_schema_add function, behind other JS
+
+= 1.9.5 = 
+- Fix, API error in PHP versions < 5.4
+
+= 1.9.4 = 
+- Fix, caching when no Schema App data found
+
+= 1.9.3 = 
+- Improve, switch remote schema lookup to faster Schema Delivery Network (CDN)
+- Improve, move JSON-LD output to wp_footer for faster loading pages
+- Feature, add filter for Wordpress SEO to remove WebSite, Company and Person data items
+
 = 1.9.2 = 
 - Fix, YouTube Video warning
 

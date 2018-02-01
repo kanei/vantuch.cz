@@ -93,7 +93,7 @@ class HunchSchema_Page extends HunchSchema_Thing
 					'position' => $BreadcrumbPosition++,
 					'item' => array
 					(
-						'@id' => get_permalink( $PostId ),
+						'@id' => get_permalink( $PostId ) . "#breadcrumbitem",
 						'name' => get_the_title( $PostId ),
 					),
 				);

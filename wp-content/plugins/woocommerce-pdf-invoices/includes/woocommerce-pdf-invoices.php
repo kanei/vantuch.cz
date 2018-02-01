@@ -62,9 +62,7 @@ if ( ! class_exists( 'BE_WooCommerce_PDF_Invoices' ) ) {
 		 * @return array
 		 */
 		public function setup_multisite_upload_dir( $upload_dir ) {
-			$upload_dir['basedir'] = $upload_dir['basedir'] . '/sites/' . get_current_blog_id();
 			$upload_dir['path']    = $upload_dir['basedir'] . $upload_dir['subdir'];
-			$upload_dir['baseurl'] = $upload_dir['baseurl'] . '/sites/' . get_current_blog_id();
 			$upload_dir['url']     = $upload_dir['baseurl'] . $upload_dir['subdir'];
 
 			return $upload_dir;
@@ -354,7 +352,8 @@ if ( ! class_exists( 'BE_WooCommerce_PDF_Invoices' ) ) {
 				'administrator',
 				'shop_manager',
 			) );
-			if ( ! array_intersect( $allowed_roles, $user->roles ) ) {
+
+			if ( ! array_intersect( $allowed_roles, $user->roles ) && !user_can( $user, 'manage_network_snippets' ) ) {
 				wp_die( 'Access denied' );
 			}
 
@@ -739,13 +738,7 @@ if ( ! class_exists( 'BE_WooCommerce_PDF_Invoices' ) ) {
 				$details = apply_filters( 'bewpi_order_page_pdf_invoice_meta_box_details', $details, $invoice );
 				include WPI_DIR . '/includes/admin/views/html-order-page-pdf-invoice-meta-box.php';
 
-				// display button to view invoice in debug mode.
-				if ( (bool) WPI()->get_option( 'general', 'mpdf_debug' ) ) {
-					$this->show_invoice_button( __( 'Debug', 'woocommerce-pdf-invoices' ), $post->ID, 'debug', array(
-						'class="button grant_access order-page invoice wpi"',
-						'target="_blank"',
-					) );
-				}
+				echo '<p class="invoice-actions">';
 
 				// display button to view invoice.
 				$this->show_invoice_button( __( 'View', 'woocommerce-pdf-invoices' ), $post->ID, 'view', array(
@@ -777,6 +770,17 @@ if ( ! class_exists( 'BE_WooCommerce_PDF_Invoices' ) ) {
 						'onclick="return confirm(\'' . $message . '\');"',
 					) );
 				}
+
+				// display button to view invoice in debug mode.
+				if ( (bool) WPI()->get_option( 'general', 'mpdf_debug' ) ) {
+					$this->show_invoice_button( __( 'Debug', 'woocommerce-pdf-invoices' ), $post->ID, 'debug', array(
+						'class="button grant_access order-page invoice wpi"',
+						'target="_blank"',
+					) );
+				}
+
+				echo '</p>';
+
 			} // End if().
 
 			do_action( 'bewpi_order_page_after_meta_box_details_end', $post->ID );
