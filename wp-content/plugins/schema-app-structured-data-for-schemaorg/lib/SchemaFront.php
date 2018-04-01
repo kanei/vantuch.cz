@@ -17,7 +17,16 @@ class SchemaFront
 
 		add_action( 'init', array( $this, 'HandleCache' ) );
 		add_action( 'wp', array( $this, 'LinkedOpenData' ), 10, 1 );
-		add_action( 'wp_footer', array( $this, 'hunch_schema_add' ), 50 );
+
+		// Do not change priority of following hooks as it breaks hook chaining and functions like wp_localize_script
+		if ( ! empty( $this->Settings['SchemaDefaultLocation'] ) && $this->Settings['SchemaDefaultLocation'] == 'Footer' )
+		{
+			add_action( 'wp_footer', array( $this, 'hunch_schema_add' ) );
+		}
+		else
+		{
+			add_action( 'wp_head', array( $this, 'hunch_schema_add' ) );
+		}
 
 		if ( ! empty( $this->Settings['SchemaRemoveMicrodata'] ) )
 		{

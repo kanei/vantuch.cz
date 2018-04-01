@@ -6,7 +6,7 @@ Author URI: https://www.hunchmanifest.com
 Author: Mark van Berkel (vberkel)
 Requires at least: 3.5
 Tested up to: 4.8
-Stable tag: 1.9.7
+Stable tag: 1.9.10
 License: GPL2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -83,6 +83,16 @@ You\'ll find the [FAQ on SchemaApp.com] (http://www.schemaapp.com/wordpress/faq/
 5. Link to Validation
 
 == Changelog ==
+= 1.9.10 = 
+- Fix, loading double encoded Cyrillic characters in URL lookup
+
+= 1.9.9 =
+- Feature, add setting for schema in header or footer
+- Fix, Advanced Plugin Rating Widget Javascript enqueue priority
+
+= 1.9.8 =
+- Fix, Ignore cached null returned
+
 = 1.9.7 = 
 - Fix, Improve cached data checking 
 

@@ -58,18 +58,22 @@ class SchemaServer {
                         return '';
                 }
 
+				// Decode accent characters
+				$resource = urldecode( $resource );
+
 
                 $transient_id = 'HunchSchema-Markup-' . md5($resource);
                 $transient = get_transient($transient_id);
 
-                if ($transient !== false) {
+                // Check for missing, empty or 'null' transient
+                if ($transient !== false && $transient !== 'null') {
                         return $transient;
                 }
 
-
                 $remote_response = wp_remote_get($this->readLink($resource));
 
-                if (is_wp_error($remote_response) || wp_remote_retrieve_body($remote_response) === "" || wp_remote_retrieve_body($remote_response) === 'null' || wp_remote_retrieve_response_code($remote_response) != 200) {
+                // Check for anything unexpected
+                if (is_wp_error($remote_response) || wp_remote_retrieve_body($remote_response) === "" || wp_remote_retrieve_body($remote_response) === false || wp_remote_retrieve_body($remote_response) === 'null' || wp_remote_retrieve_response_code($remote_response) != 200) {
                         $schemadata = '';
                 } else {
                         $schemadata = wp_remote_retrieve_body($remote_response);

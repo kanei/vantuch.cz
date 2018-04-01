@@ -299,6 +299,7 @@ class SchemaSettings
 
 
 		add_settings_section( 'schema-default', 'Schema Default Settings', null, 'schema-app-setting' );  
+		add_settings_field( 'SchemaDefaultLocation', 'Location where to put the schema markup', array( $this, 'SettingsFieldSchemaDefaultLocation' ), 'schema-app-setting', 'schema-default' );
 		add_settings_field( 'SchemaDefaultTypePost', 'Post Default Schema Type', array( $this, 'SettingsFieldSchemaDefaultTypePost' ), 'schema-app-setting', 'schema-default' );
 		add_settings_field( 'SchemaDefaultTypePage', 'Page Default Schema Type', array( $this, 'SettingsFieldSchemaDefaultTypePage' ), 'schema-app-setting', 'schema-default' );
 		add_settings_field( 'SchemaDefaultImage', 'Default Image', array( $this, 'SettingsFieldSchemaDefaultImage' ), 'schema-app-setting', 'schema-default' );
@@ -489,8 +490,7 @@ class SchemaSettings
     public function sanitize( $input ) {
         $new_input = array();
         
-        // Schema App Settings tab
-        if( isset( $input['graph_uri'] ) )
+        if ( isset( $input['graph_uri'] ) )
         {
             $new_input['graph_uri'] = sanitize_text_field( $input['graph_uri'] );
 
@@ -500,14 +500,20 @@ class SchemaSettings
 
 				wp_remote_get( sprintf( 'https://api%s.hunchmanifest.com/utility/template?template=http://hunchmanifest.com/ontology/schemarules#AddSiteAccount&accountId=%s&siteUrl=%s&software=Wordpress', $APISubDomain, $new_input['graph_uri'], site_url() ), array( 'timeout' => 15, 'sslverify' => false ) );
 			}
+
+			// Arguments: Settings Field, Old Value, New Value
+			do_action( 'hunch_schema_settings_sanitize', 'graph_uri', ( isset( $this->Settings['graph_uri'] ) ? $this->Settings['graph_uri'] : '' ), $new_input['graph_uri'] );
 		}
 
 
-		foreach ( array( 'publisher_type', 'publisher_name', 'publisher_image', 'SchemaDefaultTypePost', 'SchemaDefaultTypePage', 'SchemaDefaultImage', 'ToolbarShowTestSchema', 'SchemaBreadcrumb', 'SchemaWebSite', 'SchemaLinkedOpenData', 'SchemaRemoveMicrodata', 'SchemaRemoveWPSEOMarkup', 'Version', 'NoticeDismissWooCommerceAddon' ) as $FieldName )
+		foreach ( array( 'publisher_type', 'publisher_name', 'publisher_image', 'SchemaDefaultLocation', 'SchemaDefaultTypePost', 'SchemaDefaultTypePage', 'SchemaDefaultImage', 'ToolbarShowTestSchema', 'SchemaBreadcrumb', 'SchemaWebSite', 'SchemaLinkedOpenData', 'SchemaRemoveMicrodata', 'SchemaRemoveWPSEOMarkup', 'Version', 'NoticeDismissWooCommerceAddon' ) as $FieldName )
 		{
 			if ( isset( $input[$FieldName] ) && $input[$FieldName] != '' )
 			{
 				$new_input[$FieldName] = sanitize_text_field( $input[$FieldName] );
+
+				// Arguments: Settings Field, Old Value, New Value
+				do_action( 'hunch_schema_settings_sanitize', $FieldName, ( isset( $this->Settings[$FieldName] ) ? $this->Settings[$FieldName] : '' ), $new_input[$FieldName] );
 			}
 		}
 
@@ -646,6 +652,21 @@ class SchemaSettings
         echo $imageHtml;
 
     }
+
+
+	public function SettingsFieldSchemaDefaultLocation( $Options )
+	{
+		$Value = ! empty ( $this->Settings['SchemaDefaultLocation'] ) ? esc_attr( $this->Settings['SchemaDefaultLocation'] ) : 'Header';
+
+		?>
+
+			<select name="schema_option_name[SchemaDefaultLocation]">
+				<option value="Header" <?php selected( $Value, 'Header' ); ?>>Header</option>
+				<option value="Footer" <?php selected( $Value, 'Footer' ); ?>>Footer</option>
+			</select>
+
+		<?php
+	}
 
 
 	public function SettingsFieldSchemaDefaultTypePost( $Options )
