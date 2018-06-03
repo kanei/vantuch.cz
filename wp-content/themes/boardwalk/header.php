@@ -12,7 +12,7 @@
 <meta charset="<?php bloginfo( 'charset' ); ?>">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Cestovatelský a motorkářský blog soustředící se na vyprávění a fotografii."
-<link rel="profile" href="http://gmpg.org/xfn/11">
+<link rel="profile" href="https://gmpg.org/xfn/11">
 <link rel="pingback" href="<?php bloginfo( 'pingback_url' ); ?>">
 
 <?php wp_head(); ?>
@@ -46,8 +46,8 @@
 
 		<?php /** Translate start */ ?>
 		<div class="translate">
-			<form action="http://www.google.com/translate" >
-				<input name="u" value="<?= "http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]" ?>" type="hidden" />
+			<form action="https://www.google.com/translate" >
+				<input name="u" value="<?= "https://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]" ?>" type="hidden" />
 				<input name="hl" value="en" type="hidden" />
 				<input name="ie" value="UTF8" type="hidden" />
 				<input name="sandbox" value="0" type="hidden" />
