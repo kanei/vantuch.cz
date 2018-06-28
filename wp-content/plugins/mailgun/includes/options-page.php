@@ -57,7 +57,7 @@
                         </th>
                         <td>
                             <input type="text" class="regular-text" name="mailgun[apiKey]" value="<?php esc_attr_e($this->get_option('apiKey')); ?>" placeholder="key-3ax6xnjp29jd6fds4gc373sgvjxteol0" />
-                            <p class="description"><?php _e('Your Mailgun API key, that starts with and includes "key-". Only valid for use with the API.', 'mailgun'); ?></p>
+                            <p class="description"><?php _e('Your Mailgun API key. Only valid for use with the API.', 'mailgun'); ?></p>
                         </td>
                     </tr>
                     <tr valign="top" class="mailgun-smtp">
@@ -88,6 +88,18 @@
                                 <option value="0"<?php selected('0', $this->get_option('secure')); ?>><?php _e('No', 'mailgun'); ?></option>
                             </select>
                             <p class="description"><?php _e('Set this to "No" if your server cannot establish SSL SMTP connections or if emails are not being delivered. If you set this to "No" your password will be sent in plain text. Only valid for use with SMTP. Default "Yes".', 'mailgun'); ?></p>
+                        </td>
+                    </tr>
+                    <tr valign="top" class="mailgun-smtp">
+                        <th scope="row">
+                            <?php _e('Security Type', 'mailgun'); ?>
+                        </th>
+                        <td>
+                            <select name="mailgun[sectype]">
+                                <option value="ssl"<?php selected('ssl', $this->get_option('sectype')); ?>>SSL</option>
+                                <option value="tls"<?php selected('tls', $this->get_option('sectype')); ?>>TLS</option>
+                            </select>
+                            <p class="description"><php _e('Leave this at "TLS" unless mail sending fails. This option only matters for Secure SMTP. Default "TLS".', 'mailgun'); ?></p>
                         </td>
                     </tr>
                     <tr valign="top">

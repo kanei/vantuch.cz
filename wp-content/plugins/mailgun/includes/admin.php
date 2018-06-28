@@ -76,6 +76,7 @@ class MailgunAdmin extends Mailgun
             'username'          => '',
             'password'          => '',
             'secure'            => '1',
+            'sectype'           => 'tls',
             'track-clicks'      => '',
             'track-opens'       => '',
             'campaign-id'       => '',
@@ -259,16 +260,21 @@ class MailgunAdmin extends Mailgun
         $apiKey = trim($options['apiKey']);
         $username = trim($options['username']);
         if (!empty($apiKey)) {
-            $pos = strpos($apiKey, 'key-');
-            if ($pos === false || $pos > 4) {
-                $apiKey = "key-{$apiKey}";
-            }
-
             $pos = strpos($apiKey, 'api:');
             if ($pos !== false && $pos == 0) {
                 $apiKey = substr($apiKey, 4);
             }
-            $options['apiKey'] = $apiKey;
+
+            if (1 === preg_match('(\w{32}-\w{8}-\w{8})', $apiKey)) {
+                $options['apiKey'] = $apiKey;
+            } else {
+                $pos = strpos($apiKey, 'key-');
+                if ($pos === false || $pos > 4) {
+                    $apiKey = "key-{$apiKey}";
+                }
+
+                $options['apiKey'] = $apiKey;
+            }
         }
 
         if (!empty($username)) {
@@ -282,6 +288,10 @@ class MailgunAdmin extends Mailgun
 
         if (empty($options['override-from'])) {
             $options['override-from'] = $this->defaults['override-from'];
+        }
+
+        if (empty($options['sectype'])) {
+            $options['sectype'] = $this->defaults['sectype'];
         }
         // alternatively:
         // foreach ($defaults as $key => $value) {
@@ -374,10 +384,15 @@ class MailgunAdmin extends Mailgun
 
         $useAPI = (defined('MAILGUN_USEAPI') && MAILGUN_USEAPI) ? MAILGUN_USEAPI : $this->get_option('useAPI');
         $secure = (defined('MAILGUN_SECURE') && MAILGUN_SECURE) ? MAILGUN_SECURE : $this->get_option('secure');
+        $sectype = (defined('MAILGUN_SECTYPE') && MAILGUN_SECTYPE) ? MAILGUN_SECTYPE : $this->get_option('sectype');
+
         if ((bool) $useAPI) {
             $method = __('HTTP API', 'mailgun');
         } else {
             $method = ((bool) $secure) ? __('Secure SMTP', 'mailgun') : __('SMTP', 'mailgun');
+            if ((bool) $secure) {
+                $method = $method . sprintf(__(' via %s', $sectype));
+            }
         }
 
         $admin_email = get_option('admin_email');
