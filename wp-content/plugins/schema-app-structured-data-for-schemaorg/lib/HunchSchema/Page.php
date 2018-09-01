@@ -23,7 +23,7 @@ class HunchSchema_Page extends HunchSchema_Thing
 
         if ( is_front_page() )
         {
-			$Permalink = get_site_url();
+			$Permalink = home_url();
         }
 
         $MarkupTypeDefault = ! empty( $this->Settings['SchemaDefaultTypePage'] ) ? $this->Settings['SchemaDefaultTypePage'] : 'Article';
@@ -52,7 +52,7 @@ class HunchSchema_Page extends HunchSchema_Thing
             'url' => $Permalink,
         );
 
-		if ( get_comments_number() )
+		if ( get_comments_number() && empty( $this->Settings['SchemaHideComments'] ) )
 		{
 			$this->schema['commentCount'] = get_comments_number();
 			$this->schema['comment'] = $this->getComments();
@@ -76,7 +76,7 @@ class HunchSchema_Page extends HunchSchema_Thing
 			'position' => $BreadcrumbPosition++,
 			'item' => array
 			(
-				'@id' => get_site_url() . "#breadcrumbitem",
+				'@id' => home_url( '/#breadcrumbitem' ),
 				'name' => get_bloginfo( 'name' ),
 			),
 		);

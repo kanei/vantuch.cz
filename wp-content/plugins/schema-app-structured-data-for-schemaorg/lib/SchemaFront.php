@@ -44,11 +44,18 @@ class SchemaFront
 			add_filter( 'wpseo_json_ld_output', array( $this, 'RemoveWPSEOJsonLD' ), 10, 2 );
 		}
 
+		// Disable WPSEO Breadcrumb markup if ours is enabled
+		if ( ! empty( $this->Settings['SchemaBreadcrumb'] ) )
+		{
+			add_filter( 'wpseo_json_ld_output', array( $this, 'RemoveWPSEOJsonLDBreadcrumb' ), 10, 2 );
+		}
+
 		// Priority 15 ensures it runs after Genesis itself has setup.
 		add_action( 'genesis_setup', array( $this, 'GenesisSetup' ), 15 );
 
 		add_action( 'amp_post_template_head', array( $this, 'AMPPostTemplateHead' ) );
-		add_filter( 'amp_post_template_metadata', '__return_false' );
+		add_filter( 'amp_post_template_metadata', '__return_false', 100 );
+		add_filter( 'amp_schemaorg_metadata', '__return_false', 100 );
     }
 
 
@@ -90,7 +97,7 @@ class SchemaFront
 			$JSONSchemaMarkup = array();
 			$SchemaMarkupType = '';
 
-                        // If Custom schema markup is empty or not found
+			// If Custom schema markup is empty or not found
 			if ( $SchemaMarkup === "" || $SchemaMarkup === false ) {
 
 				$SchemaMarkupCustom = get_post_meta( $post->ID, '_HunchSchemaMarkup', true );
@@ -123,7 +130,7 @@ class SchemaFront
 				}
 				else
 				{
-					printf( '<!-- Schema App --><script type="application/ld+json">%s</script><!-- Schema App -->' . "\n", $SchemaMarkup );
+					printf( '<!-- Schema App - %s-%s-%s --><script type="application/ld+json">%s</script><!-- Schema App -->' . "\n", $SchemaMarkupType, $PostType, $post->ID, $SchemaMarkup );
 				}
 			}
 
@@ -221,7 +228,18 @@ class SchemaFront
 
 	public function RemoveWPSEOJsonLD( $data, $context )
 	{
-		if ( in_array( $context, array( 'website', 'company', 'person' ) ) )
+		if ( in_array( $context, array( 'website', 'company', 'person', 'breadcrumb' ) ) )
+		{
+			return array();
+		}
+
+		return $data;
+	}
+
+
+	public function RemoveWPSEOJsonLDBreadcrumb( $data, $context )
+	{
+		if ( $context == 'breadcrumb' )
 		{
 			return array();
 		}

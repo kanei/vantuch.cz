@@ -5,8 +5,8 @@ Tags: schema, structured data, schema.org, rich snippets, json-ld
 Author URI: https://www.hunchmanifest.com
 Author: Mark van Berkel (vberkel)
 Requires at least: 3.5
-Tested up to: 4.8
-Stable tag: 1.9.10
+Tested up to: 4.9.7
+Stable tag: 1.10.1
 License: GPL2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -83,6 +83,15 @@ You\'ll find the [FAQ on SchemaApp.com] (http://www.schemaapp.com/wordpress/faq/
 5. Link to Validation
 
 == Changelog ==
+= 1.10.1 =
+- Fix, Yoast Wordpress SEO breadcrumblist @id collisions
+
+= 1.10.0 =
+- Feature, add support for WPML urls
+- Feature, add BlogPost to include article content, make comments optional
+- Fix, error with AMP schema, collision with Glue for Yoast SEO AMP
+- Fix, CollectionPage use default schema type
+
 = 1.9.10 = 
 - Fix, loading double encoded Cyrillic characters in URL lookup
 

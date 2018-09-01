@@ -312,6 +312,8 @@ class SchemaSettings
 		add_settings_field( 'ToolbarShowTestSchema', 'Show Test Schema', array( $this, 'SettingsFieldSchemaShowTestSchema' ), 'schema-app-setting', 'schema' );      
 		add_settings_field( 'SchemaBreadcrumb', 'Show Breadcrumb', array( $this, 'SettingsFieldSchemaBreadcrumb' ), 'schema-app-setting', 'schema' );      
 		add_settings_field( 'SchemaWebSite', 'Show WebSite', array( $this, 'SettingsFieldSchemaWebSite' ), 'schema-app-setting', 'schema' );      
+		add_settings_field( 'SchemaArticleBody', 'Show articleBody', array( $this, 'SettingsFieldSchemaArticleBody' ), 'schema-app-setting', 'schema' );      
+		add_settings_field( 'SchemaHideComments', 'Hide Comments', array( $this, 'SettingsFieldSchemaHideComments' ), 'schema-app-setting', 'schema' );      
 		add_settings_field( 'SchemaLinkedOpenData', 'Linked Open Data', array( $this, 'SettingsFieldSchemaLinkedOpenData' ), 'schema-app-setting', 'schema' );      
 		add_settings_field( 'SchemaRemoveMicrodata', 'Remove Microdata', array( $this, 'SettingsFieldSchemaRemoveMicrodata' ), 'schema-app-setting', 'schema' );      
 		add_settings_field( 'SchemaRemoveWPSEOMarkup', 'Remove WPSEO Markup', array( $this, 'SettingsFieldSchemaRemoveWPSEOMarkup' ), 'schema-app-setting', 'schema' );      
@@ -506,7 +508,7 @@ class SchemaSettings
 		}
 
 
-		foreach ( array( 'publisher_type', 'publisher_name', 'publisher_image', 'SchemaDefaultLocation', 'SchemaDefaultTypePost', 'SchemaDefaultTypePage', 'SchemaDefaultImage', 'ToolbarShowTestSchema', 'SchemaBreadcrumb', 'SchemaWebSite', 'SchemaLinkedOpenData', 'SchemaRemoveMicrodata', 'SchemaRemoveWPSEOMarkup', 'Version', 'NoticeDismissWooCommerceAddon' ) as $FieldName )
+		foreach ( array( 'publisher_type', 'publisher_name', 'publisher_image', 'SchemaDefaultLocation', 'SchemaDefaultTypePost', 'SchemaDefaultTypePage', 'SchemaDefaultImage', 'ToolbarShowTestSchema', 'SchemaBreadcrumb', 'SchemaWebSite', 'SchemaArticleBody', 'SchemaHideComments', 'SchemaLinkedOpenData', 'SchemaRemoveMicrodata', 'SchemaRemoveWPSEOMarkup', 'Version', 'NoticeDismissWooCommerceAddon' ) as $FieldName )
 		{
 			if ( isset( $input[$FieldName] ) && $input[$FieldName] != '' )
 			{
@@ -752,6 +754,24 @@ class SchemaSettings
 	}
     
 
+	public function SettingsFieldSchemaArticleBody( $Options )
+	{
+		$Value = empty( $this->Settings['SchemaArticleBody'] ) ? 0 : $this->Settings['SchemaArticleBody'];
+
+		print '<input type="checkbox" name="schema_option_name[SchemaArticleBody]" value="1" ' . checked( 1, $Value, false ) . '>';
+		print '<p>Add <a href="https://schema.org/articleBody" target="_blank">articleBody</a> Markup to your Posts.</p>';
+	}
+    
+
+	public function SettingsFieldSchemaHideComments( $Options )
+	{
+		$Value = empty( $this->Settings['SchemaHideComments'] ) ? 0 : $this->Settings['SchemaHideComments'];
+
+		print '<input type="checkbox" name="schema_option_name[SchemaHideComments]" value="1" ' . checked( 1, $Value, false ) . '>';
+		print '<p>Remove <a href="http://schema.org/Comment" target="_blank">Comment</a> Markup from your Posts.</p>';
+	}
+    
+
 	public function SettingsFieldSchemaLinkedOpenData( $Options )
 	{
 		$Value = empty( $this->Settings['SchemaLinkedOpenData'] ) ? 0 : $this->Settings['SchemaLinkedOpenData'];
@@ -781,7 +801,7 @@ class SchemaSettings
 				<option value="1" <?php selected( $Value, 1 ); ?>>Enabled</option>
 				<option value="0" <?php selected( $Value, 0 ); ?>>Disabled</option>
 			</select>
-			<p>Remove Website and Person/Company JSON/LD markup.</p>
+			<p>Remove Website, Person/Company and Breadcrumb JSON/LD markup.</p>
 
 		<?php
 

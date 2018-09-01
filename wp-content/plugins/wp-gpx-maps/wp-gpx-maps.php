@@ -3,7 +3,7 @@
  * Plugin Name: WP-GPX-Maps
  * Plugin URI: http://www.devfarm.it/
  * Description: Draws a GPX track with altitude chart
- * Version: 1.5.05
+ * Version: 1.6.02
  * Author: Bastianon Massimo
  * Author URI: http://www.devfarm.it/
  * Text Domain: wp-gpx-maps
@@ -63,9 +63,23 @@ function enqueue_WP_GPX_Maps_scripts_admin($hook)
 
 function enqueue_WP_GPX_Maps_scripts() {		
 
-	wp_register_script('chartjs', plugins_url( '/js/Chart.min.js', __FILE__ ), array(), "2.7.2" );
-	wp_register_script('WP-GPX-Maps', plugins_url( '/js/WP-GPX-Maps.js', __FILE__ ), array('jquery','googlemaps','chartjs'), "1.5.05" );
+	/* leaflet */
 
+	wp_register_style( 'leaflet', plugins_url( '/ThirdParties/Leaflet_1.3.1/leaflet.css', __FILE__ ), array(), "1.3.1" );
+	wp_enqueue_style( 'leaflet' );
+	
+	wp_register_style( 'leaflet.fullscreen', plugins_url( '/ThirdParties/leaflet.fullscreen-1.1.4/Control.FullScreen.css', __FILE__ ), array(), "1.3.1" );
+	wp_enqueue_style( 'leaflet.fullscreen' );
+
+	wp_register_script('leaflet', plugins_url( '/ThirdParties/Leaflet_1.3.1/leaflet.js', __FILE__ ), array(), "1.3.1" );
+	wp_register_script('leaflet.fullscreen', plugins_url( '/ThirdParties/leaflet.fullscreen-1.1.4/Control.FullScreen.js', __FILE__ ), array(), "1.1.4" );
+
+	/* chartjs */
+	
+	wp_register_script('chartjs', plugins_url( '/js/Chart.min.js', __FILE__ ), array(), "2.7.2" );
+	wp_register_script('WP-GPX-Maps', plugins_url( '/js/WP-GPX-Maps.js', __FILE__ ), array('jquery','leaflet','chartjs'), "1.6.02" );
+
+	/*
 	$wpgpxmaps_googlemapsv3_apikey = get_option('wpgpxmaps_googlemapsv3_apikey');
 	
 	if ($wpgpxmaps_googlemapsv3_apikey)	{		
@@ -73,8 +87,11 @@ function enqueue_WP_GPX_Maps_scripts() {
 	}	
 	else {		
 		wp_enqueue_script('googlemaps', '//maps.googleapis.com/maps/api/js', null, null);
-	}	
+	}
+	*/	
 	
+	wp_enqueue_script('leaflet');
+	wp_enqueue_script('leaflet.fullscreen');
 	wp_enqueue_script('jquery');
 	wp_enqueue_script('chartjs'); 	
     wp_enqueue_script('WP-GPX-Maps');
@@ -593,10 +610,9 @@ function handle_WP_GPX_Maps_Shortcodes($attr, $content='')
 	$ngimgs_data = '';
 	if ( $ngGalleries != '' || $ngImages != '' ) {
 	
-	//print_r($points);
-	
 		$ngimgs = getNGGalleryImages($ngGalleries, $ngImages, $points_x_time, $points_x_lat, $points_x_lon, $dtoffset, $error);
 		$ngimgs_data ='';	
+			
 		foreach ($ngimgs as $img) {		
 			$data = $img['data'];
 			$data = str_replace("\n","",$data);
@@ -661,7 +677,7 @@ function handle_WP_GPX_Maps_Shortcodes($attr, $content='')
 		<script type="text/javascript">
 		
 			jQuery(document).ready(function() {
-
+		
 				jQuery("#wpgpxmaps_'.$r.'").wpgpxmaps({ 
 					targetId    : "'.$r.'",
 					mapType     : "'.$mt.'",

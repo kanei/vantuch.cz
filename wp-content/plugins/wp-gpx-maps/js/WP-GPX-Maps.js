@@ -2,91 +2,732 @@
 Plugin Name: WP-GPX-Maps
 Plugin URI: http://www.devfarm.it/
 Description: Draws a gpx track with altitude graph
-Version: 1.5.05
+Version: 1.6.02
 Author: Bastianon Massimo
 Author URI: http://www.devfarm.it/
 */
 
+var WPGPXMAPS = {
+	
+	Utils : {
+		// in case of multiple polylines this function divide the points of each polyline
+		DividePolylinesPoints : function (mapData)
+		{
+
+			var lastCut = 0;
+			
+			var result = [];
+		
+			for (i=0; i < mapData.length; i++) 
+			{	
+				if (mapData[i] == null)
+				{
+					result.push( mapData.slice(lastCut == 0 ? 0 : lastCut + 1 ,i) );
+					lastCut = i;
+				}
+			}
+			
+			if (mapData.length != lastCut)
+			{
+				result.push( mapData.slice(lastCut) );
+			}
+		
+			return result;
+			
+		},
+		
+		GetItemFromArray : function(arr,index)
+		{
+			try
+			{
+			  return arr[index];
+			}
+			catch(e)
+			{
+				return [0,0];
+			}
+		},
+
+		
+	},
+	
+	MapEngines : {
+		/* NOT WORKING AND TESTED! old code copy&pate */
+		GoogleMaps : function(){
+			this.map = null,
+			this.EventSelectChart = null,
+			this.Polylines = [],
+			this.init = function(targetElement, mapType, scrollWheelZoom, ThunderforestApiKey){
+				
+				var mapTypeIds = [];
+				for(var type in google.maps.MapTypeId) {
+					mapTypeIds.push(google.maps.MapTypeId[type]);
+				}
+				mapTypeIds.push("OSM1");
+				mapTypeIds.push("OSM2");
+				mapTypeIds.push("OSM3");
+				mapTypeIds.push("OSM4");
+				mapTypeIds.push("OSM5");
+				mapTypeIds.push("OSM6");
+				
+				var ngImageMarkers = [];
+				
+				switch (mapType)
+				{
+					case 'TERRAIN': { mapType = google.maps.MapTypeId.TERRAIN; break;}
+					case 'SATELLITE': { mapType = google.maps.MapTypeId.SATELLITE; break;}
+					case 'ROADMAP': { mapType = google.maps.MapTypeId.ROADMAP; break;}
+					case 'OSM1': { mapType = "OSM1"; break;}
+					case 'OSM2': { mapType = "OSM2"; break;}
+					case 'OSM3': { mapType = "OSM3"; break;}
+					case 'OSM4': { mapType = "OSM4"; break;}
+					case 'OSM5': { mapType = "OSM5"; break;}
+					case 'OSM6': { mapType = "OSM6"; break;}
+					default: { mapType = google.maps.MapTypeId.HYBRID; break;}
+				}
+				
+				if ( mapType == "TERRAIN" || mapType == "SATELLITE" || mapType == "ROADMAP" )
+				{
+					// google maps
+				} else {
+					// Show OpenStreetMaps credits
+					$(el_osm_credits).show();
+				}
+				
+				this.map = new google.maps.Map(el_map, {
+					mapTypeId: mapType,
+					scrollwheel: (zoomOnScrollWheel == 'true'),
+					mapTypeControlOptions: {
+						style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
+						mapTypeIds: mapTypeIds
+					}
+				}); 
+					
+			
+				this.map.mapTypes.set("OSM1", new google.maps.ImageMapType({
+					getTileUrl: function(coord, zoom) {
+						return "https://tile.openstreetmap.org/" + zoom + "/" + coord.x + "/" + coord.y + ".png";
+					},
+					tileSize: new google.maps.Size(256, 256),
+					name: "OSM",
+					alt : "Open Street Map",
+					maxZoom: 18
+				}));
+
+				
+				this.map.mapTypes.set("OSM2", new google.maps.ImageMapType({
+					getTileUrl: function(coord, zoom) {
+						if (hasThunderforestApiKey)
+							return "https://a.tile.thunderforest.com/cycle/" + zoom + "/" + coord.x + "/" + coord.y + ".png?apikey=" + ThunderforestApiKey;
+						else
+							return "http://a.tile.opencyclemap.org/cycle/" + zoom + "/" + coord.x + "/" + coord.y + ".png";
+					},
+					tileSize: new google.maps.Size(256, 256),
+					name: "OCM",
+					alt : "Open Cycle Map",
+					maxZoom: 18
+				}));
+				
+				this.map.mapTypes.set("OSM4", new google.maps.ImageMapType({
+					getTileUrl: function(coord, zoom) {
+						if (hasThunderforestApiKey)
+							return "https://a.tile.thunderforest.com/transport/" + zoom + "/" + coord.x + "/" + coord.y + ".png?apikey=" + ThunderforestApiKey;
+						else
+							return "http://a.tile2.opencyclemap.org/transport/" + zoom + "/" + coord.x + "/" + coord.y + ".png";
+					},
+					tileSize: new google.maps.Size(256, 256),
+					name: "OCM-Tran",
+					alt : "Open Cycle Map - Transport",
+					maxZoom: 18
+				}));
+				
+				this.map.mapTypes.set("OSM5", new google.maps.ImageMapType({
+					getTileUrl: function(coord, zoom) {
+						if (hasThunderforestApiKey)
+							return "https://a.tile.thunderforest.com/landscape/" + zoom + "/" + coord.x + "/" + coord.y + ".png?apikey=" + ThunderforestApiKey;
+						else
+							return "http://a.tile3.opencyclemap.org/landscape/" + zoom + "/" + coord.x + "/" + coord.y + ".png";
+					},
+					tileSize: new google.maps.Size(256, 256),
+					name: "OCM-Land",
+					alt : "Open Cycle Map - Landscape",
+					maxZoom: 18
+				}));
+					
+				this.map.mapTypes.set("OSM6", new google.maps.ImageMapType({
+					getTileUrl: function(coord, zoom) {
+						return "https://tile2.maptoolkit.net/terrain/" + zoom + "/" + coord.x + "/" + coord.y + ".png";
+					},
+					tileSize: new google.maps.Size(256, 256),
+					name: "MTK-Terr",
+					alt : "MapToolKit - Terrain",
+					maxZoom: 18
+				}));
+						
+				
+				
+			},
+			this.AppPolylines = function(mapData, color1, currentIcon, startIcon, endIcon) {
+				
+				var points = [];
+				var lastCut=0;
+				var polylinenes = [];
+				var polyline_number=0;
+				var color=0;
+				for (i=0; i < mapData.length; i++) 
+				{	
+					if (mapData[i] == null)
+					{
+
+						var poly = new google.maps.Polyline({
+							path: points.slice(lastCut,i),
+							strokeColor: color,
+							strokeOpacity: .7,
+							strokeWeight: 4,
+							map: this.map
+						});
+						polylinenes.push(poly);
+						lastCut=i;
+						polyline_number= polyline_number +1;
+						//var p = new google.maps.LatLng(mapData[i-1][0], mapData[i-1][1]);
+						//points.push(p);
+						//bounds.extend(p);
+					}
+					else
+					{
+						var p = new google.maps.LatLng(mapData[i][0], mapData[i][1]);
+						points.push(p);
+						bounds.extend(p);			
+					}
+				}
+				
+				if (points.length != lastCut)
+				{
+					if ( polyline_number < color1.length)
+					{
+						color=color1[polyline_number];
+					}
+					else
+					{
+						color=color1[color1.length-1];
+					}
+					var poly = new google.maps.Polyline({
+						path: points.slice(lastCut),
+						strokeColor: color,
+						strokeOpacity: .7,
+						strokeWeight: 4,
+						map: this.map
+					});
+
+					polylinenes.push(poly);			
+					currentPoints = [];
+					polyline_number= polyline_number +1;
+				}
+				
+				if (startIcon != '')
+				{
+					var startIconImage = new google.maps.MarkerImage(startIcon);
+					var startMarker = new google.maps.Marker({
+							  position: points[0],
+							  map: this.map,
+							  title: "Start",
+							  animation: google.maps.Animation.DROP,
+							  icon: startIconImage,
+							  zIndex: 10
+						  });
+
+				}
+
+				if (endIcon != '')
+				{
+					var endIconImage = new google.maps.MarkerImage(endIcon);
+					var startMarker = new google.maps.Marker({
+							  position: points[ points.length -1 ],
+							  map: this.map,
+							  title: "Start",
+							  animation: google.maps.Animation.DROP,
+							  icon: endIconImage,
+							  zIndex: 10
+						  });
+				
+				}
+
+				var first = WPGPXMAPS.Utils.GetItemFromArray(mapData,0)
+				
+				if (currentIcon == '')
+				{
+					currentIcon = "https://maps.google.com/mapfiles/kml/pal4/icon25.png";
+				}
+				
+				var current = new google.maps.MarkerImage(currentIcon,
+					new google.maps.Size(32, 32),
+					new google.maps.Point(0,0),
+					new google.maps.Point(16, 16)
+				);
+				
+				var marker = new google.maps.Marker({
+					position: new google.maps.LatLng(first[0], first[1]),
+					title:"Start",
+					icon: current,
+					map: this.map,
+					zIndex: 10
+				});
+				
+				for (i=0; i < polylinenes.length; i++) 
+				{	
+
+					google.maps.event.addListener(polylinenes[i],'mouseover',function(event){
+						if (marker)
+						{
+							marker.setPosition(event.latLng);	
+							marker.setTitle(lng.currentPosition);
+							if (myChart)
+							{
+								var l1 = event.latLng.lat();
+								var l2 = event.latLng.lng();
+								var ci = getClosestIndex(mapData,l1,l2);
+								var activeElements = [];
+								var seriesLen = myChart.data.datasets.length;												
+								for(var i=0; i<seriesLen;i++)
+								{
+									activeElements.push(myChart.chart.getDatasetMeta(i).data[ci]);
+								}
+								if (activeElements.length > 0)
+								{
+									myChart.options.customLine.x = activeElements[0]._model.x;
+									if (isNaN(myChart.tooltip._eventPosition))
+									{
+										myChart.tooltip._eventPosition = {
+												x: activeElements[0]._model.x, 
+												y: activeElements[0]._model.y
+											};
+									}								
+									myChart.tooltip._active = activeElements;
+									myChart.tooltip.update(true);
+									myChart.draw();
+								}
+
+							}
+						}
+					});		
+				}
+				
+				
+				
+			},
+			this.AddWaypoints = function(waypoints, waypointIcon)
+			{
+				
+			},
+			this.MoveMarkerToPosition = function(LatLon, updateChart)
+			{
+				
+			}
+		},
+		
+		Leaflet : function(){
+			this.Bounds = [],
+			this.lng = {},
+			this.map = null,
+			this.EventSelectChart = null,
+			this.Polylines = [],
+			this.CurrentPositionMarker = null,
+			this.CurrentGPSPositionMarker = null,
+			this.init = function(targetElement, mapType, scrollWheelZoom, ThunderforestApiKey){
+				
+				this.map = L.map(targetElement, 
+					{ 
+						scrollWheelZoom : scrollWheelZoom, 
+					}		
+				);
+				
+				// create fullscreen control
+				var fsControl = new L.Control.FullScreen();
+				// add fullscreen control to the map
+				this.map.addControl(fsControl);				
+				
+				L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+					attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+				}).addTo(this.map);
+
+				var hasThunderforestApiKey = (ThunderforestApiKey + '').length > 0;
+				
+				var baseMaps = {};
+				
+				var overlayMaps = { };
+				
+				var defaultMpaLayer = null;
+				
+				if (hasThunderforestApiKey)
+				{
+					baseMaps["Open Cycle Map"] = L.tileLayer('https://a.tile.thunderforest.com/cycle/{z}/{x}/{y}.png?apikey=' + ThunderforestApiKey, {
+						maxZoom: 18,
+						attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+							'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+							'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+					});
+					
+					baseMaps["Open Cycle Map - Transport"] = L.tileLayer('https://a.tile.thunderforest.com/transport/{z}/{x}/{y}.png?apikey=' + ThunderforestApiKey, {
+						maxZoom: 18,
+						attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+							'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+							'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+					});			
+				
+					baseMaps["Open Cycle Map - Landscape"] = L.tileLayer('https://a.tile.thunderforest.com/landscape/{z}/{x}/{y}.png?apikey=' + ThunderforestApiKey, {
+						maxZoom: 18,
+						attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+							'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+							'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+						});
+
+				}
+				else
+				{
+				
+					baseMaps["Open Cycle Map"] = L.tileLayer('http://a.tile.opencyclemap.org/cycle/{z}/{x}/{y}.png', {
+						maxZoom: 18,
+						attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+							'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+							'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+					});
+				
+					baseMaps["Open Cycle Map - Transport"] = L.tileLayer('https://a.tile2.opencyclemap.org/transport/{z}/{x}/{y}.png', {
+						maxZoom: 18,
+						attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+							'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+							'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+					});
+						
+					baseMaps["Open Cycle Map - Landscape"] = L.tileLayer('https://a.tile3.opencyclemap.org/landscape/{z}/{x}/{y}.png', {
+						maxZoom: 18,
+						attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+							'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+							'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+					});
+
+				}
+
+				baseMaps["Open Street Map"] = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+					maxZoom: 18,
+					attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+						'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+						'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+				});
+
+				
+				baseMaps["MapToolKit - Terrain"] = L.tileLayer('https://tile2.maptoolkit.net/terrain/{z}/{x}/{y}.png', {
+					maxZoom: 18,
+					attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+						'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+						'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+				});
+				
+				baseMaps["Humanitarian Map Style"] = L.tileLayer('https://a.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+					maxZoom: 18,
+					attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+						'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+						'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+				});
+				/*
+				baseMaps["Open Ski Map"] = L.tileLayer('http://tiles.skimap.org/openskimap/{z}/{x}/{y}.png', {
+					maxZoom: 18,
+					attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+						'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+						'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+				});
+				*/
+				
+				baseMaps["Hike & Bike"] = L.tileLayer('http://toolserver.org/tiles/hikebike/{z}/{x}/{y}.png', {
+					maxZoom: 18,
+					attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+						'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+						'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+				});		
+
+				baseMaps["Open Sea Map"] = L.tileLayer('http://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
+					maxZoom: 18,
+					attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+						'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+						'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+				});		
+
+				
+				switch (mapType)
+				{
+					case 'OSM1': { 
+						baseMaps["Open Street Map"].addTo(this.map);
+						break;
+					}
+					case 'OSM2': { 
+						baseMaps["Open Cycle Map"].addTo(this.map);
+						break;
+					}
+					case 'OSM4': { 
+						baseMaps["Open Cycle Map - Transport"].addTo(this.map);
+						break;
+					}
+					case 'OSM5': { 
+						baseMaps["Open Cycle Map - Landscape"].addTo(this.map);
+						break;
+					}
+					case 'OSM6': { 
+						baseMaps["MapToolKit - Terrain"].addTo(this.map);
+						break;
+					}
+					case 'OSM7': { 
+						baseMaps["Humanitarian Map Style"].addTo(this.map);
+						break;
+					}
+					case 'OSM8': { 
+						baseMaps["Open Ski Map"].addTo(this.map);
+						break;
+					}
+					case 'OSM9': { 
+						baseMaps["Hike & Bike"].addTo(this.map);
+						break;
+					}
+					case 'OSM10': { 
+						baseMaps["Open Sea Map"].addTo(this.map);
+						break;
+					}
+					
+					default: { 
+						baseMaps["Open Street Map"].addTo(this.map);
+					}
+				}				
+				
+				L.control.layers(baseMaps, overlayMaps).addTo(this.map);
+
+			},
+			
+			this.AppPolylines = function(mapData, color1, currentIcon, startIcon, endIcon) {
+				
+				var first = WPGPXMAPS.Utils.GetItemFromArray(mapData,0)
+				
+				if (currentIcon == '')
+				{
+					currentIcon = "https://maps.google.com/mapfiles/kml/pal4/icon25.png";
+				}
+				
+				var CurrentPositionMarker = L.marker(first, {icon: L.icon({
+																				iconUrl: currentIcon,
+																				iconSize:     [32, 32], // size of the icon
+																				iconAnchor:   [16, 16], // point of the icon which will correspond to marker's location
+																			})
+																		});
+				CurrentPositionMarker.addTo(this.map);
+				CurrentPositionMarker.title = "Start";
+				
+				this.CurrentPositionMarker = CurrentPositionMarker;
+					
+				var pointsArray = WPGPXMAPS.Utils.DividePolylinesPoints(mapData);
+				
+				var lng = this.lng;
+				var EventSelectChart = this.EventSelectChart;
+				
+				this.Bounds = mapData;
+				
+				this.CenterMap();
+				
+				for (i=0; i < pointsArray.length; i++) 
+				{
+					
+					if ( i < color1.length)
+					{
+						color=color1[i];
+					}
+					else
+					{
+						color=color1[color1.length-1];
+					}
+					
+					try
+					{
+						var polyline = L.polyline(pointsArray[i], {color: color}).addTo(this.map);
+						this.Polylines.push(polyline);
+						
+						var context = this;
+						
+						this.Polylines[i].on('mousemove', function(e) { 
+							context.MoveMarkerToPosition([e.latlng.lat, e.latlng.lng], true);
+						});						
+					}	
+					catch(err) {						
+					}
+					
+				}				
+			
+				if (startIcon != '')
+				{
+					
+					var startMarker = L.marker(mapData[0], {icon: L.icon({
+																		iconUrl: startIcon,
+																		iconSize:     [32, 32], // size of the icon
+																		iconAnchor:   [16, 16], // point of the icon which will correspond to marker's location
+																	})
+																});
+					startMarker.addTo(this.map);
+					startMarker.title = "Start";
+					
+
+				}
+
+				if (endIcon != '')
+				{
+					  
+					var endMarker = L.marker(mapData[ mapData.length - 1 ], {icon: L.icon({
+																		iconUrl: endIcon,
+																		iconSize:     [32, 32], // size of the icon
+																		iconAnchor:   [16, 16], // point of the icon which will correspond to marker's location
+																	})
+																});
+					endMarker.addTo(this.map);
+					endMarker.title = "End";
+				
+				}
+
+
+	/*			
+				var current = new google.maps.MarkerImage(currentIcon,
+					new google.maps.Size(32, 32),
+					new google.maps.Point(0,0),
+					new google.maps.Point(16, 16)
+				);
+				
+				var marker = new google.maps.Marker({
+					position: new google.maps.LatLng(first[0], first[1]),
+					title:"Start",
+					icon: current,
+					map: map,
+					zIndex: 10
+				});
+
+				for (i=0; i < polylinenes.length; i++) 
+				{	
+
+					google.maps.event.addListener(polylinenes[i],'mouseover',function(event){
+						if (marker)
+						{
+							marker.setPosition(event.latLng);	
+							marker.setTitle(lng.currentPosition);
+							if (myChart)
+							{
+								var l1 = event.latLng.lat();
+								var l2 = event.latLng.lng();
+								var ci = getClosestIndex(mapData,l1,l2);
+								var activeElements = [];
+								var seriesLen = myChart.data.datasets.length;												
+								for(var i=0; i<seriesLen;i++)
+								{
+									activeElements.push(myChart.chart.getDatasetMeta(i).data[ci]);
+								}
+								if (activeElements.length > 0)
+								{
+									myChart.options.customLine.x = activeElements[0]._model.x;
+									if (isNaN(myChart.tooltip._eventPosition))
+									{
+										myChart.tooltip._eventPosition = {
+												x: activeElements[0]._model.x, 
+												y: activeElements[0]._model.y
+											};
+									}								
+									myChart.tooltip._active = activeElements;
+									myChart.tooltip.update(true);
+									myChart.draw();
+								}
+
+							}
+						}
+					});		
+				}
+				
+		*/						
+				
+			},
+					
+			this.AddWaypoints = function(waypoints, waypointIcon)
+			{	
+			
+				var icon = L.icon({
+					iconUrl: 'https://maps.google.com/mapfiles/ms/micons/flag.png',
+					iconSize:     [32, 32], // size of the icon
+					iconAnchor:   [16, 16], // point of the icon which will correspond to marker's location
+				});
+						
+				if (waypointIcon!='')
+				{
+					icon = L.icon({
+						iconUrl: 'waypointIcon',
+						iconSize:     [32, 32], // size of the icon
+						iconAnchor:   [16, 16], // point of the icon which will correspond to marker's location
+					});
+				}
+				
+				for (i = 0; i < waypoints.length; i++) { 
+					var wpt = waypoints[i];
+					
+					this.Bounds.push([wpt.lat,wpt.lon]);
+					
+					var lat= wpt.lat;
+					var lon= wpt.lon;
+					var sym= wpt.sym;
+					var typ= wpt.type;
+
+					if (icon.img) {
+						icon.iconUrl = wpt.img;
+						wsh = '';
+					}
+					
+					var marker = L.marker([lat, lon], {icon: icon });
+
+					var cnt = '';	
+					
+					if (wpt.name=='')
+					{
+						cnt = "<div>" + unescape(wpt.desc) + "</div>";
+					}
+					else
+					{
+						cnt = "<div><b>" + wpt.name + "</b><br />" + unescape(wpt.desc) + "</div>";
+					}
+					
+					cnt += "<br /><p><a href='https://maps.google.com?daddr=" + lat + "," + lon + "' target='_blank'>Itin&eacute;raire</a></p>";
+
+					marker.addTo(this.map).bindPopup(cnt);
+					
+				}	
+			
+				this.CenterMap();				
+				
+			},
+			
+			this.MoveMarkerToPosition = function(LatLon, updateChart) {
+				if (this.CurrentPositionMarker == null)
+					return;
+				
+				this.CurrentPositionMarker.setLatLng(LatLon);	
+				
+				if (this.lng)
+					this.CurrentPositionMarker.title = this.lng.currentPosition;
+				
+				if (updateChart == true && this.EventSelectChart)
+					this.EventSelectChart(LatLon);
+						
+			},
+			this.CenterMap = function()
+			{
+				this.map.fitBounds(this.Bounds);
+			}
+			
+		}
+		
+	}
+	
+};
+
 (function ( $ ) {
 
-	var infowindow;
-	var CustomMarker;
-
-	CustomMarker = function( map, latlng, src, img_w, img_h) {
-		this.latlng_ = latlng;
-		this.setMap(map);
-		this.src_ = src;
-		this.img_w_ = img_w;
-		this.img_h_ = img_h;
-	}
-
-	CustomMarker.prototype = new google.maps.OverlayView();
-
-	CustomMarker.prototype.draw = function() {
-	
-		var me = this;
-
-		// Check if the el has been created.
-		var el = this.img_;
-		if (!el) {
-
-			this.img_ = document.createElement('img');
-			el = this.img_;
-			el.style.cssText = "width:"+(this.img_w_/3)+"px;height:"+(this.img_h_/3)+"px;";
-			el.setAttribute("class", "myngimages");
-			el.setAttribute("lat",this.latlng_.lat());
-			el.setAttribute("lon",this.latlng_.lng());
-			el.src=this.src_;
-
-			google.maps.event.addDomListener(el, "click", function(event) {
-				google.maps.event.trigger(me, "click", el);
-			});	
-			
-			google.maps.event.addDomListener(el, "mouseover", function(event) {
-				var _t = el.style.top.replace('px','');
-				var _l = el.style.left.replace('px','');
-				jQuery(el).animate({
-					height: me.img_h_,
-					width : me.img_w_,
-					top   : _t - (me.img_h_ / 3),
-					left  : _l - (me.img_w_ / 3),
-					'z-index' : 100
-				  }, 100);
-			});
-
-			google.maps.event.addDomListener(el, "mouseout", function(event) {
-				jQuery(el).animate({
-					height: me.img_h_ / 3,
-					width: me.img_w_ / 3,
-					top   : me.orig_top,
-					left  : me.orig_left,
-					'z-index' : 1
-				  }, 100);
-			});	
-
-			// Then add the overlay to the DOM
-			var panes = this.getPanes();
-			panes.overlayImage.appendChild(el);
-		}
-
-		// Position the overlay 
-		var point = this.getProjection().fromLatLngToDivPixel(this.latlng_);
-			if (point) {
-			  el.style.left = point.x + 'px';
-			  el.style.top = point.y + 'px';
-			  this.orig_left = point.x;
-			  this.orig_top = point.y;
-			}
-	};
-
-	CustomMarker.prototype.remove = function() {
-		// Check if the overlay was on the map and needs to be removed.
-		if (this.img_) {
-		  this.img_.parentNode.removeChild(this.img_);
-		  this.img_ = null;
-		}
-	};
- 
     $.fn.wpgpxmaps = function( params ) {
 
 		var targetId = params.targetId;
@@ -134,8 +775,8 @@ Author URI: http://www.devfarm.it/
 		var l_y;
 		var l_grade = { suf : "%", dec : 1 };
 		var l_hr = { suf : "", dec : 0 };
-		var l_cad = { suf : "", dec : 0 };
-		
+		var l_cad = { suf : "", dec : 0 };				
+	
 		var el = document.getElementById("wpgpxmaps_" + targetId);
 		var el_map = document.getElementById("map_" + targetId);
 		var el_chart = document.getElementById("chart_" + targetId);
@@ -143,218 +784,101 @@ Author URI: http://www.devfarm.it/
 		var el_osm_credits = document.getElementById("wpgpxmaps_" + targetId + "_osm_footer");
 		
 		var mapWidth = el_map.style.width;
-		
-		var mapTypeIds = [];
-		for(var type in google.maps.MapTypeId) {
-			mapTypeIds.push(google.maps.MapTypeId[type]);
-		}
-		mapTypeIds.push("OSM1");
-		mapTypeIds.push("OSM2");
-		mapTypeIds.push("OSM3");
-		mapTypeIds.push("OSM4");
-		mapTypeIds.push("OSM5");
-		mapTypeIds.push("OSM6");
-		
-		var ngImageMarkers = [];
-		
-		switch (mapType)
+			
+		var map = new WPGPXMAPS.MapEngines.Leaflet();
+		map.lng = lng;
+		map.init("map_" + targetId, 
+						mapType, 
+						(zoomOnScrollWheel == 'true'),
+						ThunderforestApiKey);
+					
+		map.EventSelectChart = function(LatLon) 
 		{
-			case 'TERRAIN': { mapType = google.maps.MapTypeId.TERRAIN; break;}
-			case 'SATELLITE': { mapType = google.maps.MapTypeId.SATELLITE; break;}
-			case 'ROADMAP': { mapType = google.maps.MapTypeId.ROADMAP; break;}
-			case 'OSM1': { mapType = "OSM1"; break;}
-			case 'OSM2': { mapType = "OSM2"; break;}
-			case 'OSM3': { mapType = "OSM3"; break;}
-			case 'OSM4': { mapType = "OSM4"; break;}
-			case 'OSM5': { mapType = "OSM5"; break;}
-			case 'OSM6': { mapType = "OSM6"; break;}
-			default: { mapType = google.maps.MapTypeId.HYBRID; break;}
-		}
-		
-		if ( mapType == "TERRAIN" || mapType == "SATELLITE" || mapType == "ROADMAP" )
-		{
-			// google maps
-		} else {
-			// Show OpenStreetMaps credits
-			$(el_osm_credits).show();
-		}
-		
-		var map = new google.maps.Map(el_map, {
-			mapTypeId: mapType,
-			scrollwheel: (zoomOnScrollWheel == 'true'),
-			mapTypeControlOptions: {
-				style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
-				mapTypeIds: mapTypeIds
-			}
-		}); 
 			
-		map.mapTypes.set("OSM1", new google.maps.ImageMapType({
-			getTileUrl: function(coord, zoom) {
-				return "https://tile.openstreetmap.org/" + zoom + "/" + coord.x + "/" + coord.y + ".png";
-			},
-			tileSize: new google.maps.Size(256, 256),
-			name: "OSM",
-			alt : "Open Street Map",
-			maxZoom: 18
-		}));
-		
-		map.mapTypes.set("OSM2", new google.maps.ImageMapType({
-			getTileUrl: function(coord, zoom) {
-				if (hasThunderforestApiKey)
-					return "https://a.tile.thunderforest.com/cycle/" + zoom + "/" + coord.x + "/" + coord.y + ".png?apikey=" + ThunderforestApiKey;
-				else
-					return "http://a.tile.opencyclemap.org/cycle/" + zoom + "/" + coord.x + "/" + coord.y + ".png";
-			},
-			tileSize: new google.maps.Size(256, 256),
-			name: "OCM",
-			alt : "Open Cycle Map",
-			maxZoom: 18
-		}));
-		
-		map.mapTypes.set("OSM4", new google.maps.ImageMapType({
-			getTileUrl: function(coord, zoom) {
-				if (hasThunderforestApiKey)
-					return "https://a.tile.thunderforest.com/transport/" + zoom + "/" + coord.x + "/" + coord.y + ".png?apikey=" + ThunderforestApiKey;
-				else
-					return "http://a.tile2.opencyclemap.org/transport/" + zoom + "/" + coord.x + "/" + coord.y + ".png";
-			},
-			tileSize: new google.maps.Size(256, 256),
-			name: "OCM-Tran",
-			alt : "Open Cycle Map - Transport",
-			maxZoom: 18
-		}));
-		
-		map.mapTypes.set("OSM5", new google.maps.ImageMapType({
-			getTileUrl: function(coord, zoom) {
-				if (hasThunderforestApiKey)
-					return "https://a.tile.thunderforest.com/landscape/" + zoom + "/" + coord.x + "/" + coord.y + ".png?apikey=" + ThunderforestApiKey;
-				else
-					return "http://a.tile3.opencyclemap.org/landscape/" + zoom + "/" + coord.x + "/" + coord.y + ".png";
-			},
-			tileSize: new google.maps.Size(256, 256),
-			name: "OCM-Land",
-			alt : "Open Cycle Map - Landscape",
-			maxZoom: 18
-		}));
-		
-		map.mapTypes.set("OSM6", new google.maps.ImageMapType({
-			getTileUrl: function(coord, zoom) {
-				return "https://tile2.maptoolkit.net/terrain/" + zoom + "/" + coord.x + "/" + coord.y + ".png";
-			},
-			tileSize: new google.maps.Size(256, 256),
-			name: "MTK-Terr",
-			alt : "MapToolKit - Terrain",
-			maxZoom: 18
-		}));
-			
-		// FULL SCREEN BUTTON
-		var controlDiv = document.createElement('div');
-		controlDiv.style.padding = '5px';
-
-		// Set CSS for the control border
-		var controlUI = document.createElement('img');
-		controlUI.src = pluginUrl + "/wp-gpx-maps/img/goFullScreen.png";
-		controlUI.style.cursor = 'pointer';
-		controlUI.title = lng.goFullScreen;
-		controlDiv.appendChild(controlUI);
-
-		// Setup the click event listeners
-		google.maps.event.addDomListener(controlUI, 'click', function(event) {
-			var isFullScreen = (controlUI.isfullscreen == true);
-			var mapDiv = [ map.getDiv(), map.getDiv().parentNode ];
-			var center = map.getCenter();
-			
-			if (isFullScreen)
+			if (myChart)
 			{
-				map.setOptions( { scrollwheel : (zoomOnScrollWheel == 'true') } );
-				jQuery(mapDiv).css("position", 'relative').
-				  css('top', 0).
-				  css("width", controlUI.googleMapWidth).
-				  css("height", controlUI.googleMapHeight).
-				  css("z-index", '');
-				google.maps.event.trigger(map, 'resize');
-				map.setCenter(center);
-				controlUI.src = pluginUrl + "/wp-gpx-maps/img/goFullScreen.png";	
-				controlUI.title = lng.gofullscreen;
-			}
-			else
-			{
-				map.setOptions( { scrollwheel : true } );		
-				controlUI.googleMapWidth = jQuery(mapDiv).css('width');
-				controlUI.googleMapHeight = jQuery(mapDiv).css('height');		
-				jQuery(mapDiv).css("position", 'fixed').
-				  css('top', 0).
-				  css('left', 0).
-				  css("width", '100%').
-				  css("height", '100%').
-				  css("z-index", '100');
-				jQuery("#wpadminbar").each(function(){
-					jQuery(mapDiv).css('top', jQuery(this).height());
-				});
-				google.maps.event.trigger(map, 'resize');
-				map.setCenter(center);
-				controlUI.src = pluginUrl + "/wp-gpx-maps/img/exitFullFcreen.png";
-				controlUI.title = lng.exitFullFcreen;
-			}
-			controlUI.isfullscreen = !isFullScreen;
-			return false;			
-		});
+				var l1 = LatLon[0];
+				var l2 = LatLon[1];
+				var ci = getClosestIndex(mapData,l1,l2);
+				var activeElements = [];
+				var seriesLen = myChart.data.datasets.length;												
+				for(var i=0; i<seriesLen;i++)
+				{
+					activeElements.push(myChart.chart.getDatasetMeta(i).data[ci]);
+				}
+				if (activeElements.length > 0)
+				{
+					myChart.options.customLine.x = activeElements[0]._model.x;
+					if (isNaN(myChart.tooltip._eventPosition))
+					{
+						myChart.tooltip._eventPosition = {
+								x: activeElements[0]._model.x, 
+								y: activeElements[0]._model.y
+							};
+					}								
+					myChart.tooltip._active = activeElements;
+					myChart.tooltip.update(true);
+					myChart.draw();
+				}
+
+			}			
+		}
+	
+		//var bounds = new google.maps.LatLngBounds();
 		
-		
-		controlDiv.index = 1;
-		map.controls[google.maps.ControlPosition.TOP_RIGHT].push(controlDiv);
-		
-		var bounds = new google.maps.LatLngBounds();
-		
-		var markerCurrentPosition = null;
-		
-		if ( usegpsposition == "true" )
+	
+		if ( usegpsposition == "true"  )
 		{
 
 			// Try HTML5 geolocation
 			if(navigator.geolocation) {
+				
+				var context = map;
+			
+				navigator.geolocation.watchPosition(function(position)
+				{
+					
+					var radius = position.coords.accuracy / 2;
 
-				navigator.geolocation.getCurrentPosition(function(position) {
-				
 					// user position
-					var pos = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+					var pos = [position.coords.latitude, position.coords.longitude];
 				
-					// draw current position marker
-					markerCurrentPosition = new google.maps.Marker({
-										  position: pos,
-										  map: map,
-										  title: "you",
-										  animation: google.maps.Animation.DROP,
-										  zIndex: 10
-									  });
-									  
-					if (currentpositioncon)
+					if (context.CurrentGPSPositionMarker == null)
 					{
-						markerCurrentPosition.setIcon(currentpositioncon);
+						if (currentpositioncon == '')
+						{
+							currentpositioncon = "https://maps.google.com/mapfiles/kml/pal4/icon25.png";
+						}						
+						
+						context.CurrentGPSPositionMarker = L.marker(pos, {icon: L.icon({
+																		iconUrl: currentpositioncon,
+																		iconSize:     [32, 32], // size of the icon
+																		iconAnchor:   [16, 16], // point of the icon which will correspond to marker's location
+																	})
+																})
+																.addTo(context.map)
+																.bindPopup(lng.currentPosition)
+																.openPopup();
+																
 					}
-					bounds.extend(pos);
-					
-					map.setCenter(bounds.getCenter()); 
-					map.fitBounds(bounds);
-					
-					
-				}, function() {});
+					else 
+					{
+						context.CurrentGPSPositionMarker.setLatLng(pos);
+					}
 				
-				navigator.geolocation.watchPosition(function(position){
-														// move current position marker
-														if (markerCurrentPosition != null)
-														{
-															markerCurrentPosition.setPosition(new google.maps.LatLng(position.coords.latitude, position.coords.longitude));
-														}
-													}, 
-													function(e){
-														// some errors
-													}, 
-													{
-													  enableHighAccuracy: false,
-													  timeout: 5000,
-													  maximumAge: 0
-													});
+					context.Bounds.push(pos);
+					
+					context.CenterMap();				
+				
+				}, 
+				function(e){
+					// some errors
+				}, 
+				{
+				  enableHighAccuracy: false,
+				  timeout: 5000,
+				  maximumAge: 0
+				});
 			}
 		
 		}
@@ -363,42 +887,7 @@ Author URI: http://www.devfarm.it/
 		// Print WayPoints
 		if (!jQuery.isEmptyObject(waypoints))
 		{
-
-			var image = new google.maps.MarkerImage('https://maps.google.com/mapfiles/ms/micons/flag.png',
-				new google.maps.Size(32, 32),
-				new google.maps.Point(0,0),
-				new google.maps.Point(16, 32)
-			);
-			var shadow = new google.maps.MarkerImage('https://maps.google.com/mapfiles/ms/micons/flag.shadow.png',
-				new google.maps.Size(59, 32),
-				new google.maps.Point(0,0),
-				new google.maps.Point(16, 32)
-			);
-			
-			if (waypointIcon!='')
-			{
-				image = new google.maps.MarkerImage(waypointIcon);
-				shadow = '';
-			}
-			
-			jQuery.each(waypoints, function(i, wpt) {
-				
-				var lat= wpt.lat;
-				var lon= wpt.lon;
-				var sym= wpt.sym;
-				var typ= wpt.type;
-				var wim= image;
-				var wsh= shadow;
-
-				if (wpt.img) {
-					wim = new google.maps.MarkerImage(wpt.img);
-					wsh = '';
-				}
-
-				addWayPoint(map, wim, wsh, lat, lon, wpt.name, wpt.desc);
-				bounds.extend(new google.maps.LatLng(lat, lon));
-				
-			});
+			map.AddWaypoints(waypoints, waypointIcon);
 		}
 		
 		// Print Images
@@ -420,8 +909,8 @@ Author URI: http://www.devfarm.it/
 					imageLat = imageLat.replace(",", ".");
 					imageLon = imageLon.replace(",", ".");
 					
-					var p = new google.maps.LatLng(imageLat, imageLon);
-					bounds.extend(p);
+					//var p = new google.maps.LatLng(imageLat, imageLon);
+					//bounds.extend(p);
 
 					var mc = new CustomMarker(map, p, imageUrl, img_w, img_h );
 					
@@ -519,208 +1008,41 @@ Author URI: http://www.devfarm.it/
 				return false;			
 			});
 
-		}
-		
+		}		
 		
 		// Print Track
 		if (mapData != '')		
 		{
-			var points = [];
-			var lastCut=0;
-			var polylinenes = [];
-			var polyline_number=0;
-			var color=0;
-			for (i=0; i < mapData.length; i++) 
-			{	
-				if (mapData[i] == null)
-				{
-				
-
-						color=color1[polyline_number % color1.length];
-
-
-					var poly = new google.maps.Polyline({
-						path: points.slice(lastCut,i),
-						strokeColor: color,
-						strokeOpacity: .7,
-						strokeWeight: 4,
-						map: map
-					});
-					polylinenes.push(poly);
-					lastCut=i;
-					polyline_number= polyline_number +1;
-					//var p = new google.maps.LatLng(mapData[i-1][0], mapData[i-1][1]);
-					//points.push(p);
-					//bounds.extend(p);
-				}
-				else
-				{
-					var p = new google.maps.LatLng(mapData[i][0], mapData[i][1]);
-					points.push(p);
-					bounds.extend(p);			
-				}
-			}
-			
-			if (points.length != lastCut)
-			{
-					if ( polyline_number < color1.length)
-					{
-						color=color1[polyline_number];
-					}
-					else
-					{
-						color=color1[color1.length-1];
-					}
-				var poly = new google.maps.Polyline({
-					path: points.slice(lastCut),
-					strokeColor: color,
-					strokeOpacity: .7,
-					strokeWeight: 4,
-					map: map
-				});
-				polylinenes.push(poly);			
-				currentPoints = [];
-				polyline_number= polyline_number +1;
-			}
-			
-			if (startIcon != '')
-			{
-				var startIconImage = new google.maps.MarkerImage(startIcon);
-				var startMarker = new google.maps.Marker({
-						  position: points[0],
-						  map: map,
-						  title: "Start",
-						  animation: google.maps.Animation.DROP,
-						  icon: startIconImage,
-						  zIndex: 10
-					  });
-
-			}
-
-			if (endIcon != '')
-			{
-				var endIconImage = new google.maps.MarkerImage(endIcon);
-				var startMarker = new google.maps.Marker({
-						  position: points[ points.length -1 ],
-						  map: map,
-						  title: "Start",
-						  animation: google.maps.Animation.DROP,
-						  icon: endIconImage,
-						  zIndex: 10
-					  });
-			
-			}
-
-			var first = getItemFromArray(mapData,0)
-			
-			if (currentIcon == '')
-			{
-				currentIcon = "https://maps.google.com/mapfiles/kml/pal4/icon25.png";
-			}
-			
-			var current = new google.maps.MarkerImage(currentIcon,
-				new google.maps.Size(32, 32),
-				new google.maps.Point(0,0),
-				new google.maps.Point(16, 16)
-			);
-			
-			var marker = new google.maps.Marker({
-				position: new google.maps.LatLng(first[0], first[1]),
-				title:"Start",
-				icon: current,
-				map: map,
-				zIndex: 10
-			});
-			
-			for (i=0; i < polylinenes.length; i++) 
-			{	
-
-				google.maps.event.addListener(polylinenes[i],'mouseover',function(event){
-					if (marker)
-					{
-						marker.setPosition(event.latLng);	
-						marker.setTitle(lng.currentPosition);
-						if (myChart)
-						{
-							var l1 = event.latLng.lat();
-							var l2 = event.latLng.lng();
-							var ci = getClosestIndex(mapData,l1,l2);
-							var activeElements = [];
-							var seriesLen = myChart.data.datasets.length;												
-							for(var i=0; i<seriesLen;i++)
-							{
-								activeElements.push(myChart.chart.getDatasetMeta(i).data[ci]);
-							}
-							if (activeElements.length > 0)
-							{
-								myChart.options.customLine.x = activeElements[0]._model.x;
-								if (isNaN(myChart.tooltip._eventPosition))
-								{
-									myChart.tooltip._eventPosition = {
-											x: activeElements[0]._model.x, 
-											y: activeElements[0]._model.y
-										};
-								}								
-								myChart.tooltip._active = activeElements;
-								myChart.tooltip.update(true);
-								myChart.draw();
-							}
-
-						}
-					}
-				});		
-			}
+			map.AppPolylines(mapData, color1, currentIcon, startIcon, endIcon);
 		}
 		
+		/*
 		map.setCenter(bounds.getCenter()); 
 		map.fitBounds(bounds);
-		
+		*/
+			
 		// FIX post tabs	
-		var $_tab = $(el).closest(".wordpress-post-tabs").eq(0);	
+		var $_tab = $(el).closest(".wordpress-post-tabs, .tab-pane").eq(0);	
 		if ($_tab)
 		{
-			$("div > ul > li > a", $_tab).click(function(e){		
-				setTimeout(function(e){		
-					google.maps.event.trigger(map, 'resize');
-					//map.setCenter(bounds.getCenter());
-					map.fitBounds(bounds);
+			var contextMap = map;
+			
+			var FixMapSize = function(e)
+			{
+				setTimeout(function(e){				
+					//google.maps.event.trigger(map, 'resize');					
+					contextMap.map.invalidateSize();
+					contextMap.CenterMap();
 					tabResized = true;
-				},10);
-			});
+				}, 300);				
+			}
+			
+			$(".wpsm_nav-tabs a").click(FixMapSize);
+			
+			$("div > ul > li > a", $_tab).click(FixMapSize);
 		}	
 		
-		var controlUIcenter = null;
-		var idFirstCenterChanged = true;
-		
-		google.maps.event.addListener(map, 'center_changed', function() {
-
-			if (idFirstCenterChanged == true)
-			{
-				idFirstCenterChanged = false;
-				return;
-			}
-		
-			if (controlUIcenter == null)
-			{
-				// Set CSS for the control border
-				controlUIcenter = document.createElement('img');
-				controlUIcenter.src = pluginUrl + "/wp-gpx-maps/img/backToCenter.png";
-				controlUIcenter.style.cursor = 'pointer';
-				controlUIcenter.title = lng.backToCenter;
-				controlDiv.appendChild(controlUIcenter);
-
-				// Setup the click event listeners
-				google.maps.event.addDomListener(controlUIcenter, 'click', function(event) {
-					map.setCenter(bounds.getCenter()); 
-					map.fitBounds(bounds);
-					controlDiv.removeChild(controlUIcenter);
-					controlUIcenter = null;
-					return false;			
-				});		
-			}
-
-		});
-		
+	
 		var graphh = jQuery('#myChart_' + params.targetId).css("height");
 		
 		if (graphDist != '' && (graphEle != '' || graphSpeed != '' || graphHr != '' || graphAtemp != '' || graphCad != '') && graphh != "0px")
@@ -827,15 +1149,9 @@ Author URI: http://www.devfarm.it/
 							footer : function(tooltipItem){
 								// move the point in map
 								var i = tooltipItem[0].index;
-								if (marker)
-								{
-									var point = getItemFromArray(mapData,i)
-									if (point)
-									{
-										marker.setPosition(new google.maps.LatLng(point[0],point[1]));
-									}
-									marker.setTitle(lng.currentPosition);								
-								}
+								var point = WPGPXMAPS.Utils.GetItemFromArray(mapData,i)
+								map.MoveMarkerToPosition(point, false);
+
 							}						
 						}
 					},
@@ -867,61 +1183,6 @@ Author URI: http://www.devfarm.it/
 				
 				labels : graphDist,
 				
-				oldchart: {
-					renderTo: 'myChart_' + params.targetId,
-					type: 'area',
-					events: {
-						selection: function(event) {
-
-							if (event.xAxis) {
-							
-								el_report.innerHTML = 'Zoom: '+ (event.xAxis[0].min).toFixed(l_x.dec) + ' ' + l_x.suf + ' -> '+ (event.xAxis[0].max).toFixed(decPoint) + ' ' + l_x.suf + '<br />';						
-							
-								var seriesLength = event.currentTarget.series.length;
-							
-								for (var i = 0; i < seriesLength; i++) {
-								
-									var dataX = {value: 0, count: 0};
-									
-									var serie = event.currentTarget.series[i];
-									var points = serie.points;
-									var min = event.xAxis[0].min, max = event.xAxis[0].max;
-									
-									for (var j = 0; j < points.length; j++) {
-										if (points[j].x >= min && points[j].x <= max) {
-											dataX.value += points[j].y;
-											dataX.count +=1;
-										}
-									}
-									
-									var name = serie.name;
-									
-									if (name == lng.altitude) {
-										el_report.innerHTML += name + ' avg: ' + (dataX.value / dataX.count).toFixed(l_y.dec) + " " + l_y.suf + "<br />";
-									} else if (name == lng.speed) {
-										el_report.innerHTML += name + ' avg: ' + (dataX.value / dataX.count).toFixed(l_s.dec) + " " + l_s.suf + "<br />";
-									} else if (name == lng.grade) {
-										el_report.innerHTML += name + ' avg: ' + (dataX.value / dataX.count).toFixed(l_grade.dec) + " " + l_grade.suf + "<br />";
-									} else if (name == lng.cadence) {
-										el_report.innerHTML += name + ' avg: ' + (dataX.value / dataX.count).toFixed(l_cad.dec) + " " + l_cad.suf + "<br />";
-									} else if (name == lng.heartRate) {
-										el_report.innerHTML += name + ' avg: ' + (dataX.value / dataX.count).toFixed(l_hr.dec) + " " + l_hr.suf + "<br />";
-									} else
-									{
-										el_report.innerHTML += serie.name + ' avg: ' + dataX.value / dataX.count + "<br />";
-									}
-
-								}
-
-								el_report.innerHTML += "<br />"
-								
-							} else {
-								el_report.innerHTML = '';
-							}
-						}
-					},
-					zoomType: 'x'
-				},
 			};
 		
 			if (graphEle != '')
@@ -1131,9 +1392,7 @@ Author URI: http://www.devfarm.it/
 			}
 			
 			var ctx = document.getElementById("myChart_" + params.targetId).getContext('2d');
-
 			var myChart = new Chart(ctx, hoptions);
-
 		
 		}
 		else  {
@@ -1183,7 +1442,7 @@ Author URI: http://www.devfarm.it/
 	
 	function wpgpxmapsGetDataset(name,data,color, id) {
 		return {
-			label: name,
+			label: name, // jQuery("<div/>").html(name).text(), // convert html special chars to text, ugly but it works
 			data : data,
 			borderColor: color,
 			backgroundColor: hexToRgbA(color, .3),
@@ -1206,51 +1465,7 @@ Author URI: http://www.devfarm.it/
 		}
 		throw new Error('Bad Hex');
 	}
-		
-	
-	function addWayPoint(map, image, shadow, lat, lon, title, descr)
-	{
-		var p = new google.maps.LatLng(lat, lon);
-		var m = new google.maps.Marker({
-							  position: p,
-							  map: map,
-							  title: title,
-							  animation: google.maps.Animation.DROP,
-							  shadow: shadow,
-							  icon: image,
-							  zIndex: 5
-						  });
-						  
-		google.maps.event.addListener(m, 'click', function() {
-			if (infowindow)
-			{
-				infowindow.close(); 		
-			}
-			var cnt = '';	
-			
-			if (title=='')
-			{
-				cnt = "<div>" + unescape(descr) + "</div>";
-			}
-			else
-			{
-				cnt = "<div><b>" + title + "</b><br />" + unescape(descr) + "</div>";
-			}
-			
-			cnt += "<br /><p><a href='https://maps.google.com?daddr=" + lat + "," + lon + "' target='_blank'>Itin&eacute;raire</a></p>";
-			
-			infowindow = new google.maps.InfoWindow({ content: cnt});
-			infowindow.open(map,m);
-		});	
-		/*
-		google.maps.event.addListener(m, "mouseout", function () {
-			if (infowindow)
-			{
-				infowindow.close();
-			}
-		});
-		*/
-	}
+
 
 	function getItemFromArray(arr,index)
 	{

@@ -64,12 +64,12 @@ class HunchSchema_Thing {
         public function getWebSite($Pretty = false) {
                 $this->SchemaWebSite['@context'] = 'http://schema.org';
                 $this->SchemaWebSite['@type'] = 'WebSite';
-                $this->SchemaWebSite['@id'] = get_site_url() . "#website";
+                $this->SchemaWebSite['@id'] = home_url( '/#website' );
                 $this->SchemaWebSite['name'] = get_bloginfo('name');
-                $this->SchemaWebSite['url'] = get_site_url();
+                $this->SchemaWebSite['url'] = home_url();
                 $this->SchemaWebSite['potentialAction'] = array(
                         '@type' => 'SearchAction',
-                        'target' => get_site_url(null, '?s={search_term_string}'),
+                        'target' => home_url('/?s={search_term_string}'),
                         'query-input' => 'required name=search_term_string',
                 );
 
@@ -94,7 +94,7 @@ class HunchSchema_Thing {
                         $Permalink = get_permalink();
                 } elseif (is_front_page() && is_home() || is_front_page())
                 {
-                        $Permalink = get_site_url();
+                        $Permalink = home_url();
                 } elseif (is_home())
                 {
                         $Permalink = get_permalink(get_option('page_for_posts'));

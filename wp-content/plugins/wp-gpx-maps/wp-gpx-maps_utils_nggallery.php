@@ -34,6 +34,8 @@
 				array_push($pictures, nggdb::find_image($i));
 			}
 			
+			// print_r ($pictures);
+			
 			foreach ($pictures as $p) {
 			
 				$item = array();

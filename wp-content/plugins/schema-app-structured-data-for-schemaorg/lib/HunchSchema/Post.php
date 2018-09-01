@@ -28,8 +28,11 @@ class HunchSchema_Post extends HunchSchema_Page
 
 		$this->schema['wordCount'] = str_word_count( $post->post_content );
 		$this->schema['keywords'] = $this->getTags();
-		$this->schema['commentCount'] = get_comments_number();
-		$this->schema['comment'] = $this->getComments();
+
+		if ( ! empty( $this->Settings['SchemaArticleBody'] ) )
+		{
+			$this->schema['articleBody'] = str_replace( array( "\n", "\r" ), '', strip_tags( apply_filters( 'the_content', get_post_field( 'post_content', $post->ID ) ) ) );
+		}
 
 
         return $this->toJson( $this->schema, $pretty );
@@ -49,7 +52,7 @@ class HunchSchema_Post extends HunchSchema_Page
 			'position' => $BreadcrumbPosition++,
 			'item' => array
 			(
-				'@id' => get_site_url() . "#breadcrumbitem",
+				'@id' => home_url( '/#breadcrumbitem' ),
 				'name' => get_bloginfo( 'name' ),
 			),
 		);

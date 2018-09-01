@@ -16,7 +16,7 @@ class HunchSchema_Blog extends HunchSchema_Thing
         if ( is_front_page() && is_home() || is_front_page() )
         {
             $Headline = get_bloginfo( 'name' );
-            $Permalink = get_site_url() . '/';
+            $Permalink = home_url();
         }
         else
         {
@@ -30,8 +30,8 @@ class HunchSchema_Blog extends HunchSchema_Thing
         while (have_posts()) : the_post();
 
             $blogPost[] = array
-                (
-                '@type' => 'BlogPosting',
+			(
+                '@type' => ! empty( $this->Settings['SchemaDefaultTypePost'] ) ? $this->Settings['SchemaDefaultTypePost'] : 'BlogPosting',
                 'headline' => get_the_title(),
                 'url' => get_the_permalink(),
                 'datePublished' => get_the_date( 'Y-m-d' ),
