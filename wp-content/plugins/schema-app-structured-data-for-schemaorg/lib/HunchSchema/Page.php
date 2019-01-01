@@ -38,7 +38,7 @@ class HunchSchema_Page extends HunchSchema_Thing
             'mainEntityOfPage' => array
             (
 				'@type' => 'WebPage',
-				'@id' => $Permalink,
+				'@id' => $Permalink . '#' . $this->schemaType,
 			),
             'headline' => get_the_title(),
             'name' => get_the_title(),

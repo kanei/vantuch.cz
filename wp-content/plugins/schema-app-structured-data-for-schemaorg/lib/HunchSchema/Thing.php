@@ -113,6 +113,18 @@ class HunchSchema_Thing {
 				return 'This is a protected post.';
 			}
 
+			if ( class_exists( 'WPSEO_Frontend' ) ) {
+
+				$WPSEO_Frontend = WPSEO_Frontend::get_instance();
+
+				$wpseo_meta_description = $WPSEO_Frontend->metadesc( false );
+
+				if ( ! empty( $wpseo_meta_description ) )
+				{
+					return $wpseo_meta_description;
+				}
+			}
+
 			if ( ! empty( $post->post_excerpt ) )
 			{
 				return apply_filters( 'get_the_excerpt', $post->post_excerpt, $post );
@@ -121,11 +133,11 @@ class HunchSchema_Thing {
 			if ( ! empty( $post->post_content ) )
 			{
 				$text = $post->post_content;
-
 				$text = strip_shortcodes( $text );
 
 				$text = apply_filters( 'the_content', $text );
-				$text = str_replace(']]>', ']]&gt;', $text);
+				$text = str_replace( ']]>', ']]&gt;', $text );
+				$text = wp_strip_all_tags( $text );
 
 				$excerpt_length = apply_filters( 'excerpt_length', 55 );
 				$excerpt_more = apply_filters( 'excerpt_more', ' ' . '[&hellip;]' );
@@ -259,6 +271,7 @@ class HunchSchema_Thing {
 
                 $Author = array(
                         '@type' => 'Person',
+						'@id' => esc_url(get_author_posts_url(get_the_author_meta('ID', $post->post_author))) . '#Person',
                         'name' => get_the_author_meta('display_name', $post->post_author),
                         'url' => esc_url(get_author_posts_url(get_the_author_meta('ID', $post->post_author))),
                 );
@@ -346,29 +359,36 @@ class HunchSchema_Thing {
         }
 
 
-		public function getVideos()
-		{
+		public function getVideos() {
 			global $post;
 
-			$YouTubeVideoIds = $this->getYouTubeVideoIds( $post->post_content );
+			$videos = array();
+			$urls = wp_extract_urls( $post->post_content );
 
-			if ( count( $YouTubeVideoIds ) )
-			{
-				if ( count( $YouTubeVideoIds ) == 1 )
-				{
-					return $this->getYouTubeVideo( $YouTubeVideoIds[0] );
-				}
-				else
-				{
-					$Videos = array();
+			if ( count( $urls ) ) {
+				foreach ( $urls as $url ) {
+					$url = trim( $url );
 
-					foreach ( $YouTubeVideoIds as $YouTubeVideoId )
-					{
-						$Videos[] = $this->getYouTubeVideo( $YouTubeVideoId );
+					if ( filter_var( $url, FILTER_VALIDATE_URL ) != false  &&  stripos( $url, 'vimeo.com' ) !== false ) {
+						$videos[] = $this->get_vimeo_video( $url );
 					}
-
-					return $Videos;
 				}
+			}
+
+
+			$youtube_video_ids = $this->getYouTubeVideoIds( $post->post_content );
+
+			if ( count( $youtube_video_ids ) ) {
+				foreach ( $youtube_video_ids as $youtube_video_id ) {
+					$videos[] = $this->getYouTubeVideo( $youtube_video_id );
+				}
+			}
+
+
+			if ( count( $videos ) && count( $videos ) == 1 ) {
+				return reset( $videos );
+			} elseif ( count( $videos ) ) {
+				return $videos;
 			}
 
 			return;
@@ -408,7 +428,8 @@ class HunchSchema_Thing {
 			if ( ! empty( $String ) )
 			{
 				// https?://(?:[0-9A-Z-]+\.)?(?:youtu\.be/|youtube(?:-nocookie)?\.com\S*?[^\w\s-])([\w-]{11})(?=[^\w-]|$)(?![?=&+%\w.-]*(?:[\'"][^<>]*>|</a>))[?=&+%\w.-]*
-				preg_match_all( '~https?://(?:[0-9A-Z-]+\.)?(?:youtu\.be/|youtube(?:-nocookie)?\.com\S*?[^\w\s-])([\w-]{11})(?=[^\w-]|$)[?=&+%\w.-]*~im', $String, $Matches );
+				// https?://(?:[0-9A-Z-]+\.)?(?:youtu\.be/|youtube(?:-nocookie)?\.com\S*?[^\w\s-])([\w-]{11})(?=[^\w-]|$)[?=&+%\w.-]*
+				preg_match_all( '~https?://(?:www\.)?(?:youtu\.be/|youtube(?:-nocookie)?\.com\S*?[^\w\s-])([\w-]{11})(?=[^\w-]|$)[?=&+%\w.-]*~im', $String, $Matches );
 
 				if ( isset( $Matches[1] ) && count( $Matches[1] ) )
 				{
@@ -417,6 +438,52 @@ class HunchSchema_Thing {
 			}
 
 			return array();
+		}
+
+
+		protected function get_vimeo_video( $url ) {
+			if ( ! empty( $url ) ) {
+				$transient_id = sprintf( 'HunchSchema-Markup-Vimeo-%s', md5( $url ) );
+				$transient = get_transient( $transient_id );
+
+				if ( $transient !== false ) {
+					return $transient;
+				}
+
+
+				$oembed = wp_remote_retrieve_body( wp_remote_get( 'https://vimeo.com/api/oembed.json?url=' . rawurlencode( $url ) ) );
+
+				if ( ! empty( $oembed )  &&  ( $oembed_json = json_decode( $oembed ) )  ) {
+					$schema = array(
+						'@type' => 'VideoObject',
+						'name' => $oembed_json->title,
+						'description' => $oembed_json->description,
+						'thumbnailUrl' => $oembed_json->thumbnail_url,
+						'uploadDate' => date( 'c', strtotime( $oembed_json->upload_date ) ),
+						'duration' => $this->iso8601_duration( $oembed_json->duration ),
+					);
+
+					set_transient( $transient_id, $schema, ( 14 * DAY_IN_SECONDS ) );
+
+					return $schema;
+				}
+			}
+		}
+
+
+		protected function iso8601_duration( $seconds ) {
+			if ( ! empty( $seconds ) ) {
+				$days = floor( $seconds / 86400 );
+				$seconds = $seconds % 86400;
+
+				$hours = floor( $seconds / 3600 );
+				$seconds = $seconds % 3600;
+
+				$minutes = floor( $seconds / 60 );
+				$seconds = $seconds % 60;
+
+				return sprintf( 'P%dDT%dH%dM%dS', $days, $hours, $minutes, $seconds );
+			}
 		}
 
 

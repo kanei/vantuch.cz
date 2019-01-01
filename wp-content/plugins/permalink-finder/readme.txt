@@ -1,8 +1,8 @@
 === Permalink Finder Plugin ===
 Tags: permalinks, move, migrate, 301, 404, redirect, PageRank, seo,sitemap, robots.txt, crossdomain.xml, apple-touch-icon.png, favicon.ico
 Requires at least: 3.0  
-Stable tag: 2.3   
-Tested up to: 3.5
+Stable tag: 2.5   
+Tested up to: 5.0
 Contributors: Keith Graham       
 Donate link: http://www.blogseye.com/donate/
 License: GPLv2 or later
@@ -37,44 +37,21 @@ The plugin can be tested by adding or deleting words from a working permalink in
 
 == Changelog ==
 
-= 1.0 =
-* initial release 
+= 2.5 =
+* Escaping sql strings in PHP has changed in PHP7. The old MySQL escape fails. I added checks for the existence of the correct functions in case PHP is misconfigured or the default changes again. Many installs fail to install all the libraries needed, which makes this hard to debug.
 
-= 1.1 =
-* added ability select degree of matching on bad urls.
-* added the ability to redirect index.htm, index.html and index.shtml to blog home page.
-* fixed a stupid name in the install directory - should be "permalink-finder" no s.
+= 2.4 =
+* re-released the plugin so that instances of esc_sql can be updated to mysql_real_escape_string. It appears that not everyone got the change.
 
-= 1.11 =
-* 10/26/2009 Fixed index option to work on PHP4 on some servers.
-
-= 1.20 =
-* 11/04/2009 Added a short log of fixed and unfixed permalinks.
-
-= 1.21 =
-* 11/24/2009 Fixed a bug in recording the permalinks that caused a 500 error. Formatted the urls as links in the report.
-
-= 1.30 =
-* 01/10/2010 added uninstall procedure. Add links to 404 area of report.
-
-= 1.40 =
-* 02/23/2010 Fixed errors setting and unsetting variables.
-
-= 1.50 =
-* 04/29/2010 Changed redirect method for to make the plugin compatible with future versions of Wordpress.
-
-= 1.60 =
-* 01/14/2011 Cleaned up code. Added support for MU. Used wordpress functions to sanitize urls and find alternate encodings.
-* This revision changed the way the plugin works, so please let me know if you experience any problems.
-
-= 1.70 =
-* Due to many suggestions for features: Added code to strip “GET” parameters like UTM tags. Added code to optionally strip numbers, common words, and short words.
-
+= 2.3 =
+* ignore search queries - s=search - as this is not a 404 and it caused looping.
+* Ignore feed requests as there is no permalink for things starting with /feed/
+* fixed load order and deleted an early an unecessary call to get_options
+* changed the way MU blog options are loaded.
+* fixed the links in the options page
+* Put in code to avoid recursive redirects. If redirect equals current page then let wordpress 404 it.
 = 2.0 =
 * Rewrote entire plugin to be more compatible with new versions of WordPress. Simplified the code and added extra steps to sanitize data and increase security. Added support for default robots.txt, sitemap.xml, crossdomain.xml, favicon.ico, or apple-touch-icon.png files. Added metaphone search. Ignores 404 errors on wp-login and wp-signup from trolls. Sanitizes data so there is less chance of options and logs being reset.
-
-= 2.1 =
-* 07/20/2012 Fixed issue with error logging. System now displays crash logs so that they can be checked. Changed the way certain Server variables are accessed. The REQUEST_URI was not being set on some hosts. Fixed an error with redirects that had only one token on the original URL. Remove /archive/ from links before checking. Added a reason to the reports in order to get a sense of how a permalink is redirected. Added options to control exactly how the plugin searches for a permalink. Ignores (but logs) many types of files that are normally not things that WordPress controls (images, js, css, pdf, etc). Removed the index/default redirect option, as the plugin now does this as side effect of cleaning the slug.
 
 = 2.2 =
 * 10/2/2012 Fixed many small but annoying bugs.
@@ -87,16 +64,12 @@ The plugin can be tested by adding or deleting words from a working permalink in
 * thanks to siddkb1986 who posted at the Wordpress plugin support page on Wordpress.org about query strings being lost. I incorporated the changes suggested.
 * Delayed loading of 404 processing in order to conserve memory resources. Only loads the redirection functions after a 404 has been detected.
 
-= 2.3 =
-* ignore search queries - s=search - as this is not a 404 and it caused looping.
-* Ignore feed requests as there is no permalink for things starting with /feed/
-* fixed load order and deleted an early an unecessary call to get_options
-* changed the way MU blog options are loaded.
-* fixed the links in the options page
-* Put in code to avoid recursive redirects. If redirect equals current page then let wordpress 404 it.
+= 2.1 =
+* 07/20/2012 Fixed issue with error logging. System now displays crash logs so that they can be checked. Changed the way certain Server variables are accessed. The REQUEST_URI was not being set on some hosts. Fixed an error with redirects that had only one token on the original URL. Remove /archive/ from links before checking. Added a reason to the reports in order to get a sense of how a permalink is redirected. Added options to control exactly how the plugin searches for a permalink. Ignores (but logs) many types of files that are normally not things that WordPress controls (images, js, css, pdf, etc). Removed the index/default redirect option, as the plugin now does this as side effect of cleaning the slug.
 
 == Support ==
 This plugin is free and I expect nothing in return. Please rate the plugin at: http://wordpress.org/extend/plugins/permalink-finder/
-If you wish to support my programming, You can donate or by my book: 
-<a href="http://www.blogseye.com/donate/">donate>/a>
-<a href="http://www.blogseye.com/buy-the-book/">Error Message Eyes: A Programmer's Guide to the Digital Soul</a>
+If you wish to support my programming, You can donate or buy my book: 
+http://www.blogseye.com/buy-the-book 
+Error Message Eyes: A Programmer's Guide to the Digital Soul
+

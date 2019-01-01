@@ -211,6 +211,7 @@
 		$points->totalEleUp = 0;
 		$points->totalEleDown = 0;
 		$points->avgSpeed = 0;
+		$points->avgCad = 0;
 		$points->totalLength = 0;
 		
 		$gpx = simplexml_load_file($filePath);	
@@ -220,7 +221,7 @@
 		
 		$gpx->registerXPathNamespace('a', 'http://www.topografix.com/GPX/1/0');
 		$gpx->registerXPathNamespace('b', 'http://www.topografix.com/GPX/1/1');
-		$gpx->registerXPathNamespace('gpxtpx', 'http://www.garmin.com/xmlschemas/TrackPointExtension/v1');
+		$gpx->registerXPathNamespace('ns3', 'http://www.garmin.com/xmlschemas/TrackPointExtension/v1');
 		
 		$nodes = $gpx->xpath('//trk | //a:trk | //b:trk');
 		//normal gpx
@@ -235,7 +236,6 @@
 				
 				$trk->registerXPathNamespace('a', 'http://www.topografix.com/GPX/1/0');
 				$trk->registerXPathNamespace('b', 'http://www.topografix.com/GPX/1/1');
-				$trk->registerXPathNamespace('gpxtpx', 'http://www.garmin.com/xmlschemas/TrackPointExtension/v1');
 
 				$trkpts = $trk->xpath('//trkpt | //a:trkpt | //b:trkpt');
 				
@@ -265,7 +265,14 @@
 						
 						$arr = json_decode( json_encode($trkpt->extensions) , 1);
 
-						if (isset($arr['gpxtpx:TrackPointExtension']))
+						if (isset($arr['ns3:TrackPointExtension']))
+						{
+							$tpe = $arr['ns3:TrackPointExtension'];
+							$hr =    @$tpe["ns3:hr"];
+							$atemp = @$tpe["ns3:atemp"];
+							$cad =   @$tpe["ns3:cad"];			
+						}
+						else if (isset($arr['gpxtpx:TrackPointExtension']))
 						{
 							$tpe = $arr['gpxtpx:TrackPointExtension'];
 							$hr =    @$tpe["gpxtpx:hr"];
@@ -361,10 +368,8 @@
 							array_push($points->dist,  (float)round($dist, 2) );
 							array_push($points->speed, (float)round($avgSpeed, 1) );
 							array_push($points->hr, 	$hr);
-							array_push($points->atemp,	$atemp);
-							
-							
-							array_push($points->cad, $cad);
+							array_push($points->atemp,	$atemp);						
+							array_push($points->cad, 	$cad);
 							array_push($points->grade, (float)round($grade, 2) );
 							
 						}
@@ -415,13 +420,18 @@
 				$_ele = array_filter($points->ele);
 				$_dist = array_filter($points->dist);
 				$_speed = array_filter($points->speed);
+				$_cad = array_filter($points->cad);
+				
 				$points->maxEle = max($_ele);
 				$points->minEle = min($_ele);
 				$points->totalLength = max($_dist);
 				$points->maxTime = max($_time);
 				$points->minTime = min($_time);
-				
+										
+				$points->avgCad = (float)round(array_sum($_cad) / count($_cad), 0);			
 				$points->avgSpeed = array_sum($_speed) / count($_speed);
+				
+				
 			} catch (Exception $e) { }
 		
 		}

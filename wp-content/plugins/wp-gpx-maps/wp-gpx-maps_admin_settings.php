@@ -26,7 +26,7 @@
 	$max_ele = get_option("wpgpxmaps_summary_max_ele");	
 	$total_ele_up = get_option("wpgpxmaps_summary_total_ele_up");
 	$total_ele_down = get_option("wpgpxmaps_summary_total_ele_down");
-	$avg_speed = get_option("wpgpxmaps_summary_avg_speed");
+	$avg_speed = get_option("wpgpxmaps_summary_avg_speed");	$avg_cad = get_option("wpgpxmaps_summary_avg_cad");
 	$total_time = get_option("wpgpxmaps_summary_total_time");
 	
 	$usegpsposition = get_option("wpgpxmaps_usegpsposition");	
@@ -152,23 +152,23 @@
 			</td>
 		</tr>
 		<tr>
-			<th scope="row">Min Elevation:</th>
+			<th scope="row">Total climbing:</th>
 			<td>
 				<input name="wpgpxmaps_summary_total_ele_up" type="checkbox" value="true" <?php if($total_ele_up == true){echo('checked');} ?> onchange="this.value = (this.checked)"  /> <i>Print Total climbing</i>
 			</td>
 		</tr>
 		<tr>
-			<th scope="row">Min Elevation:</th>
+			<th scope="row">Total descent:</th>
 			<td>
 				<input name="wpgpxmaps_summary_total_ele_down" type="checkbox" value="true" <?php if($total_ele_down == true){echo('checked');} ?> onchange="this.value = (this.checked)"  /> <i>Print Total descent</i>
 			</td>
 		</tr>
 		<tr>
-			<th scope="row">Min Elevation:</th>
+			<th scope="row">Average Speed:</th>
 			<td>
 				<input name="wpgpxmaps_summary_avg_speed" type="checkbox" value="true" <?php if($avg_speed == true){echo('checked');} ?> onchange="this.value = (this.checked)"  /> <i>Print Average Speed</i>
 			</td>
-		</tr>
+		</tr>		<tr> 			<th scope="row">Average Cadence:</th>			<td>				<input name="wpgpxmaps_summary_avg_cad" type="checkbox" value="true" <?php if($avg_cad == true){echo('checked');} ?> onchange="this.value = (this.checked)"  /> <i>Print Average Cadence</i>			</td> 		</tr>
 		<tr>
 			<th scope="row">Total time:</th>
 			<td>
@@ -180,7 +180,7 @@
 	
 	<p class="submit">
 		<input type="hidden" name="action" value="update" />
-    	<input name="page_options" type="hidden" value="wpgpxmaps_summary,wpgpxmaps_summary_tot_len,wpgpxmaps_summary_max_ele,wpgpxmaps_summary_min_ele,wpgpxmaps_summary_total_ele_up,wpgpxmaps_summary_total_ele_down,wpgpxmaps_summary_avg_speed,wpgpxmaps_summary_total_time" />
+    	<input name="page_options" type="hidden" value="wpgpxmaps_summary,wpgpxmaps_summary_tot_len,wpgpxmaps_summary_max_ele,wpgpxmaps_summary_min_ele,wpgpxmaps_summary_total_ele_up,wpgpxmaps_summary_total_ele_down,wpgpxmaps_summary_avg_speed,wpgpxmaps_summary_avg_cad,wpgpxmaps_summary_total_time" />
 		<input type="submit" class="button-primary" value="<?php _e('Save Changes', "wp_gpx_maps") ?>" />
 	</p>
 

@@ -615,10 +615,21 @@ function kpg_find_permalink_post_exact( $plink,$find,$kpg_pf_numbs ,$kpg_pf_comm
 	if ($find>count($ss)) $findcnt=count($ss);
 	if (empty($ss)) return array(false,0);
 	$sql="SELECT ID, ";
-
+    /* 
+	need to escape strings in WordPress. 
+	Since the db should be MySQL we can count on the MySQL escape functions.
+	*/
 	for ($j=0;$j<count($ss);$j++) {
 		// CONCAT(name, ' - ', description)
-		$sql=$sql." if(INSTR(CONCAT('-',LCASE(post_name),'-'),'-".mysql_real_escape_string($ss[$j])."-'),1,0)+" ;
+		$esc_sql=$ss[$j];
+		if (function_exists('mysql_real_escape_string')) {
+			$esc_sql=mysql_real_escape_string($esc_sql); //missing from PHP 7
+		} else if (function_exists('mysqi_real_escape_string')) {
+			$esc_sql=mysqli_real_escape_string($wpdb,$esc_sql); // php 7 version?
+		} else {
+			$esc_sql=addslashes($esc_sql); // at least something.
+		}
+		$sql=$sql." if(INSTR(CONCAT('-',LCASE(post_name),'-'),'-".$esc_sql."-'),1,0)+" ;
 	}
 	$sql=$sql."0 as CNT FROM ".$wpdb->posts." WHERE post_status = 'publish'
 		and POST_TYPE <> 'attachment' and POST_TYPE <> 'nav_menu_item' 
@@ -664,8 +675,17 @@ function kpg_find_permalink_post_loose( $plink,$find,$kpg_pf_numbs ,$kpg_pf_comm
 	if (empty($ss)) return array(false,0);
 	// try it the old way without explicit searching for the dashes, hits anywhere on any part of a word.
 	$sql="SELECT ID, ";
+	
 	for ($j=0;$j<count($ss);$j++) {
-		$sql=$sql." if(INSTR(LCASE(post_name),'".mysql_real_escape_string($ss[$j])."'),1,0)+" ;
+		$esc_sql=$ss[$j];
+		if (function_exists('mysql_real_escape_string')) {
+			$esc_sql=mysql_real_escape_string($esc_sql); //missing from PHP 7 - not safe?
+		} else if (function_exists('mysqi_real_escape_string')) {
+			$esc_sql=mysqli_real_escape_string($wpdb,$esc_sql); // php 7 version?
+		} else {
+			$esc_sql=addslashes($esc_sql);
+		}		
+		$sql=$sql." if(INSTR(LCASE(post_name),'".$esc_sql."'),1,0)+" ;
 	}
 	$sql=$sql."0 as CNT FROM ".$wpdb->posts." WHERE post_status = 'publish' 
 		and POST_TYPE <> 'attachment' and POST_TYPE <> 'nav_menu_item' 

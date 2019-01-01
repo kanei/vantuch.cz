@@ -14,6 +14,7 @@ class HunchSchema_Post extends HunchSchema_Page
 
 
         $this->schema['@type'] = ! empty( $this->Settings['SchemaDefaultTypePost'] ) ? $this->Settings['SchemaDefaultTypePost'] : 'BlogPosting';
+		$this->schema['mainEntityOfPage']['@id'] = get_permalink() . '#' . $this->schema['@type'];
 
 
         // Get the Categories

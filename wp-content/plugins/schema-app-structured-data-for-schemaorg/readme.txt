@@ -1,12 +1,14 @@
-=== Schema App Structured Data ===
+﻿=== Schema App Structured Data ===
+
 Contributors: vberkel
 Plugin Name: Schema App Structured Data
 Tags: schema, structured data, schema.org, rich snippets, json-ld
 Author URI: https://www.hunchmanifest.com
 Author: Mark van Berkel (vberkel)
-Requires at least: 3.5
-Tested up to: 4.9.7
-Stable tag: 1.10.1
+Requires at least: 3.7
+Requires PHP: 5.4
+Tested up to: 5.0
+Stable tag: 1.11.0
 License: GPL2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -68,14 +70,14 @@ Installation is straightforward
 
 1. Upload hunch-schema to the /wp-content/plugins/ directory.
 1. Activate the plugin through the 'Plugins' menu in WordPress.
-1. Configure AMP publisher settings for Plugin in Wordpress under Settings>Schema App
-1. For greater organic search results [register with Schema App](https://hunchmanifest.leadpages.co/leadbox/143ff4a73f72a2%3A1601ca700346dc/5764878782431232/) to extend your content structured data. 
-1. Add the Account ID to WP Admin > Settings > Schema App from the registration email and found at http://app.schemaapp.com/wordpress
+1. Configure your settings for Plugin in Wordpress under Settings>Schema App
+1. For Paid Customers connect Schema App Account ID from WP Admin > Settings > Schema App. Your Account ID is provided in the introductory credentials email and found at https://app.schemaapp.com/integration/wordpress
 
 == Frequently Asked Questions ==
-You\'ll find the [FAQ on SchemaApp.com] (http://www.schemaapp.com/wordpress/faq/).
+You\'ll find the [FAQ on SchemaApp.com] (https://www.schemaapp.com/wordpress/faq/).
 
 == Screenshots ==
+
 1. Schema App Tools Admin
 2. Settings Menu Navigation
 3. Schema.org Page Meta Box
@@ -83,6 +85,16 @@ You\'ll find the [FAQ on SchemaApp.com] (http://www.schemaapp.com/wordpress/faq/
 5. Link to Validation
 
 == Changelog ==
+
+= 1.11.0 = 
+- Feature, use Yoast SEO's description if available
+- Feature, Schema markup for Vimeo videos
+- Info, tested on WP 5 beta for Gutenberg compatibility
+
+= 1.10.2 = 
+- Fix, VideoObject markup generated from Youtube images
+- Improve, Use #Class based @id's to prevent collisions
+
 = 1.10.1 =
 - Fix, Yoast Wordpress SEO breadcrumblist @id collisions
 
@@ -335,3 +347,8 @@ You\'ll find the [FAQ on SchemaApp.com] (http://www.schemaapp.com/wordpress/faq/
 
 = 0.1.0 =
 - First version 
+
+== Upgrade Notice ==
+
+= 1.11.0 = 
+- Use Yoast SEO's description, Schema markup for Vimeo videos, tested on WP 5 for Gutenberg

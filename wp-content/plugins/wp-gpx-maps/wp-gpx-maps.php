@@ -3,7 +3,7 @@
  * Plugin Name: WP-GPX-Maps
  * Plugin URI: http://www.devfarm.it/
  * Description: Draws a GPX track with altitude chart
- * Version: 1.6.02
+ * Version: 1.6.05
  * Author: Bastianon Massimo
  * Author URI: http://www.devfarm.it/
  * Text Domain: wp-gpx-maps
@@ -64,33 +64,21 @@ function enqueue_WP_GPX_Maps_scripts_admin($hook)
 function enqueue_WP_GPX_Maps_scripts() {		
 
 	/* leaflet */
-
 	wp_register_style( 'leaflet', plugins_url( '/ThirdParties/Leaflet_1.3.1/leaflet.css', __FILE__ ), array(), "1.3.1" );
-	wp_enqueue_style( 'leaflet' );
+	wp_enqueue_style( 'leaflet' );	wp_register_style( 'leaflet.markercluster', plugins_url( '/ThirdParties/Leaflet.markercluster-1.4.1/MarkerCluster.css', __FILE__ ), array(), "0" );	wp_enqueue_style( 'leaflet.markercluster' );		wp_register_style( 'leaflet.Photo', plugins_url( '/ThirdParties/Leaflet.Photo/Leaflet.Photo.css', __FILE__ ), array(), "0" );	wp_enqueue_style( 'leaflet.Photo' );
 	
 	wp_register_style( 'leaflet.fullscreen', plugins_url( '/ThirdParties/leaflet.fullscreen-1.1.4/Control.FullScreen.css', __FILE__ ), array(), "1.3.1" );
 	wp_enqueue_style( 'leaflet.fullscreen' );
 
-	wp_register_script('leaflet', plugins_url( '/ThirdParties/Leaflet_1.3.1/leaflet.js', __FILE__ ), array(), "1.3.1" );
-	wp_register_script('leaflet.fullscreen', plugins_url( '/ThirdParties/leaflet.fullscreen-1.1.4/Control.FullScreen.js', __FILE__ ), array(), "1.1.4" );
+	wp_register_script('leaflet', plugins_url( '/ThirdParties/Leaflet_1.3.1/leaflet.js', __FILE__ ), array(), "1.3.1" );	wp_register_script('leaflet.markercluster', plugins_url( '/ThirdParties/Leaflet.markercluster-1.4.1/leaflet.markercluster.js', __FILE__ ), array('leaflet'), "0" );	wp_register_script('leaflet.Photo', plugins_url( '/ThirdParties/Leaflet.Photo/Leaflet.Photo.js', __FILE__ ), array('leaflet','leaflet.markercluster'), "0" );
+	wp_register_script('leaflet.fullscreen', plugins_url( '/ThirdParties/leaflet.fullscreen-1.1.4/Control.FullScreen.js', __FILE__ ), array('leaflet'), "1.1.4" );
 
 	/* chartjs */
-	
 	wp_register_script('chartjs', plugins_url( '/js/Chart.min.js', __FILE__ ), array(), "2.7.2" );
-	wp_register_script('WP-GPX-Maps', plugins_url( '/js/WP-GPX-Maps.js', __FILE__ ), array('jquery','leaflet','chartjs'), "1.6.02" );
+	
+	wp_register_script('WP-GPX-Maps', plugins_url( '/js/WP-GPX-Maps.js', __FILE__ ), array('jquery','leaflet','chartjs'), "1.6.04" );
 
-	/*
-	$wpgpxmaps_googlemapsv3_apikey = get_option('wpgpxmaps_googlemapsv3_apikey');
-	
-	if ($wpgpxmaps_googlemapsv3_apikey)	{		
-		wp_enqueue_script('googlemaps', '//maps.googleapis.com/maps/api/js?key='.$wpgpxmaps_googlemapsv3_apikey, null, null);					
-	}	
-	else {		
-		wp_enqueue_script('googlemaps', '//maps.googleapis.com/maps/api/js', null, null);
-	}
-	*/	
-	
-	wp_enqueue_script('leaflet');
+	wp_enqueue_script('leaflet');	wp_enqueue_script('leaflet.markercluster');	wp_enqueue_script('leaflet.Photo');
 	wp_enqueue_script('leaflet.fullscreen');
 	wp_enqueue_script('jquery');
 	wp_enqueue_script('chartjs'); 	
@@ -292,6 +280,7 @@ function handle_WP_GPX_Maps_Shortcodes($attr, $content='')
 	$p_total_ele_up =     wpgpxmaps_findValue($attr, "summaryeleup",       "wpgpxmaps_summary_total_ele_up",   false);
 	$p_total_ele_down =   wpgpxmaps_findValue($attr, "summaryeledown",     "wpgpxmaps_summary_total_ele_down", false);
 	$p_avg_speed =        wpgpxmaps_findValue($attr, "summaryavgspeed",    "wpgpxmaps_summary_avg_speed",      false);
+	$p_avg_cad =          wpgpxmaps_findValue($attr, "summaryavgcad",      "wpgpxmaps_summary_avg_cad",      false);
 	$p_total_time =       wpgpxmaps_findValue($attr, "summarytotaltime",   "wpgpxmaps_summary_total_time",     false);
 	
 	$usegpsposition =     wpgpxmaps_findValue($attr, "usegpsposition",     "wpgpxmaps_usegpsposition",         false);
@@ -308,7 +297,7 @@ function handle_WP_GPX_Maps_Shortcodes($attr, $content='')
 	} else {
 		$mtime = 0;
 	}
-	$cacheFileName = "$gpx,$mtime,$w,$mh,$mt,$gh,$showEle,$showW,$showHr,$showAtemp,$showCad,$donotreducegpx,$pointsoffset,$showSpeed,$showGrade,$uomspeed,$uom,$distanceType,v1.3.9";
+	$cacheFileName = "$gpx,$mtime,$w,$mh,$mt,$gh,$showEle,$showW,$showHr,$showAtemp,$showCad,$donotreducegpx,$avg_cad,$pointsoffset,$showSpeed,$showGrade,$uomspeed,$uom,$distanceType,v1.3.9";
 
 	$cacheFileName = md5($cacheFileName);
 	
@@ -344,6 +333,7 @@ function handle_WP_GPX_Maps_Shortcodes($attr, $content='')
 			$total_ele_up = $cache_obj["total_ele_up"];
 			$total_ele_down = $cache_obj["total_ele_down"];
 			$avg_speed = $cache_obj["avg_speed"];
+			$avg_cad = $cache_obj["avg_cad"];
 			$tot_len = $cache_obj["tot_len"];
 			
 		} catch (Exception $e) {
@@ -366,6 +356,7 @@ function handle_WP_GPX_Maps_Shortcodes($attr, $content='')
 			$total_ele_up = 0;
 			$total_ele_down = 0;
 			$avg_speed = 0;
+			$avg_cad = 0;
 			$tot_len = 0;
 		}
 	}
@@ -414,6 +405,7 @@ function handle_WP_GPX_Maps_Shortcodes($attr, $content='')
 		$total_ele_up = $points->totalEleUp;
 		$total_ele_down = $points->totalEleDown;
 		$avg_speed = $points->avgSpeed;
+		$avg_cad = $points->avgCad;
 		$tot_len = $points->totalLength;
 			
 		if (is_array ($points_x_lat))
@@ -649,6 +641,7 @@ function handle_WP_GPX_Maps_Shortcodes($attr, $content='')
 										"total_ele_up"        => $total_ele_up,
 										"total_ele_down"      => $total_ele_down,
 										"avg_speed"           => $avg_speed,
+										"avg_cad"             => $avg_cad,
 										"tot_len"             => $tot_len,
 										"max_time"			  => $max_time,
 										"min_time"			  => $min_time
@@ -755,6 +748,10 @@ function handle_WP_GPX_Maps_Shortcodes($attr, $content='')
 		if ($points_graph_speed != '' && $p_avg_speed == 'true')
 		{
 			$output .= "<span class='avgspeed'><span class='summarylabel'>".__("Average speed", "wp-gpx-maps").":</span><span class='summaryvalue'> $avg_speed</span></span><br />";
+		}
+		if ($points_graph_cad != '' && $p_avg_cad == 'true')
+		{
+			$output .= "<span class='avgcad'><span class='summarylabel'>".__("Average cadence", "wp-gpx-maps").":</span><span class='summaryvalue'> $avg_cad</span></span><br />";
 		}
 		if ($p_total_time == 'true' && $max_time > 0)
 		{		

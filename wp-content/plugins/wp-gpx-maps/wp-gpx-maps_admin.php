@@ -141,7 +141,7 @@ function WP_GPX_Maps_html_page() {
 </li><li><b>summaryminele</b>: Print Min Elevation in summary table (default is FALSE)
 </li><li><b>summaryeleup</b>: Print Total climbing in summary table (default is FALSE)
 </li><li><b>summaryeledown</b>: Print Total descent in summary table (default is FALSE)
-</li><li><b>summaryavgspeed</b>: Print Average Speed in summary table (default is FALSE)
+</li><li><b>summaryavgspeed</b>: Print Average Speed in summary table (default is FALSE)</li><li><b>summaryavgcad</b>: Print Average Cadence in summary table (default is FALSE)
 </li><li><b>summarytotaltime</b>: Print Total time in summary table (default is FALSE)  </li>
 			</ul>
 		
