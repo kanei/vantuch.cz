@@ -622,13 +622,7 @@ function kpg_find_permalink_post_exact( $plink,$find,$kpg_pf_numbs ,$kpg_pf_comm
 	for ($j=0;$j<count($ss);$j++) {
 		// CONCAT(name, ' - ', description)
 		$esc_sql=$ss[$j];
-		if (function_exists('mysql_real_escape_string')) {
-			$esc_sql=mysql_real_escape_string($esc_sql); //missing from PHP 7
-		} else if (function_exists('mysqi_real_escape_string')) {
-			$esc_sql=mysqli_real_escape_string($wpdb,$esc_sql); // php 7 version?
-		} else {
-			$esc_sql=addslashes($esc_sql); // at least something.
-		}
+		$esc_sql=mysql_escape_mimic($esc_sql);
 		$sql=$sql." if(INSTR(CONCAT('-',LCASE(post_name),'-'),'-".$esc_sql."-'),1,0)+" ;
 	}
 	$sql=$sql."0 as CNT FROM ".$wpdb->posts." WHERE post_status = 'publish'
@@ -643,6 +637,16 @@ function kpg_find_permalink_post_exact( $plink,$find,$kpg_pf_numbs ,$kpg_pf_comm
 	} 
 	
 	return array(false,0);
+}
+function mysql_escape_mimic($inp) {
+    if(is_array($inp))
+        return array_map(__METHOD__, $inp);
+
+    if(!empty($inp) && is_string($inp)) {
+        return str_replace(array('\\', "\0", "\n", "\r", "'", '"', "\x1a"), array('\\\\', '\\0', '\\n', '\\r', "\\'", '\\"', '\\Z'), $inp);
+    }
+
+    return $inp;
 }
 // use the loose search
 function kpg_find_permalink_post_loose( $plink,$find,$kpg_pf_numbs ,$kpg_pf_common ,$kpg_pf_short) {
@@ -678,13 +682,7 @@ function kpg_find_permalink_post_loose( $plink,$find,$kpg_pf_numbs ,$kpg_pf_comm
 	
 	for ($j=0;$j<count($ss);$j++) {
 		$esc_sql=$ss[$j];
-		if (function_exists('mysql_real_escape_string')) {
-			$esc_sql=mysql_real_escape_string($esc_sql); //missing from PHP 7 - not safe?
-		} else if (function_exists('mysqi_real_escape_string')) {
-			$esc_sql=mysqli_real_escape_string($wpdb,$esc_sql); // php 7 version?
-		} else {
-			$esc_sql=addslashes($esc_sql);
-		}		
+		$esc_sql=mysql_escape_mimic($esc_sql);
 		$sql=$sql." if(INSTR(LCASE(post_name),'".$esc_sql."'),1,0)+" ;
 	}
 	$sql=$sql."0 as CNT FROM ".$wpdb->posts." WHERE post_status = 'publish' 

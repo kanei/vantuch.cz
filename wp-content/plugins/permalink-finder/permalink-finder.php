@@ -3,7 +3,7 @@
 Plugin Name: Permalink Finder
 Plugin URI: http://www.BlogsEye.com/
 Description: Never get a 404 page not found again. If you have restructured or moved your blog, this plugin will find the right post or page every time.
-Version: 2.5
+Version: 2.6
 Author: Keith P. Graham
 Author URI: http://www.BlogsEye.com/
 

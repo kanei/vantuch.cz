@@ -1,7 +1,7 @@
 === Permalink Finder Plugin ===
 Tags: permalinks, move, migrate, 301, 404, redirect, PageRank, seo,sitemap, robots.txt, crossdomain.xml, apple-touch-icon.png, favicon.ico
 Requires at least: 3.0  
-Stable tag: 2.5   
+Stable tag: 2.6   
 Tested up to: 5.0
 Contributors: Keith Graham       
 Donate link: http://www.blogseye.com/donate/
@@ -36,6 +36,9 @@ The plugin can be tested by adding or deleting words from a working permalink in
 
 
 == Changelog ==
+
+= 2.6 =
+* Fixed mysqli_escape_string error.
 
 = 2.5 =
 * Escaping sql strings in PHP has changed in PHP7. The old MySQL escape fails. I added checks for the existence of the correct functions in case PHP is misconfigured or the default changes again. Many installs fail to install all the libraries needed, which makes this hard to debug.
