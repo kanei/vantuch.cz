@@ -1,11 +1,11 @@
 <?php
 /*
 Plugin Name: Permalink Finder
-Plugin URI: http://www.BlogsEye.com/
+Plugin URI: https://www.facebook.com/BlogsEye/
 Description: Never get a 404 page not found again. If you have restructured or moved your blog, this plugin will find the right post or page every time.
-Version: 2.6
+Version: 2.8
 Author: Keith P. Graham
-Author URI: http://www.BlogsEye.com/
+Author URI: https://www.facebook.com/BlogsEye/
 
 This software is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -92,7 +92,7 @@ function kpg_pf_rightnow() {
 		// steal the akismet stats css format 
 		// get the path to the plugin
 		echo "<p><a style=\"font-style:italic;\" href=\"$me\">Permalink Finder</a> has redirected $totredir pages.";
-		if ($nobuy=='N' && $totredir>10000) echo "  <a style=\"font-style:italic;\" href=\"http://www.blogseye.com/buy-the-book/\">Buy Keith Graham&apos;s Science Fiction Book</a>";
+		if ($nobuy=='N' && $totredir>10000) echo "  <a style=\"font-style:italic;\" href=\"https://www.facebook.com/BlogsEye/buy-the-book/\">Buy Keith Graham&apos;s Science Fiction Book</a>";
 		echo"</p>";
 	} else {
 		echo "<p><a style=\"font-style:italic\" href=\"$me\">Permalink Finder</a> has not redirected any 404 errors, yet.";

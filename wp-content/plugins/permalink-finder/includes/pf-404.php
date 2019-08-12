@@ -4,7 +4,7 @@ if (!defined('ABSPATH')) exit; // just in case
 // this does the work of the 404 processing. It is not loaded unless there is a 404.
 
 // Guts of the plugin. This is where we do the redirect. We are already in a 404 before we get here.
-function kpg_permalink_fixer() {
+function kpg_permalink_fixer() {	
 	$options=kpg_pf_get_options();
 	extract($options);
 	// fix request_uri on IIS
@@ -279,6 +279,13 @@ function kpg_permalink_fixer() {
 			kpg_find_permalink_error_log($options,$e404,$r404,$stats);
 			return;
 		}
+	}
+	// new with this version. found missing yyyy/mm configuration.
+	
+	if (substr($plink,strlen($plink)-3,1)=='/') {
+		// assume archive - lets get out of here now.
+		wp_redirect($flink.$query,301); // let wp do it - more compatable.
+		exit();
 	}
 
 	// santize to get rid of all odd characters, including cross browser scripts.
@@ -622,7 +629,7 @@ function kpg_find_permalink_post_exact( $plink,$find,$kpg_pf_numbs ,$kpg_pf_comm
 	for ($j=0;$j<count($ss);$j++) {
 		// CONCAT(name, ' - ', description)
 		$esc_sql=$ss[$j];
-		$esc_sql=mysql_escape_mimic($esc_sql);
+		$esc_sql=my_s_q_l_escape_mimic($esc_sql);
 		$sql=$sql." if(INSTR(CONCAT('-',LCASE(post_name),'-'),'-".$esc_sql."-'),1,0)+" ;
 	}
 	$sql=$sql."0 as CNT FROM ".$wpdb->posts." WHERE post_status = 'publish'
@@ -638,7 +645,7 @@ function kpg_find_permalink_post_exact( $plink,$find,$kpg_pf_numbs ,$kpg_pf_comm
 	
 	return array(false,0);
 }
-function mysql_escape_mimic($inp) {
+function my_s_q_l_escape_mimic($inp) {
     if(is_array($inp))
         return array_map(__METHOD__, $inp);
 
@@ -682,7 +689,7 @@ function kpg_find_permalink_post_loose( $plink,$find,$kpg_pf_numbs ,$kpg_pf_comm
 	
 	for ($j=0;$j<count($ss);$j++) {
 		$esc_sql=$ss[$j];
-		$esc_sql=mysql_escape_mimic($esc_sql);
+		$esc_sql=my_s_q_l_escape_mimic($esc_sql);
 		$sql=$sql." if(INSTR(LCASE(post_name),'".$esc_sql."'),1,0)+" ;
 	}
 	$sql=$sql."0 as CNT FROM ".$wpdb->posts." WHERE post_status = 'publish' 

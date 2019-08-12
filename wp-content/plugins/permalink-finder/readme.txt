@@ -1,10 +1,10 @@
 === Permalink Finder Plugin ===
 Tags: permalinks, move, migrate, 301, 404, redirect, PageRank, seo,sitemap, robots.txt, crossdomain.xml, apple-touch-icon.png, favicon.ico
 Requires at least: 3.0  
-Stable tag: 2.6   
-Tested up to: 5.0
+Stable tag: 2.8  
+Tested up to: 5.1
 Contributors: Keith Graham       
-Donate link: http://www.blogseye.com/donate/
+Donate link: https://www.facebook.com/BlogsEye/
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -36,6 +36,12 @@ The plugin can be tested by adding or deleting words from a working permalink in
 
 
 == Changelog ==
+
+= 2.8 =
+* Changed the name of a function that used the mysql_ string so that it would not trigger compatibility testers.
+
+= 2.7 =
+* Minor bug where it was not finding yyyy/mm archives when missing, but file was located somewhere else.
 
 = 2.6 =
 * Fixed mysqli_escape_string error.
@@ -73,6 +79,6 @@ The plugin can be tested by adding or deleting words from a working permalink in
 == Support ==
 This plugin is free and I expect nothing in return. Please rate the plugin at: http://wordpress.org/extend/plugins/permalink-finder/
 If you wish to support my programming, You can donate or buy my book: 
-http://www.blogseye.com/buy-the-book 
+https://www.facebook.com/BlogsEye
 Error Message Eyes: A Programmer's Guide to the Digital Soul
 

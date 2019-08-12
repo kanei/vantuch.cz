@@ -275,7 +275,7 @@ if (!defined('ABSPATH')) exit; // just in case
 ?>
   <div style="width:60%;background-color:ivory;border:#333333 medium groove;padding:4px;margin-left:4px;margin-left:auto;margin-right:auto;">
     <p>This plugin is free and I expect nothing in return. You can support me by donating a dollar or so.
-      <a target="_blank" href="http://www.blogseye.com/donate" target="_blank">Donate!</a></p>
+      <a target="_blank" href="https://www.facebook.com/BlogsEye/donate" target="_blank">Donate!</a></p>
   </div>
   <?php
 	}
@@ -286,7 +286,7 @@ if (!defined('ABSPATH')) exit; // just in case
   <p style="font-weight:bold;">The Permalink-Finder Plugin is installed and working correctly.</p>
   <p style="font-weight:bold;"><a href="" onclick="window.location.href=window.location.href;return false;">Refresh</a></p>
   <hr/>
-  <h4>For questions and support please check my website <a href="http://www.blogseye.com/i-make-plugins/permalink-finder-plugin/">BlogsEye.com</a>.</h4>
+  <h4>For questions and support please check my website <a href="https://www.facebook.com/BlogsEye/">BlogsEye FB Page</a>.</h4>
   <form method="post" action="">
     <input type="hidden" name="action" value="update" />
     <input type="hidden" name="kpg_pf_control" value="<?php echo $nonce;?>" />
@@ -469,7 +469,7 @@ if (!defined('ABSPATH')) exit; // just in case
 			echo "Thanks";		
 		} else {
 		?>
-    Check if you are tired of seeing the <a target="_blank" href="http://www.blogseye.com/donate/">donate</a> box at the top of the page.
+    Check if you are tired of seeing the <a target="_blank" href="https://www.facebook.com/BlogsEye/donate/">donate</a> box at the top of the page.
     <?php 
 		}
 	?>
@@ -663,7 +663,7 @@ for ($j=0;$j<count($e404)&&$j<$stats;$j++ ) {
   <p>If debugging is turned on, the plugin will drop a record each time it encounters a PHP error. 
     Most of these errors are not fatal and do not effect the operation of the plugin. Almost all come from the unexpected data that
     spammers include in their effort to fool us. The author's goal is to eliminate any and
-    all errors. These errors should be corrected. Fatal errors should be reported to the author at www.blogseye.com.</p>
+    all errors. These errors should be corrected. Fatal errors should be reported to the author at https://www.facebook.com/BlogsEye/.</p>
   <form method="post" action="">
     <input type="hidden" name="kpg_stop_spammers_control" value="<?php echo $nonce;?>" />
     <input type="hidden" name="kpg_pf_log" value="true" />

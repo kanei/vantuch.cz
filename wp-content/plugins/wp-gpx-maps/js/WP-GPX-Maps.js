@@ -8,178 +8,171 @@ Author URI: http://www.devfarm.it/
 */
 
 var WPGPXMAPS = {
-	
-	Utils : {
-		// in case of multiple polylines this function divide the points of each polyline
-		DividePolylinesPoints : function (mapData)
-		{
+
+	Utils: {
+
+		// In case of multiple polylines this function divide the points of each polyline.
+		DividePolylinesPoints: function( mapData ) {
 
 			var lastCut = 0;
-			
+
 			var result = [];
-			
+
 			var _len = mapData.length;
-		
-			for (i=0; i < _len; i++) 
-			{	
-				if (mapData[i] == null)
-				{
-					result.push( mapData.slice(lastCut == 0 ? 0 : lastCut + 1 ,i) );
+
+			for ( i = 0; i < _len; i++ ) {
+				if ( mapData[i] == null ) {
+					result.push( mapData.slice( lastCut == 0 ? 0 : lastCut + 1, i ) );
 					lastCut = i;
 				}
 			}
-			
-			if ( (_len - 1 ) != lastCut)
-			{
-				result.push( mapData.slice(lastCut) );
+
+			if ( ( _len - 1 ) != lastCut ) {
+				result.push( mapData.slice( lastCut ) );
 			}
-		
+
 			return result;
-			
+
 		},
-		
-		GetItemFromArray : function(arr,index)
-		{
-			try
-			{
-			  return arr[index];
-			}
-			catch(e)
-			{
-				return [0,0];
+
+		GetItemFromArray: function( arr, index ) {
+			try {
+				return arr[index];
+			} catch ( e ) {
+				return [ 0, 0 ];
 			}
 		},
 
-		
+
 	},
-	
-	MapEngines : {
+
+	MapEngines: {
+
 		/* NOT WORKING AND TESTED! old code copy&pate */
-		GoogleMaps : function(){
+		GoogleMaps: function() {
 			this.map = null,
 			this.EventSelectChart = null,
 			this.Polylines = [],
-			this.init = function(targetElement, mapType, scrollWheelZoom, ThunderforestApiKey){
-				
+			this.init = function( targetElement, mapType, scrollWheelZoom, ThunderforestApiKey ) {
+
 				var mapTypeIds = [];
-				for(var type in google.maps.MapTypeId) {
-					mapTypeIds.push(google.maps.MapTypeId[type]);
+				for ( var type in google.maps.MapTypeId ) {
+					mapTypeIds.push( google.maps.MapTypeId[type] );
 				}
-				mapTypeIds.push("OSM1");
-				mapTypeIds.push("OSM2");
-				mapTypeIds.push("OSM3");
-				mapTypeIds.push("OSM4");
-				mapTypeIds.push("OSM5");
-				mapTypeIds.push("OSM6");
-				
+				mapTypeIds.push( 'OSM1' );
+				mapTypeIds.push( 'OSM2' );
+				mapTypeIds.push( 'OSM3' );
+				mapTypeIds.push( 'OSM4' );
+				mapTypeIds.push( 'OSM5' );
+				mapTypeIds.push( 'OSM6' );
+
 				var ngImageMarkers = [];
-				
-				switch (mapType)
-				{
+
+				switch ( mapType ) {
 					case 'TERRAIN': { mapType = google.maps.MapTypeId.TERRAIN; break;}
 					case 'SATELLITE': { mapType = google.maps.MapTypeId.SATELLITE; break;}
 					case 'ROADMAP': { mapType = google.maps.MapTypeId.ROADMAP; break;}
-					case 'OSM1': { mapType = "OSM1"; break;}
-					case 'OSM2': { mapType = "OSM2"; break;}
-					case 'OSM3': { mapType = "OSM3"; break;}
-					case 'OSM4': { mapType = "OSM4"; break;}
-					case 'OSM5': { mapType = "OSM5"; break;}
-					case 'OSM6': { mapType = "OSM6"; break;}
+					case 'OSM1': { mapType = 'OSM1'; break;}
+					case 'OSM2': { mapType = 'OSM2'; break;}
+					case 'OSM3': { mapType = 'OSM3'; break;}
+					case 'OSM4': { mapType = 'OSM4'; break;}
+					case 'OSM5': { mapType = 'OSM5'; break;}
+					case 'OSM6': { mapType = 'OSM6'; break;}
 					default: { mapType = google.maps.MapTypeId.HYBRID; break;}
 				}
-				
-				if ( mapType == "TERRAIN" || mapType == "SATELLITE" || mapType == "ROADMAP" )
-				{
+
+				if ( mapType == 'TERRAIN' || mapType == 'SATELLITE' || mapType == 'ROADMAP' ) {
+
 					// google maps
 				} else {
+
 					// Show OpenStreetMaps credits
-					$(el_osm_credits).show();
+					$( el_osm_credits ).show();
 				}
-				
-				this.map = new google.maps.Map(el_map, {
+
+				this.map = new google.maps.Map( el_map, {
 					mapTypeId: mapType,
-					scrollwheel: (zoomOnScrollWheel == 'true'),
+					scrollwheel: ( zoomOnScrollWheel == 'true' ),
 					mapTypeControlOptions: {
 						style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
 						mapTypeIds: mapTypeIds
 					}
-				}); 
-					
-			
-				this.map.mapTypes.set("OSM1", new google.maps.ImageMapType({
-					getTileUrl: function(coord, zoom) {
-						return "https://tile.openstreetmap.org/" + zoom + "/" + coord.x + "/" + coord.y + ".png";
+				});
+
+
+				this.map.mapTypes.set( 'OSM1', new google.maps.ImageMapType({
+					getTileUrl: function( coord, zoom ) {
+						return "https://tile.openstreetmap.org/" + zoom + "/" + coord.x + "/" + coord.y + '.png';
 					},
-					tileSize: new google.maps.Size(256, 256),
-					name: "OSM",
-					alt : "Open Street Map",
+					tileSize: new google.maps.Size( 256, 256 ),
+					name: 'OSM',
+					alt: 'Open Street Map',
+					maxZoom: 18
+				}) );
+
+
+				this.map.mapTypes.set( 'OSM2', new google.maps.ImageMapType({
+					getTileUrl: function( coord, zoom ) {
+						if ( hasThunderforestApiKey ) {
+							return "https://a.tile.thunderforest.com/cycle/" + zoom + "/" + coord.x + "/" + coord.y + ".png?apikey=" + ThunderforestApiKey;
+						} else {
+							return "http://a.tile.opencyclemap.org/cycle/" + zoom + "/" + coord.x + "/" + coord.y + '.png';
+						}
+					},
+					tileSize: new google.maps.Size( 256, 256 ),
+					name: 'OCM',
+					alt: 'Open Cycle Map',
 					maxZoom: 18
 				}));
 
-				
-				this.map.mapTypes.set("OSM2", new google.maps.ImageMapType({
-					getTileUrl: function(coord, zoom) {
-						if (hasThunderforestApiKey)
-							return "https://a.tile.thunderforest.com/cycle/" + zoom + "/" + coord.x + "/" + coord.y + ".png?apikey=" + ThunderforestApiKey;
-						else
-							return "http://a.tile.opencyclemap.org/cycle/" + zoom + "/" + coord.x + "/" + coord.y + ".png";
-					},
-					tileSize: new google.maps.Size(256, 256),
-					name: "OCM",
-					alt : "Open Cycle Map",
-					maxZoom: 18
-				}));
-				
-				this.map.mapTypes.set("OSM4", new google.maps.ImageMapType({
-					getTileUrl: function(coord, zoom) {
-						if (hasThunderforestApiKey)
+				this.map.mapTypes.set( 'OSM4', new google.maps.ImageMapType({
+					getTileUrl: function( coord, zoom ) {
+						if ( hasThunderforestApiKey ) {
 							return "https://a.tile.thunderforest.com/transport/" + zoom + "/" + coord.x + "/" + coord.y + ".png?apikey=" + ThunderforestApiKey;
-						else
-							return "http://a.tile2.opencyclemap.org/transport/" + zoom + "/" + coord.x + "/" + coord.y + ".png";
+						} else {
+							return "http://a.tile2.opencyclemap.org/transport/" + zoom + "/" + coord.x + "/" + coord.y + '.png';
+						}
 					},
 					tileSize: new google.maps.Size(256, 256),
-					name: "OCM-Tran",
-					alt : "Open Cycle Map - Transport",
+					name: 'OCM-Tran',
+					alt: 'Open Cycle Map - Transport',
 					maxZoom: 18
-				}));
-				
-				this.map.mapTypes.set("OSM5", new google.maps.ImageMapType({
-					getTileUrl: function(coord, zoom) {
-						if (hasThunderforestApiKey)
+				}) );
+
+				this.map.mapTypes.set( 'OSM5', new google.maps.ImageMapType({
+					getTileUrl: function( coord, zoom ) {
+						if ( hasThunderforestApiKey ) {
 							return "https://a.tile.thunderforest.com/landscape/" + zoom + "/" + coord.x + "/" + coord.y + ".png?apikey=" + ThunderforestApiKey;
-						else
-							return "http://a.tile3.opencyclemap.org/landscape/" + zoom + "/" + coord.x + "/" + coord.y + ".png";
+						} else {
+							return "http://a.tile3.opencyclemap.org/landscape/" + zoom + "/" + coord.x + "/" + coord.y + '.png';
+						}
 					},
-					tileSize: new google.maps.Size(256, 256),
-					name: "OCM-Land",
-					alt : "Open Cycle Map - Landscape",
+					tileSize: new google.maps.Size( 256, 256 ),
+					name: 'OCM-Land',
+					alt: 'Open Cycle Map - Landscape',
 					maxZoom: 18
-				}));
-					
-				this.map.mapTypes.set("OSM6", new google.maps.ImageMapType({
-					getTileUrl: function(coord, zoom) {
-						return "https://tile2.maptoolkit.net/terrain/" + zoom + "/" + coord.x + "/" + coord.y + ".png";
+				}) );
+
+				this.map.mapTypes.set( 'OSM6', new google.maps.ImageMapType({
+					getTileUrl: function( coord, zoom ) {
+						return "https://tile2.maptoolkit.net/terrain/" + zoom + "/" + coord.x + "/" + coord.y + '.png';
 					},
-					tileSize: new google.maps.Size(256, 256),
-					name: "MTK-Terr",
-					alt : "MapToolKit - Terrain",
+					tileSize: new google.maps.Size( 256, 256 ),
+					name: 'MTK-Terr',
+					alt: 'MapToolKit - Terrain',
 					maxZoom: 18
-				}));
-						
-				
-				
+				}) );
 			},
-			this.AppPolylines = function(mapData, color1, currentIcon, startIcon, endIcon) {
-				
+
+			this.AppPolylines = function( mapData, color1, currentIcon, startIcon, endIcon ) {
+
 				var points = [];
-				var lastCut=0;
+				var lastCut = 0;
 				var polylinenes = [];
-				var polyline_number=0;
-				var color=0;
-				for (i=0; i < mapData.length; i++) 
-				{	
-					if (mapData[i] == null)
-					{
+				var polyline_number = 0;
+				var color = 0;
+				for ( i = 0; i < mapData.length; i++ ) {
+					if (mapData[i] == null) {
 
 						var poly = new google.maps.Polyline({
 							path: points.slice(lastCut,i),
@@ -188,47 +181,41 @@ var WPGPXMAPS = {
 							strokeWeight: 4,
 							map: this.map
 						});
-						polylinenes.push(poly);
-						lastCut=i;
-						polyline_number= polyline_number +1;
+						polylinenes.push( poly );
+						lastCut = i;
+						polyline_number = polyline_number +1;
+
 						//var p = new google.maps.LatLng(mapData[i-1][0], mapData[i-1][1]);
 						//points.push(p);
 						//bounds.extend(p);
-					}
-					else
-					{
-						var p = new google.maps.LatLng(mapData[i][0], mapData[i][1]);
-						points.push(p);
-						bounds.extend(p);			
+					} else {
+						var p = new google.maps.LatLng( mapData[i][0], mapData[i][1]);
+						points.push( p );
+						bounds.extend( p );
 					}
 				}
-				
-				if (points.length != lastCut)
-				{
-					if ( polyline_number < color1.length)
-					{
-						color=color1[polyline_number];
-					}
-					else
-					{
-						color=color1[color1.length-1];
+
+				if ( points.length != lastCut ) {
+					if ( polyline_number < color1.length ) {
+						color = color1[polyline_number];
+					} else {
+						color = color1[color1.length - 1];
 					}
 					var poly = new google.maps.Polyline({
-						path: points.slice(lastCut),
+						path: points.slice( lastCut ),
 						strokeColor: color,
 						strokeOpacity: .7,
 						strokeWeight: 4,
 						map: this.map
 					});
 
-					polylinenes.push(poly);			
+					polylinenes.push( poly );
 					currentPoints = [];
-					polyline_number= polyline_number +1;
+					polyline_number = polyline_number + 1;
 				}
-				
-				if (startIcon != '')
-				{
-					var startIconImage = new google.maps.MarkerImage(startIcon);
+
+				if ( startIcon != '' ) {
+					var startIconImage = new google.maps.MarkerImage( startIcon );
 					var startMarker = new google.maps.Marker({
 							  position: points[0],
 							  map: this.map,
@@ -240,9 +227,8 @@ var WPGPXMAPS = {
 
 				}
 
-				if (endIcon != '')
-				{
-					var endIconImage = new google.maps.MarkerImage(endIcon);
+				if ( endIcon != '' ) {
+					var endIconImage = new google.maps.MarkerImage( endIcon );
 					var startMarker = new google.maps.Marker({
 							  position: points[ points.length -1 ],
 							  map: this.map,
@@ -251,83 +237,73 @@ var WPGPXMAPS = {
 							  icon: endIconImage,
 							  zIndex: 10
 						  });
-				
+
 				}
 
-				var first = WPGPXMAPS.Utils.GetItemFromArray(mapData,0)
-				
-				if (currentIcon == '')
-				{
+				var first = WPGPXMAPS.Utils.GetItemFromArray( mapData, 0 )
+
+				if ( currentIcon == '' ) {
 					currentIcon = "https://maps.google.com/mapfiles/kml/pal4/icon25.png";
 				}
-				
+
 				var current = new google.maps.MarkerImage(currentIcon,
-					new google.maps.Size(32, 32),
-					new google.maps.Point(0,0),
-					new google.maps.Point(16, 16)
+					new google.maps.Size( 32, 32 ),
+					new google.maps.Point( 0 ,0 ),
+					new google.maps.Point( 16, 16 )
 				);
-				
+
 				var marker = new google.maps.Marker({
-					position: new google.maps.LatLng(first[0], first[1]),
+					position: new google.maps.LatLng( first[0], first[1] ),
 					title:"Start",
 					icon: current,
 					map: this.map,
 					zIndex: 10
 				});
-				
-				for (i=0; i < polylinenes.length; i++) 
-				{	
 
-					google.maps.event.addListener(polylinenes[i],'mouseover',function(event){
-						if (marker)
-						{
-							marker.setPosition(event.latLng);	
-							marker.setTitle(lng.currentPosition);
-							if (myChart)
-							{
+				for ( i = 0; i < polylinenes.length; i++ ) {
+
+					google.maps.event.addListener( polylinenes[i], 'mouseover', function( event ) {
+						if ( marker ) {
+							marker.setPosition( event.latLng );
+							marker.setTitle( lng.currentPosition );
+							if ( myChart ) {
 								var l1 = event.latLng.lat();
 								var l2 = event.latLng.lng();
 								var ci = getClosestIndex(mapData,l1,l2);
 								var activeElements = [];
-								var seriesLen = myChart.data.datasets.length;												
-								for(var i=0; i<seriesLen;i++)
-								{
-									activeElements.push(myChart.chart.getDatasetMeta(i).data[ci]);
+								var seriesLen = myChart.data.datasets.length;
+								for ( var i = 0; i<seriesLen;i++ ) {
+									activeElements.push( myChart.chart.getDatasetMeta( i ).data[ci] );
 								}
-								if (activeElements.length > 0)
-								{
+								if ( activeElements.length > 0) {
 									myChart.options.customLine.x = activeElements[0]._model.x;
-									if (isNaN(myChart.tooltip._eventPosition))
-									{
+									if ( isNaN( myChart.tooltip._eventPosition ) ) {
 										myChart.tooltip._eventPosition = {
-												x: activeElements[0]._model.x, 
+												x: activeElements[0]._model.x,
 												y: activeElements[0]._model.y
 											};
-									}								
+									}
 									myChart.tooltip._active = activeElements;
-									myChart.tooltip.update(true);
+									myChart.tooltip.update ( true );
 									myChart.draw();
 								}
 
 							}
 						}
-					});		
+					});
 				}
-				
-				
-				
+
+
 			},
-			this.AddWaypoints = function(waypoints, waypointIcon)
-			{
-				
+			this.AddWaypoints = function( waypoints, waypointIcon ) {
+
 			},
-			this.MoveMarkerToPosition = function(LatLon, updateChart)
-			{
-				
+			this.MoveMarkerToPosition = function( LatLon, updateChart ) {
+
 			}
 		},
-		
-		Leaflet : function(){
+
+		Leaflet: function() {
 			this.Bounds = [],
 			this.lng = {},
 			this.map = null,
@@ -335,73 +311,71 @@ var WPGPXMAPS = {
 			this.Polylines = [],
 			this.CurrentPositionMarker = null,
 			this.CurrentGPSPositionMarker = null,
-			this.init = function(targetElement, mapType, scrollWheelZoom, ThunderforestApiKey){
-				
-				this.map = L.map(targetElement, 
-					{ 
-						scrollWheelZoom : scrollWheelZoom, 
-					}		
+			this.init = function( targetElement, mapType, scrollWheelZoom, ThunderforestApiKey ) {
+
+				this.map = L.map( targetElement,
+					{
+						scrollWheelZoom : scrollWheelZoom,
+					}
 				);
-				
+
 				// create fullscreen control
 				var fsControl = new L.Control.FullScreen();
+
 				// add fullscreen control to the map
-				this.map.addControl(fsControl);				
-				
+				this.map.addControl( fsControl );
+
 				L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 					attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-				}).addTo(this.map);
+				}).addTo( this.map );
 
-				var hasThunderforestApiKey = (ThunderforestApiKey + '').length > 0;
-				
+				var hasThunderforestApiKey = ( ThunderforestApiKey + '' ).length > 0;
+
 				var baseMaps = {};
-				
+
 				var overlayMaps = { };
-				
+
 				var defaultMpaLayer = null;
-				
-				if (hasThunderforestApiKey)
-				{
-					baseMaps["Open Cycle Map"] = L.tileLayer('https://a.tile.thunderforest.com/cycle/{z}/{x}/{y}.png?apikey=' + ThunderforestApiKey, {
+
+				if ( hasThunderforestApiKey ) {
+					baseMaps['Open Cycle Map'] = L.tileLayer( 'https://a.tile.thunderforest.com/cycle/{z}/{x}/{y}.png?apikey=' + ThunderforestApiKey, {
 						maxZoom: 18,
 						attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
 							'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
 							'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
 					});
-					
-					baseMaps["Open Cycle Map - Transport"] = L.tileLayer('https://a.tile.thunderforest.com/transport/{z}/{x}/{y}.png?apikey=' + ThunderforestApiKey, {
+
+					baseMaps['Open Cycle Map - Transport'] = L.tileLayer( 'https://a.tile.thunderforest.com/transport/{z}/{x}/{y}.png?apikey=' + ThunderforestApiKey, {
 						maxZoom: 18,
 						attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
 							'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
 							'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-					});			
-				
-					baseMaps["Open Cycle Map - Landscape"] = L.tileLayer('https://a.tile.thunderforest.com/landscape/{z}/{x}/{y}.png?apikey=' + ThunderforestApiKey, {
+					});
+
+					baseMaps['Open Cycle Map - Landscape'] = L.tileLayer( 'https://a.tile.thunderforest.com/landscape/{z}/{x}/{y}.png?apikey=' + ThunderforestApiKey, {
 						maxZoom: 18,
 						attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
 							'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
 							'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
 						});
 
-				}
-				else
-				{
-				
-					baseMaps["Open Cycle Map"] = L.tileLayer('http://a.tile.opencyclemap.org/cycle/{z}/{x}/{y}.png', {
+				} else {
+
+					baseMaps['Open Cycle Map'] = L.tileLayer( 'http://a.tile.opencyclemap.org/cycle/{z}/{x}/{y}.png', {
 						maxZoom: 18,
 						attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
 							'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
 							'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
 					});
-				
-					baseMaps["Open Cycle Map - Transport"] = L.tileLayer('https://a.tile2.opencyclemap.org/transport/{z}/{x}/{y}.png', {
+
+					baseMaps['Open Cycle Map - Transport'] = L.tileLayer( 'https://a.tile2.opencyclemap.org/transport/{z}/{x}/{y}.png', {
 						maxZoom: 18,
 						attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
 							'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
 							'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
 					});
-						
-					baseMaps["Open Cycle Map - Landscape"] = L.tileLayer('https://a.tile3.opencyclemap.org/landscape/{z}/{x}/{y}.png', {
+
+					baseMaps['Open Cycle Map - Landscape'] = L.tileLayer( 'https://a.tile3.opencyclemap.org/landscape/{z}/{x}/{y}.png', {
 						maxZoom: 18,
 						attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
 							'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
@@ -410,193 +384,182 @@ var WPGPXMAPS = {
 
 				}
 
-				baseMaps["Open Street Map"] = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+				baseMaps['Open Street Map'] = L.tileLayer( 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 					maxZoom: 18,
 					attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
 						'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
 						'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
 				});
 
-				
-				baseMaps["MapToolKit - Terrain"] = L.tileLayer('https://tile2.maptoolkit.net/terrain/{z}/{x}/{y}.png', {
+
+				baseMaps['MapToolKit - Terrain'] = L.tileLayer( 'https://tile2.maptoolkit.net/terrain/{z}/{x}/{y}.png', {
 					maxZoom: 18,
 					attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
 						'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
 						'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
 				});
-				
-				baseMaps["Humanitarian Map Style"] = L.tileLayer('https://a.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+
+				baseMaps['Humanitarian Map Style'] = L.tileLayer( 'https://a.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
 					maxZoom: 18,
 					attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
 						'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
 						'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
 				});
 				/*
-				baseMaps["Open Ski Map"] = L.tileLayer('http://tiles.skimap.org/openskimap/{z}/{x}/{y}.png', {
+				baseMaps['Open Ski Map'] = L.tileLayer( 'http://tiles.skimap.org/openskimap/{z}/{x}/{y}.png', {
 					maxZoom: 18,
 					attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
 						'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
 						'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
 				});
 				*/
-				
-				baseMaps["Hike & Bike"] = L.tileLayer('http://toolserver.org/tiles/hikebike/{z}/{x}/{y}.png', {
+
+				baseMaps['Hike & Bike'] = L.tileLayer( 'http://toolserver.org/tiles/hikebike/{z}/{x}/{y}.png', {
 					maxZoom: 18,
 					attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
 						'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
 						'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-				});		
+				});
 
-				baseMaps["Open Sea Map"] = L.tileLayer('http://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
+				baseMaps['Open Sea Map'] = L.tileLayer( 'http://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
 					maxZoom: 18,
 					attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
 						'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
 						'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-				});		
+				});
 
-				
-				switch (mapType)
-				{
-					case 'OSM1': { 
-						baseMaps["Open Street Map"].addTo(this.map);
+
+				switch ( mapType ) {
+					case 'OSM1': {
+						baseMaps['Open Street Map'].addTo( this.map );
 						break;
 					}
-					case 'OSM2': { 
-						baseMaps["Open Cycle Map"].addTo(this.map);
+					case 'OSM2': {
+						baseMaps['Open Cycle Map'].addTo( this.map );
 						break;
 					}
-					case 'OSM4': { 
-						baseMaps["Open Cycle Map - Transport"].addTo(this.map);
+					case 'OSM4': {
+						baseMaps['Open Cycle Map - Transport'].addTo( this.map );
 						break;
 					}
-					case 'OSM5': { 
-						baseMaps["Open Cycle Map - Landscape"].addTo(this.map);
+					case 'OSM5': {
+						baseMaps['Open Cycle Map - Landscape'].addTo( this.map );
 						break;
 					}
-					case 'OSM6': { 
-						baseMaps["MapToolKit - Terrain"].addTo(this.map);
+					case 'OSM6': {
+						baseMaps['MapToolKit - Terrain'].addTo( this.map );
 						break;
 					}
-					case 'OSM7': { 
-						baseMaps["Humanitarian Map Style"].addTo(this.map);
+					case 'OSM7': {
+						baseMaps['Humanitarian Map Style'].addTo( this.map );
 						break;
 					}
-					case 'OSM8': { 
-						baseMaps["Open Ski Map"].addTo(this.map);
+					case 'OSM8': {
+						baseMaps['Open Ski Map'].addTo( this.map );
 						break;
 					}
-					case 'OSM9': { 
-						baseMaps["Hike & Bike"].addTo(this.map);
+					case 'OSM9': {
+						baseMaps['Hike & Bike'].addTo( this.map );
 						break;
 					}
-					case 'OSM10': { 
-						baseMaps["Open Sea Map"].addTo(this.map);
+					case 'OSM10': {
+						baseMaps['Open Sea Map'].addTo( this.map );
 						break;
 					}
-					
-					default: { 
-						baseMaps["Open Street Map"].addTo(this.map);
+
+					default: {
+						baseMaps['Open Street Map'].addTo( this.map );
 					}
-				}				
-				
-				L.control.layers(baseMaps, overlayMaps).addTo(this.map);
+				}
+
+				L.control.layers( baseMaps, overlayMaps ).addTo( this.map );
 
 			},
-			
-			this.AppPolylines = function(mapData, color1, currentIcon, startIcon, endIcon) {
-				
-				var first = WPGPXMAPS.Utils.GetItemFromArray(mapData,0)
-				
-				if (currentIcon == '')
-				{
+
+			this.AppPolylines = function( mapData, color1, currentIcon, startIcon, endIcon ) {
+
+				var first = WPGPXMAPS.Utils.GetItemFromArray( mapData, 0 );
+
+				if ( currentIcon == '' ) {
 					currentIcon = "https://maps.google.com/mapfiles/kml/pal4/icon25.png";
 				}
-				
-				var CurrentPositionMarker = L.marker(first, {icon: L.icon({
-																				iconUrl: currentIcon,
-																				iconSize:     [32, 32], // size of the icon
-																				iconAnchor:   [16, 16], // point of the icon which will correspond to marker's location
-																			})
-																		});
-				CurrentPositionMarker.addTo(this.map);
-				CurrentPositionMarker.title = "Start";
-				
+
+				var CurrentPositionMarker = L.marker( first, { icon: L.icon ({
+					iconUrl: currentIcon,
+					iconSize:     [32, 32], // size of the icon
+					iconAnchor:   [16, 16], // point of the icon which will correspond to marker's location
+				})
+				});
+				CurrentPositionMarker.addTo( this.map );
+				CurrentPositionMarker.title = 'Start';
+
 				this.CurrentPositionMarker = CurrentPositionMarker;
-					
-				var pointsArray = WPGPXMAPS.Utils.DividePolylinesPoints(mapData);
-				
+
+				var pointsArray = WPGPXMAPS.Utils.DividePolylinesPoints( mapData );
+
 				var lng = this.lng;
 				var EventSelectChart = this.EventSelectChart;
-				
+
 				this.Bounds = mapData;
-				
+
 				this.CenterMap();
-				
-				for (i=0; i < pointsArray.length; i++) 
-				{
-					
-					if ( i < color1.length)
-					{
-						color=color1[i];
+
+				for ( i = 0; i < pointsArray.length; i++ ) {
+
+					if ( i < color1.length ) {
+						color = color1[i];
+					} else {
+						color = color1[color1.length - 1];
 					}
-					else
-					{
-						color=color1[color1.length-1];
-					}
-					
-					try
-					{
-						var polyline = L.polyline(pointsArray[i], {color: color}).addTo(this.map);
-						this.Polylines.push(polyline);
-						
+					try {
+						var polyline = L.polyline( pointsArray[i], {color: color} ).addTo( this.map );
+						this.Polylines.push( polyline );
+
 						var context = this;
-						
-						this.Polylines[i].on('mousemove', function(e) { 
-							context.MoveMarkerToPosition([e.latlng.lat, e.latlng.lng], true);
-						});						
-					}	
-					catch(err) {						
+
+						this.Polylines[i].on('mousemove', function( e ) {
+							context.MoveMarkerToPosition( [e.latlng.lat, e.latlng.lng], true );
+						});
+					} catch ( err ) {
 					}
-					
-				}				
-			
-				if (startIcon != '')
-				{
-					
-					var startMarker = L.marker(mapData[0], {icon: L.icon({
-																		iconUrl: startIcon,
-																		iconSize:     [32, 32], // size of the icon
-																		iconAnchor:   [16, 16], // point of the icon which will correspond to marker's location
-																	})
-																});
-					startMarker.addTo(this.map);
-					startMarker.title = "Start";
-					
 
 				}
 
-				if (endIcon != '')
-				{
-					  
-					var endMarker = L.marker(mapData[ mapData.length - 1 ], {icon: L.icon({
-																		iconUrl: endIcon,
-																		iconSize:     [32, 32], // size of the icon
-																		iconAnchor:   [16, 16], // point of the icon which will correspond to marker's location
-																	})
-																});
-					endMarker.addTo(this.map);
-					endMarker.title = "End";
-				
+				if ( startIcon != '' ) {
+
+					var startMarker = L.marker( mapData[0], {icon: L.icon( {
+						iconUrl: startIcon,
+						iconSize:     [32, 32], // size of the icon
+						iconAnchor:   [16, 16], // point of the icon which will correspond to marker's location
+					})
+					});
+					startMarker.addTo( this.map );
+					startMarker.title = 'Start';
+
+
+				}
+
+				if ( endIcon != '' ) {
+
+					var endMarker = L.marker( mapData[ mapData.length - 1 ], {icon: L.icon( {
+						iconUrl: endIcon,
+						iconSize:     [32, 32], // size of the icon
+						iconAnchor:   [16, 16], // point of the icon which will correspond to marker's location
+					})
+					});
+					endMarker.addTo( this.map );
+					endMarker.title = 'End';
+
 				}
 
 
-	/*			
+	/*
 				var current = new google.maps.MarkerImage(currentIcon,
 					new google.maps.Size(32, 32),
 					new google.maps.Point(0,0),
 					new google.maps.Point(16, 16)
 				);
-				
+
 				var marker = new google.maps.Marker({
 					position: new google.maps.LatLng(first[0], first[1]),
 					title:"Start",
@@ -605,13 +568,13 @@ var WPGPXMAPS = {
 					zIndex: 10
 				});
 
-				for (i=0; i < polylinenes.length; i++) 
-				{	
+				for (i=0; i < polylinenes.length; i++)
+				{
 
 					google.maps.event.addListener(polylinenes[i],'mouseover',function(event){
 						if (marker)
 						{
-							marker.setPosition(event.latLng);	
+							marker.setPosition(event.latLng);
 							marker.setTitle(lng.currentPosition);
 							if (myChart)
 							{
@@ -619,7 +582,7 @@ var WPGPXMAPS = {
 								var l2 = event.latLng.lng();
 								var ci = getClosestIndex(mapData,l1,l2);
 								var activeElements = [];
-								var seriesLen = myChart.data.datasets.length;												
+								var seriesLen = myChart.data.datasets.length;
 								for(var i=0; i<seriesLen;i++)
 								{
 									activeElements.push(myChart.chart.getDatasetMeta(i).data[ci]);
@@ -630,10 +593,10 @@ var WPGPXMAPS = {
 									if (isNaN(myChart.tooltip._eventPosition))
 									{
 										myChart.tooltip._eventPosition = {
-												x: activeElements[0]._model.x, 
+												x: activeElements[0]._model.x,
 												y: activeElements[0]._model.y
 											};
-									}								
+									}
 									myChart.tooltip._active = activeElements;
 									myChart.tooltip.update(true);
 									myChart.draw();
@@ -641,94 +604,88 @@ var WPGPXMAPS = {
 
 							}
 						}
-					});		
+					});
 				}
-				
-		*/						
-				
+
+		*/
+
 			},
-					
-			this.AddWaypoints = function(waypoints, waypointIcon)
-			{	
-			
+
+			this.AddWaypoints = function( waypoints, waypointIcon ) {
+
 				var icon = L.icon({
 					iconUrl: 'https://maps.google.com/mapfiles/ms/micons/flag.png',
 					iconSize:     [32, 32], // size of the icon
 					iconAnchor:   [16, 16], // point of the icon which will correspond to marker's location
 				});
-						
-				if (waypointIcon!='')
-				{
+
+				if ( waypointIcon!='' ) {
 					icon = L.icon({
 						iconUrl: 'waypointIcon',
 						iconSize:     [32, 32], // size of the icon
 						iconAnchor:   [16, 16], // point of the icon which will correspond to marker's location
 					});
 				}
-				
-				for (i = 0; i < waypoints.length; i++) { 
+
+				for ( i = 0; i < waypoints.length; i++ ) {
 					var wpt = waypoints[i];
-					
-					this.Bounds.push([wpt.lat,wpt.lon]);
-					
+
+					this.Bounds.push( [wpt.lat,wpt.lon] );
+
 					var lat= wpt.lat;
 					var lon= wpt.lon;
 					var sym= wpt.sym;
 					var typ= wpt.type;
 
-					if (icon.img) {
+					if ( icon.img ) {
 						icon.iconUrl = wpt.img;
 						wsh = '';
 					}
-					
-					var marker = L.marker([lat, lon], {icon: icon });
 
-					var cnt = '';	
-					
-					if (wpt.name=='')
-					{
-						cnt = "<div>" + unescape(wpt.desc) + "</div>";
+					var marker = L.marker( [lat, lon], {icon: icon } );
+
+					var cnt = '';
+
+					if ( wpt.name=='' ) {
+						cnt = "<div>" + unescape( wpt.desc ) + "</div>";
+					} else {
+						cnt = "<div><b>" + wpt.name + "</b><br />" + unescape( wpt.desc ) + "</div>";
 					}
-					else
-					{
-						cnt = "<div><b>" + wpt.name + "</b><br />" + unescape(wpt.desc) + "</div>";
-					}
-					
+
 					cnt += "<br /><p><a href='https://maps.google.com?daddr=" + lat + "," + lon + "' target='_blank'>Itin&eacute;raire</a></p>";
 
-					marker.addTo(this.map).bindPopup(cnt);
-					
-				}	
-			
-				this.CenterMap();				
-				
+					marker.addTo( this.map ).bindPopup( cnt );
+
+				}
+
+				this.CenterMap();
+
 			},
-			
-			this.MoveMarkerToPosition = function(LatLon, updateChart) {
-				if (this.CurrentPositionMarker == null)
+
+			this.MoveMarkerToPosition = function( LatLon, updateChart ) {
+				if ( this.CurrentPositionMarker == null )
 					return;
-				
-				this.CurrentPositionMarker.setLatLng(LatLon);	
-				
-				if (this.lng)
+
+				this.CurrentPositionMarker.setLatLng( LatLon );
+
+				if ( this.lng )
 					this.CurrentPositionMarker.title = this.lng.currentPosition;
-				
-				if (updateChart == true && this.EventSelectChart)
-					this.EventSelectChart(LatLon);
-						
+
+				if ( updateChart == true && this.EventSelectChart )
+					this.EventSelectChart( LatLon );
+
 			},
-			this.CenterMap = function()
-			{
-				this.map.fitBounds(this.Bounds);
-			}
-			
+			this.CenterMap = function() {
+				this.map.fitBounds( this.Bounds );
+			};
+
 		}
-		
+
 	}
-	
+
 };
 
-(function ( $ ) {
+(function( $ ) {
 
     $.fn.wpgpxmaps = function( params ) {
 
@@ -764,12 +721,12 @@ var WPGPXMAPS = {
 		var lng = params.langs;
 		var pluginUrl = params.pluginUrl;
 		var usegpsposition = params.usegpsposition;
-		var currentpositioncon= params.currentpositioncon;
+		var currentpositioncon = params.currentpositioncon;
 		var ThunderforestApiKey = params.TFApiKey;
-		
-		var hasThunderforestApiKey = (ThunderforestApiKey + '').length > 0;
-		
-		var _formats=[];
+
+		var hasThunderforestApiKey = ( ThunderforestApiKey + '' ).length > 0;
+
+		var _formats = [];
 
 		// Unit of measure settings
 		var l_s;
@@ -777,143 +734,132 @@ var WPGPXMAPS = {
 		var l_y;
 		var l_grade = { suf : "%", dec : 1 };
 		var l_hr = { suf : "", dec : 0 };
-		var l_cad = { suf : "", dec : 0 };				
-	
-		var el = document.getElementById("wpgpxmaps_" + targetId);
-		var el_map = document.getElementById("map_" + targetId);
-		var el_chart = document.getElementById("chart_" + targetId);
-		var el_report = document.getElementById("report_" + targetId);
-		var el_osm_credits = document.getElementById("wpgpxmaps_" + targetId + "_osm_footer");
-		
+		var l_cad = { suf : "", dec : 0 };
+
+		var el = document.getElementById('wpgpxmaps_' + targetId);
+		var el_map = document.getElementById('map_' + targetId);
+		var el_chart = document.getElementById('chart_' + targetId);
+		var el_report = document.getElementById('report_' + targetId);
+		var el_osm_credits = document.getElementById('wpgpxmaps_' + targetId + '_osm_footer');
+
 		var mapWidth = el_map.style.width;
-			
+
 		var map = new WPGPXMAPS.MapEngines.Leaflet();
 		map.lng = lng;
-		map.init("map_" + targetId, 
-						mapType, 
-						(zoomOnScrollWheel == 'true'),
+		map.init( 'map_' + targetId,
+						mapType,
+						( zoomOnScrollWheel == 'true' ),
 						ThunderforestApiKey);
-					
-		map.EventSelectChart = function(LatLon) 
-		{
-			
-			if (myChart)
-			{
+
+		map.EventSelectChart = function( LatLon ) {
+
+			if ( myChart ) {
 				var l1 = LatLon[0];
 				var l2 = LatLon[1];
-				var ci = getClosestIndex(mapData,l1,l2);
+				var ci = getClosestIndex( mapData, l1, l2 );
 				var activeElements = [];
-				var seriesLen = myChart.data.datasets.length;												
-				for(var i=0; i<seriesLen;i++)
-				{
-					activeElements.push(myChart.chart.getDatasetMeta(i).data[ci]);
+				var seriesLen = myChart.data.datasets.length;
+				for ( var i = 0; i < seriesLen;i++ ) {
+					activeElements.push( myChart.chart.getDatasetMeta( i ).data[ci]);
 				}
-				if (activeElements.length > 0)
-				{
+				if ( activeElements.length > 0 ) {
 					myChart.options.customLine.x = activeElements[0]._model.x;
-					if (isNaN(myChart.tooltip._eventPosition))
-					{
+					if ( isNaN( myChart.tooltip._eventPosition ) ) {
 						myChart.tooltip._eventPosition = {
-								x: activeElements[0]._model.x, 
+								x: activeElements[0]._model.x,
 								y: activeElements[0]._model.y
 							};
-					}								
+					}
 					myChart.tooltip._active = activeElements;
-					myChart.tooltip.update(true);
+					myChart.tooltip.update( true );
 					myChart.draw();
 				}
 
-			}			
+			}
 		}
-	
+
 		//var bounds = new google.maps.LatLngBounds();
-		
-	
-		if ( usegpsposition == "true"  )
-		{
+
+
+		if ( usegpsposition == 'true'  ) {
 
 			// Try HTML5 geolocation
-			if(navigator.geolocation) {
-				
+			if ( navigator.geolocation ) {
+
 				var context = map;
-			
-				navigator.geolocation.watchPosition(function(position)
-				{
-					
+
+				navigator.geolocation.watchPosition( function( position ) {
+
 					var radius = position.coords.accuracy / 2;
 
 					// user position
-					var pos = [position.coords.latitude, position.coords.longitude];
-				
-					if (context.CurrentGPSPositionMarker == null)
-					{
-						if (currentpositioncon == '')
-						{
+					var pos = [ position.coords.latitude, position.coords.longitude ];
+
+					if ( context.CurrentGPSPositionMarker == null ) {
+						if ( currentpositioncon == '' ) {
 							currentpositioncon = "https://maps.google.com/mapfiles/kml/pal4/icon25.png";
-						}						
-						
+						}
+
 						context.CurrentGPSPositionMarker = L.marker(pos, {icon: L.icon({
-																		iconUrl: currentpositioncon,
-																		iconSize:     [32, 32], // size of the icon
-																		iconAnchor:   [16, 16], // point of the icon which will correspond to marker's location
-																	})
-																})
-																.addTo(context.map)
-																.bindPopup(lng.currentPosition)
-																.openPopup();
-																
+							iconUrl: currentpositioncon,
+							iconSize: [ 32, 32 ], // size of the icon
+							iconAnchor: [ 16, 16 ] // point of the icon which will correspond to marker's location
+						})
+						})
+						.addTo( context.map )
+						.bindPopup( lng.currentPosition )
+						.openPopup();
+
+					} else {
+						context.CurrentGPSPositionMarker.setLatLng( pos );
 					}
-					else 
-					{
-						context.CurrentGPSPositionMarker.setLatLng(pos);
-					}
-				
-					context.Bounds.push(pos);
-					
-					context.CenterMap();				
-				
-				}, 
-				function(e){
+
+					context.Bounds.push( pos );
+
+					context.CenterMap();
+
+				},
+				function( e ) {
+
 					// some errors
-				}, 
+				},
 				{
-				  enableHighAccuracy: false,
-				  timeout: 5000,
-				  maximumAge: 0
+				enableHighAccuracy: false,
+				timeout: 5000,
+				maximumAge: 0
 				});
 			}
-		
+
 		}
-		
-		
+
+
 		// Print WayPoints
-		if (!jQuery.isEmptyObject(waypoints) && waypoints.length > 0)
-		{
-			map.AddWaypoints(waypoints, waypointIcon);
+		if ( ! jQuery.isEmptyObject( waypoints ) && waypoints.length > 0 ) {
+			map.AddWaypoints( waypoints, waypointIcon );
 		}
-		
+
 		// Print Images
-		
+
 		jQuery("#ngimages_" + targetId).attr("style","display:block;position:absolute;left:-50000px");
-		
+
 		var nggImages = jQuery("#ngimages_" + targetId + " span").toArray();
-		
+
 		if (nggImages !== undefined && nggImages.length > 0)
 		{
 			var photos = [];
-			
+
 			for (var i = 0; i < nggImages.length; i++) {
-				
+
 				var ngg_span = nggImages[i];
 				var ngg_span_a = ngg_span.children[0];
-				
-				var pos = [	
-							Number(ngg_span.getAttribute("lat")), 
+
+				var pos = [
+							Number(ngg_span.getAttribute("lat")),
 							Number(ngg_span.getAttribute("lon"))
 							];
-				
+
 				map.Bounds.push(pos);
-								
+
 				photos.push({
 							  "lat": pos[0],
 							  "lng": pos[1],
@@ -921,9 +867,9 @@ var WPGPXMAPS = {
 							  "url": ngg_span_a.getAttribute("data-src"),
 							  "thumbnail": ngg_span_a.getAttribute("data-thumbnail")
 							});
-				
+
 			}
-	
+
 			if (photos.length > 0)
 			{
 				var photoLayer = L.photo.cluster().on('click', function(evt) {
@@ -933,22 +879,22 @@ var WPGPXMAPS = {
 							minWidth: 'auto',
 					  }).openPopup();
 				});
-				
-				photoLayer.add(photos).addTo(map.map);	
 
-				map.CenterMap();	
-				
-				
+				photoLayer.add(photos).addTo(map.map);
+
+				map.CenterMap();
+
+
 				/*
 				var showHideImagesCustomControl = L.Control.extend({
-				 
+
 					options: {
-						position: 'topleft' 
+						position: 'topleft'
 						//control position - allowed: 'topleft', 'topright', 'bottomleft', 'bottomright'
 					},
-				 
+
 				  onAdd: function (map) {
-					  
+
 					var container = document.createElement('img');
 					container.class= "leaflet-bar leaflet-control leaflet-control-custom"
 					container.style.backgroundColor = 'white';
@@ -957,7 +903,7 @@ var WPGPXMAPS = {
 					container.src = pluginUrl + "/wp-gpx-maps/img/hideImages.png";
 					container.style.cursor = 'pointer';
 					container.title = lng.hideImages;
-					
+
 					container.onclick = function(){
 
 						var isImagesHidden = (controlUIhi.isImagesHidden == true);
@@ -968,52 +914,52 @@ var WPGPXMAPS = {
 						{
 							for (var i=0; i<ngImageMarkers.length; i++) {
 								ngImageMarkers[i].setMap(map);
-							}			
-							controlUIhi.src = pluginUrl + "/wp-gpx-maps/img/hideImages.png";	
+							}
+							controlUIhi.src = pluginUrl + "/wp-gpx-maps/img/hideImages.png";
 							controlUIhi.title = lng.hideImages;
 						}
 						else
 						{
 							for (var i=0; i<ngImageMarkers.length; i++) {
 								ngImageMarkers[i].setMap(null);
-							}			
+							}
 							controlUIhi.src = pluginUrl + "/wp-gpx-maps/img/showImages.png";
 							controlUIhi.title = lng.showImages;
 						}
 						controlUIhi.isImagesHidden = !isImagesHidden;
-						return false;	
+						return false;
 
 					}
 
 					return container;
 				  },
-				 
+
 				});
-	
+
 				map.map.addControl(new showHideImagesCustomControl());
 				*/
-				
+
 			}
 
 		}
-			
+
 		/*
-		
+
 		// Nextgen Pro Lightbox FIX
 		var _xx = jQuery("#ngimages_" + targetId + " .nextgen_pro_lightbox");
 		if (_xx.length > 0)
 		{
-		
+
 			var rnd1 = Math.random().toString(36).substring(7);
 			var rnd2 = Math.random().toString(36).substring(7);
-		
+
 			//get first gallery without images
-			for (var _temp in galleries) {  
+			for (var _temp in galleries) {
 				var _gal = galleries[_temp];
-				
+
 				if (_gal.source == "random_images" && _gal.wpgpxmaps != true )
 				{
-				
+
 					_gal.source == "galleries";
 					_gal.wpgpxmaps = true;
 					_transient_id = _temp.replace("gallery_","")
@@ -1021,10 +967,10 @@ var WPGPXMAPS = {
 					_gal["image_ids"] = [];
 					_gal["gallery_ids"] = [96];
 					for (var i=0;i<_xx.length;i++)
-					{ 
+					{
 						var __xx = jQuery(_xx[i]);
 						__xx.attr("data-nplmodal-gallery-id", _transient_id);
-						_gal["image_ids"].push(__xx.attr("data-image-id"));			
+						_gal["image_ids"].push(__xx.attr("data-image-id"));
 					}
 					break;
 				}
@@ -1032,48 +978,48 @@ var WPGPXMAPS = {
 		}
 		*/
 
-		
+
 		// Print Track
-		if (mapData != '')		
+		if (mapData != '')
 		{
 			map.AppPolylines(mapData, color1, currentIcon, startIcon, endIcon);
 		}
-		
+
 		/*
-		map.setCenter(bounds.getCenter()); 
+		map.setCenter(bounds.getCenter());
 		map.fitBounds(bounds);
 		*/
-			
-		// FIX post tabs	
-		var $_tab = $(el).closest(".wordpress-post-tabs, .tab-pane").eq(0);	
+
+		// FIX post tabs
+		var $_tab = $(el).closest(".wordpress-post-tabs, .tab-pane").eq(0);
 		if ($_tab)
 		{
 			var contextMap = map;
-			
+
 			var FixMapSize = function(e)
 			{
-				setTimeout(function(e){				
-					//google.maps.event.trigger(map, 'resize');					
+				setTimeout(function(e){
+					//google.maps.event.trigger(map, 'resize');
 					contextMap.map.invalidateSize();
 					contextMap.CenterMap();
 					tabResized = true;
-				}, 300);				
+				}, 300);
 			}
-			
+
 			$(".wpsm_nav-tabs a").click(FixMapSize);
-			
+
 			$("div > ul > li > a", $_tab).click(FixMapSize);
-		}	
-		
-	
+		}
+
+
 		var graphh = jQuery('#myChart_' + params.targetId).css("height");
-		
+
 		if (graphDist != '' && (graphEle != '' || graphSpeed != '' || graphHr != '' || graphAtemp != '' || graphCad != '') && graphh != "0px")
 		{
 
 			var valLen = graphDist.length;
-		
-		
+
+
 			if (unit=="1")
 			{
 				l_x = { suf : "mi", dec : 1 };
@@ -1088,7 +1034,7 @@ var WPGPXMAPS = {
 			{
 				l_x = { suf : "NM", dec : 1 };
 				l_y = { suf : "m", dec : 0 };
-			}		
+			}
 			else if (unit=="4")
 			{
 				l_x = { suf : "mi", dec : 1 };
@@ -1104,19 +1050,19 @@ var WPGPXMAPS = {
 				l_x = { suf : "m", dec : 0 };
 				l_y = { suf : "m", dec : 0 };
 			}
-			
+
 			var nn = 1111.1;
 			var _nn = nn.toLocaleString();
 			var _nnLen = _nn.length;
 			var decPoint = _nn.substring(_nnLen - 2, _nnLen - 1);
 			var thousandsSep = _nn.substring(1, 2);
-			
+
 			if (decPoint == "1")
 				decPoint = ".";
-				
+
 			if (thousandsSep == "1")
-				thousandsSep = "";		
-				
+				thousandsSep = "";
+
 			// define the options
 			var hoptions = {
 				type: 'line',
@@ -1175,11 +1121,11 @@ var WPGPXMAPS = {
 								var point = WPGPXMAPS.Utils.GetItemFromArray(mapData,i)
 								map.MoveMarkerToPosition(point, false);
 
-							}						
+							}
 						}
 					},
 				},
-				
+
 				plugins: [{
 					beforeEvent: function(chart, e) {
 						if ((e.type === 'mousemove')
@@ -1203,14 +1149,14 @@ var WPGPXMAPS = {
 						}
 					}
 				}],
-				
+
 				labels : graphDist,
-				
+
 			};
-		
+
 			if (graphEle != '')
 			{
-				
+
 				var myData = mergeArrayForChart(graphDist, graphEle);
 
 				var yaxe = {
@@ -1223,63 +1169,63 @@ var WPGPXMAPS = {
 					},
 					id: "y-axis-" + (hoptions.options.scales.yAxes.length + 1),
 				};
-		
+
 				if ( chartFrom1 != '' )
 				{
 					yaxe.min = chartFrom1;
 					yaxe.startOnTick = false;
 				}
-				else { 
-					yaxe.min = myData.Min; 
+				else {
+					yaxe.min = myData.Min;
 				}
-				
+
 				if ( chartTo1 != '' )
 				{
 					yaxe.max = chartTo1;
 					yaxe.endOnTick = false;
 				}
-				else { 
-					yaxe.max = myData.Max; 
+				else {
+					yaxe.max = myData.Max;
 				}
 				_formats.push(l_y)
 				hoptions.options.scales.yAxes.push(yaxe);
-				hoptions.data.datasets.push( wpgpxmapsGetDataset(lng.altitude, myData.Items, color2, yaxe.id ));		
+				hoptions.data.datasets.push( wpgpxmapsGetDataset(lng.altitude, myData.Items, color2, yaxe.id ));
 
 			}
-			
+
 			if (graphSpeed != '') {
-				if (unitspeed == '6') /* min/100m */				
-				{					
-					l_s = { suf : "min/100m", dec : 2 };				
-				} 
+				if (unitspeed == '6') /* min/100m */
+				{
+					l_s = { suf : "min/100m", dec : 2 };
+				}
 				else if (unitspeed == '5') /* knots */
 				{
 					l_s = { suf : "knots", dec : 2 };
-				} 
+				}
 				else if (unitspeed == '4') /* min/miles */
 				{
 					l_s = { suf : "min/mi", dec : 2 };
-				} 
+				}
 				else if (unitspeed == '3') /* min/km */
 				{
 					l_s = { suf : "min/km", dec : 2 };
-				} 
+				}
 				else if (unitspeed == '2') /* miles/h */
 				{
 					l_s = { suf : "mi/h", dec : 0 };
-				} 
+				}
 				else if (unitspeed == '1') /* km/h */
 				{
 					l_s = { suf : "km/h", dec : 0 };
-				} 
+				}
 				else
 				{
 					l_s = { suf : "m/s", dec : 0 };
 				}
-				
+
 				var myData = mergeArrayForChart(graphDist, graphSpeed);
 
-				var yaxe = { 
+				var yaxe = {
 					type: 'linear',
 					ticks: {
 						// Include a dollar sign in the ticks
@@ -1291,39 +1237,39 @@ var WPGPXMAPS = {
 					scalePositionLeft: false,
 					id: "y-axis-" + (hoptions.options.scales.yAxes.length + 1),
 				};
-							
+
 				if ( chartFrom2 != '' )
 				{
 					yaxe.min = chartFrom2;
-					yaxe.startOnTick = false;				
+					yaxe.startOnTick = false;
 				}
-				else { 
-					yaxe.min = myData.Min; 
+				else {
+					yaxe.min = myData.Min;
 				}
-				
+
 				if ( chartTo2 != '' )
 				{
 					yaxe.max = chartTo2;
-					yaxe.endOnTick = false;				
+					yaxe.endOnTick = false;
 				}
-				else { 
-					yaxe.max = myData.Max; 
+				else {
+					yaxe.max = myData.Max;
 				}
 
-				
+
 				_formats.push(l_s);
 				hoptions.options.scales.yAxes.push(yaxe);
-				hoptions.data.datasets.push( wpgpxmapsGetDataset(lng.speed, myData.Items, color3, yaxe.id ) );			
+				hoptions.data.datasets.push( wpgpxmapsGetDataset(lng.speed, myData.Items, color3, yaxe.id ) );
 
 			}
-			
+
 			if (graphHr != '')
 			{
-				
+
 				var myData = mergeArrayForChart(graphDist, graphHr);
 
 				var yaxe = {
-					type: 'linear',					
+					type: 'linear',
 					ticks: {
 						// Include a dollar sign in the ticks
 						callback: function(value, index, values) {
@@ -1336,14 +1282,14 @@ var WPGPXMAPS = {
 				};
 
 				hoptions.options.scales.yAxes.push(yaxe);
-				hoptions.data.datasets.push( wpgpxmapsGetDataset(lng.heartRate, myData.Items, color4, yaxe.id ) );			
+				hoptions.data.datasets.push( wpgpxmapsGetDataset(lng.heartRate, myData.Items, color4, yaxe.id ) );
 				_formats.push(l_hr);
 			}
-			
-			
+
+
 			if (graphAtemp != '')
 			{
-				
+
 				var myData = mergeArrayForChart(graphDist, graphAtemp);
 
 				var yaxe = {
@@ -1358,19 +1304,19 @@ var WPGPXMAPS = {
 					scalePositionLeft: false,
 					id: "y-axis-" + (hoptions.options.scales.yAxes.length + 1),
 				};
-				
+
 				hoptions.options.scales.yAxes.push(yaxe);
-				hoptions.data.datasets.push( wpgpxmapsGetDataset(lng.atemp, myData.Items, color7, yaxe.id ) );			
+				hoptions.data.datasets.push( wpgpxmapsGetDataset(lng.atemp, myData.Items, color7, yaxe.id ) );
 				_formats.push({ suf : "°C", dec : 1 });
-				
+
 			}
-			
-			
+
+
 			if (graphCad != '')
 			{
-				
+
 				var myData = mergeArrayForChart(graphDist, graphCad, true);
-				
+
 				var yaxe = {
 					type: 'linear',
 					ticks: {
@@ -1383,20 +1329,20 @@ var WPGPXMAPS = {
 					scalePositionLeft: false,
 					id: "y-axis-" + (hoptions.options.scales.yAxes.length + 1),
 				};
-									
+
 				hoptions.options.scales.yAxes.push(yaxe);
 				hoptions.data.datasets.push( wpgpxmapsGetDataset(lng.cadence, myData.Items, color5, yaxe.id) );
 				_formats.push(l_cad);
-				
+
 			}
 
 			if (graphGrade != '')
 			{
-				
+
 				var myData = mergeArrayForChart(graphDist, graphGrade);
 
 				var yaxe = {
-					type: 'linear',					
+					type: 'linear',
 					ticks: {
 						// Include a dollar sign in the ticks
 						callback: function(value, index, values) {
@@ -1407,62 +1353,62 @@ var WPGPXMAPS = {
 					scalePositionLeft: false,
 					id: "y-axis-" + (hoptions.options.scales.yAxes.length + 1),
 				};
-				
+
 				_formats.push(l_grade);
 				hoptions.options.scales.yAxes.push(yaxe);
-				hoptions.data.datasets.push( wpgpxmapsGetDataset(lng.grade, myData.Items, color6, yaxe.id ) );			
-				
+				hoptions.data.datasets.push( wpgpxmapsGetDataset(lng.grade, myData.Items, color6, yaxe.id ) );
+
 			}
-			
+
 			var ctx = document.getElementById("myChart_" + params.targetId).getContext('2d');
 			var myChart = new Chart(ctx, hoptions);
-		
+
 		}
 		else  {
 			jQuery("#myChart_" + params.targetId).css("display","none");
 		}
-	
+
         return this;
     };
-	
+
 	function mergeArrayForChart(distArr, dataArr, setZerosAsNull)
 	{
 		var l = distArr.length;
-		
+
 		var items = new Array(l);
 		var min=10000;
 		var max=-10000;
-		
-		for (i=0; i<l; i++) 
+
+		for (i=0; i<l; i++)
 		{
 			if (distArr[i] != null)
 			{
 				var _item = dataArr[i];
-				
+
 				if (setZerosAsNull === true && _item === 0)
 				{
-					_item = null;					
+					_item = null;
 				}
-				
+
 				items[i] = {
-								x: distArr[i], 
+								x: distArr[i],
 								y:_item
 							};
-				if (_item > max) 
-					max = _item; 
-				if (_item < min) 
+				if (_item > max)
+					max = _item;
+				if (_item < min)
 					min = _item;
 			}
 		}
-		
+
 		return {
 			Items : items,
 			Min : min,
-			Max : max,			
+			Max : max,
 		}
-		
+
 	}
-	
+
 	function wpgpxmapsGetDataset(name,data,color, id) {
 		return {
 			label: name, // jQuery("<div/>").html(name).text(), // convert html special chars to text, ugly but it works
@@ -1475,7 +1421,7 @@ var WPGPXMAPS = {
 			yAxisID: id,
 		}
 	}
-	
+
 	function hexToRgbA(hex,a){
 		var c;
 		if(/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)){
@@ -1507,11 +1453,11 @@ var WPGPXMAPS = {
 	{
 		var dd=10000;
 		var ii=0;
-		for (i=0; i < points.length; i++) 
+		for (i=0; i < points.length; i++)
 		{
 			if (points[i]==null)
 				continue;
-		
+
 			var d = wpgpxmapsDist(points[i][0], points[i][1], lat, lon);
 			if ( d < dd )
 			{
@@ -1527,20 +1473,20 @@ var WPGPXMAPS = {
 		var dd=10000;
 		var img;
 		var divImages = document.getElementById("ngimages_"+targetId);
-		var img_spans = divImages.getElementsByTagName("span");   
-		for (var i = 0; i < img_spans.length; i++) {   
+		var img_spans = divImages.getElementsByTagName("span");
+		for (var i = 0; i < img_spans.length; i++) {
 			var imageLat = img_spans[i].getAttribute("lat");
-			var imageLon = img_spans[i].getAttribute("lon");	
-						
+			var imageLon = img_spans[i].getAttribute("lon");
+
 			imageLat = imageLat.replace(",", ".");
 			imageLon = imageLon.replace(",", ".");
-			
+
 			var d = wpgpxmapsDist(imageLat, imageLon, lat, lon);
 			if ( d < dd )
 			{
 				img = img_spans[i];
 				dd = d;
-			}		
+			}
 		}
 		return img;
 	}
@@ -1557,5 +1503,5 @@ var WPGPXMAPS = {
 		var dLon = (lon2-lon1);
 		return Math.sqrt(dLat * dLat + dLon * dLon);
 	}
-	
+
 }( jQuery ));
